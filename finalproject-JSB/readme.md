@@ -428,7 +428,52 @@ La configuración de la infraestructura se gestiona principalmente a través de 
 
 ### **2.5. Seguridad**
 
-> Enumera y describe las prácticas de seguridad principales que se han implementado en el proyecto, añadiendo ejemplos si procede
+La seguridad es un aspecto fundamental del proyecto LeanSim. A continuación se detallan las principales prácticas de seguridad implementadas:
+
+1. **Mitigación de OWASP Top 10**:
+
+   - Prevención de inyecciones SQL mediante el uso de Prisma ORM
+   - Protección contra autenticación rota con gestión segura de sesiones
+   - Prevención de exposición de datos sensibles mediante HTTPS y encriptación
+   - Protección contra controles de acceso rotos con middleware de autorización
+   - Defensa contra XSS utilizando React y sanitización de datos
+
+2. **Seguridad de API**:
+
+   - Implementación de rate limiting para prevenir abusos
+   - Versionado de API para gestionar cambios de forma segura
+   - Validación rigurosa de inputs con bibliotecas como Zod
+
+3. **Seguridad de Base de Datos**:
+
+   - Uso de variables de entorno para credenciales de conexión
+   - Implementación de encriptación TLS para conexiones
+   - Políticas de backup y recuperación de datos
+
+4. **Seguridad Frontend**:
+
+   - Configuración de Content Security Policy (CSP)
+   - Uso exclusivo de HTTPS con encabezados HSTS
+   - Protección CSRF en formularios
+
+5. **Protección de Datos y Privacidad**:
+
+   - Minimización de datos recolectados
+   - Cookies seguras con atributos HttpOnly y SameSite
+   - Gestión apropiada de información sensible
+
+6. **Seguridad DevOps**:
+
+   - Gestión segura de secretos mediante variables de entorno
+   - Escaneo regular de dependencias
+   - Pruebas de seguridad integradas en el pipeline
+
+7. **Opcional: Monitorización y Respuesta a Incidentes**:
+   - Logging estructurado de eventos de seguridad
+   - Alertas para actividades sospechosas
+   - Plan documentado de respuesta a incidentes
+
+Las implementaciones detalladas de estas prácticas se encuentran documentadas en el archivo [security.md](/docs/technical/security.md).
 
 ### **2.6. Tests**
 
