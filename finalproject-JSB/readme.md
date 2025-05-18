@@ -350,7 +350,7 @@ Este documento describe la infraestructura de despliegue de LeanSim, una aplicac
 
 ## Diagrama de Infraestructura
 
-![Diagrama de Infraestructura](docs/technical/infrastructure.png)
+![Diagrama de Infraestructura](../docs/technical/infrastructure.png)
 
 ## Componentes Principales
 
