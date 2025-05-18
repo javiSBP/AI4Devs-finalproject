@@ -37,8 +37,6 @@ https://github.com/javiSBP/leansim
 
 ## 1. Descripción general del producto
 
-> Describe en detalle los siguientes aspectos del producto:
-
 ### **1.1. Objetivo:**
 
 **LeanSim** es una herramienta web que permite a emprendedores simular la viabilidad básica de su modelo de negocio sin conocimientos financieros.  
@@ -74,19 +72,359 @@ El objetivo del MVP es permitir que el usuario:
 
 ### **2.1. Diagrama de arquitectura:**
 
-> Usa el formato que consideres más adecuado para representar los componentes principales de la aplicación y las tecnologías utilizadas. Explica si sigue algún patrón predefinido, justifica por qué se ha elegido esta arquitectura, y destaca los beneficios principales que aportan al proyecto y justifican su uso, así como sacrificios o déficits que implica.
+# Arquitectura de Alto Nivel - LeanSim
+
+## Descripción
+
+Este diagrama representa la arquitectura de alto nivel propuesta para la aplicación LeanSim, mostrando los componentes principales, las capas de la aplicación, el flujo de datos entre componentes y las tecnologías utilizadas en cada uno.
+
+## Decisiones de Diseño
+
+- Se ha elegido una arquitectura basada en Next.js que aprovecha sus capacidades fullstack para simplicidad del desarrollo MVP.
+- La arquitectura sigue un patrón de capas que separa claramente las responsabilidades de UI, lógica de negocio y persistencia.
+- Se ha evitado la sobreingeniería, manteniendo un enfoque pragmático y orientado a la entrega rápida del MVP.
+- El diseño respeta los principios SOLID, KISS, DRY y YAGNI:
+  - **SOLID**: Las responsabilidades están bien separadas (UI/Lógica/Datos).
+  - **KISS**: La arquitectura es simple y directa, sin componentes innecesarios.
+  - **DRY**: Se promueve la reutilización de componentes y lógica de negocio.
+  - **YAGNI**: Solo se incluyen los componentes necesarios para el MVP.
+
+## Diagrama
+
+```mermaid
+flowchart TB
+    subgraph Client["Cliente (Browser)"]
+        UI["Interfaz de Usuario\n(React + TailwindCSS)"]
+    end
+
+    subgraph NextJS["Next.js Application"]
+        subgraph FrontendLayer["Capa de Presentación"]
+            Pages["Pages\n(React Components)"]
+            Components["UI Components\n(React + TailwindCSS)"]
+            Hooks["Custom Hooks\n(React)"]
+            Contexts["Context Providers\n(React)"]
+        end
+
+        subgraph BusinessLayer["Capa de Lógica de Negocio"]
+            FinancialCalculator["Calculador Financiero\n(TypeScript)"]
+            ValidationService["Servicio de Validación\n(TypeScript)"]
+            SimulationManager["Gestor de Simulaciones\n(TypeScript)"]
+        end
+
+        subgraph DataLayer["Capa de Datos"]
+            APIRoutes["API Routes\n(Next.js)"]
+            PrismaORM["Prisma Client\n(ORM)"]
+        end
+
+        subgraph UtilsLayer["Capa de Utilidades"]
+            HelpSystem["Sistema de Ayudas\n(TypeScript)"]
+            StorageUtils["Utilidades de Almacenamiento\n(TypeScript)"]
+        end
+    end
+
+    subgraph Database["Base de Datos"]
+        SQLite["SQLite (Desarrollo)"]
+        PostgreSQL["PostgreSQL (Producción)"]
+    end
+
+    subgraph DeploymentPlatform["Plataforma de Despliegue"]
+        Vercel["Vercel"]
+    end
+
+    UI <--> Pages
+    Pages <--> Components
+    Pages <--> Hooks
+    Components <--> Hooks
+    Hooks <--> Contexts
+
+    Pages --> APIRoutes
+    Hooks --> APIRoutes
+
+    APIRoutes <--> FinancialCalculator
+    APIRoutes <--> ValidationService
+    APIRoutes <--> SimulationManager
+
+    FinancialCalculator <--> ValidationService
+    SimulationManager <--> ValidationService
+
+    APIRoutes <--> PrismaORM
+
+    Components <--> HelpSystem
+    Pages <--> HelpSystem
+    APIRoutes <--> StorageUtils
+
+    PrismaORM <--> SQLite
+    PrismaORM <--> PostgreSQL
+
+    NextJS --> Vercel
+
+    classDef tech fill:#f9f9f9,stroke:#333,stroke-width:1px;
+    class UI,Components,Pages,Hooks,Contexts,FinancialCalculator,ValidationService,SimulationManager,APIRoutes,PrismaORM,HelpSystem,StorageUtils,SQLite,PostgreSQL,Vercel tech;
+```
+
+## Elementos Principales
+
+1. **Capa de Presentación**:
+
+   - **Pages**: Componentes de página de Next.js que definen las rutas de la aplicación.
+   - **UI Components**: Componentes reutilizables para construir la interfaz (formularios, tarjetas, etc.).
+   - **Custom Hooks**: Lógica reutilizable para gestión de estado y efectos secundarios.
+   - **Context Providers**: Proveedores de contexto para compartir estado global.
+
+2. **Capa de Lógica de Negocio**:
+
+   - **Calculador Financiero**: Implementa las fórmulas para calcular KPIs financieros.
+   - **Servicio de Validación**: Valida los inputs del usuario antes de procesarlos.
+   - **Gestor de Simulaciones**: Maneja las operaciones CRUD de las simulaciones.
+
+3. **Capa de Datos**:
+
+   - **API Routes**: Endpoints de API de Next.js para operaciones CRUD.
+   - **Prisma Client**: ORM para interactuar con la base de datos.
+
+4. **Capa de Utilidades**:
+
+   - **Sistema de Ayudas**: Gestiona las ayudas contextuales y tooltips.
+   - **Utilidades de Almacenamiento**: Funciones para interactuar con localStorage y persistencia.
+
+5. **Base de Datos**:
+
+   - **SQLite**: Para desarrollo local.
+   - **PostgreSQL**: Para el entorno de producción.
+
+6. **Plataforma de Despliegue**:
+   - **Vercel**: Plataforma para el despliegue de la aplicación Next.js.
+
+## Consideraciones Adicionales
+
+- Esta arquitectura prioriza la simplicidad y rapidez de desarrollo, adecuada para un MVP.
+- El uso de Next.js permite una experiencia de desarrollo integrada sin necesidad de mantener repositorios separados para frontend y backend.
+- La separación en capas facilita las futuras expansiones sin alterar la estructura fundamental.
+- El sistema está diseñado para ser desplegable en Vercel con mínima configuración.
+- Las operaciones de cálculo financiero se realizan en el servidor para proteger la lógica de negocio.
+- No se incluye autenticación de usuarios en esta fase, utilizando identificadores de dispositivo para las simulaciones.
+
+### Patrones y Arquitectura
+
+La estructura del proyecto sigue varios patrones de diseño y convenciones:
+
+1. **Arquitectura por capas**: La organización de carpetas refleja la separación de responsabilidades en capas (presentación, lógica de negocio, datos y utilidades).
+
+2. **File-based Routing**: Se utiliza el sistema de enrutamiento basado en archivos de Next.js, donde la estructura de carpetas en `app/` define automáticamente las rutas de la aplicación.
+
+3. **Feature-based Organization**: Los componentes están organizados por funcionalidad o característica (lean-canvas, financial-form, results) en lugar de por tipo, facilitando la localización y mantenimiento del código.
+
+4. **Dependency Injection**: Se utilizan contextos de React para proporcionar servicios y estado a los componentes que los necesitan, permitiendo un acoplamiento débil entre componentes.
+
+5. **Repository Pattern**: La capa de datos utiliza Prisma Client como una implementación del patrón repositorio, abstrayendo las operaciones de la base de datos.
+
+6. **Service Pattern**: La lógica de negocio está encapsulada en servicios especializados (FinancialCalculator, ValidationService, SimulationManager).
+
+Esta estructura facilita:
+
+- La **escalabilidad** del proyecto a medida que crezca
+- La **mantenibilidad** al tener una clara separación de responsabilidades
+- El **testeo** al permitir probar cada capa de forma aislada
+- La **colaboración** entre desarrolladores al tener una organización clara y predecible
 
 ### **2.2. Descripción de componentes principales:**
 
-> Describe los componentes más importantes, incluyendo la tecnología utilizada
+```mermaid
+C4Component
+    title Diagrama de Componentes para LeanSim
+
+    Person(emprendedor, "Emprendedor", "Usuario que busca evaluar la viabilidad de su idea de negocio")
+
+    System_Boundary(leanSimSystem, "LeanSim") {
+        Container_Boundary(webApplication, "Aplicación Web") {
+            Component(pageComponents, "Páginas", "Next.js Pages", "Implementan las rutas principales de la aplicación")
+            Component(leanCanvasForm, "Formulario Lean Canvas", "React Component", "Permite al usuario rellenar el Lean Canvas simplificado")
+            Component(financialInputForm, "Formulario Inputs Financieros", "React Component", "Permite ingresar datos financieros clave")
+            Component(resultsDisplay, "Visualizador de Resultados", "React Component", "Muestra los KPIs calculados y sus explicaciones")
+            Component(historyList, "Historial", "React Component", "Muestra el listado de simulaciones previas")
+            Component(contextualHelp, "Sistema de Ayudas", "React Component", "Proporciona tooltips y explicaciones contextuales")
+            Component(stateManagement, "Gestión de Estado", "React Context/Hooks", "Maneja el estado global de la aplicación")
+        }
+
+        Container_Boundary(apiLayer, "API Backend") {
+            Component(simulationAPI, "API de Simulaciones", "Next.js API Route", "Endpoints para CRUD de simulaciones")
+            Component(calculationService, "Servicio de Cálculo", "TypeScript", "Implementa la lógica de cálculo de KPIs financieros")
+            Component(validationService, "Servicio de Validación", "TypeScript", "Valida los inputs del usuario")
+            Component(dataAccessLayer, "Capa de Acceso a Datos", "Prisma Client", "Interactúa con la base de datos")
+        }
+
+        ContainerDb(database, "Base de Datos", "SQLite/PostgreSQL", "Almacena simulaciones, datos financieros y contenido de ayuda")
+    }
+
+    Rel(emprendedor, pageComponents, "Interactúa con")
+    Rel(pageComponents, leanCanvasForm, "Utiliza")
+    Rel(pageComponents, financialInputForm, "Utiliza")
+    Rel(pageComponents, resultsDisplay, "Utiliza")
+    Rel(pageComponents, historyList, "Utiliza")
+
+    Rel(leanCanvasForm, contextualHelp, "Usa para mostrar ayudas")
+    Rel(financialInputForm, contextualHelp, "Usa para mostrar ayudas")
+    Rel(resultsDisplay, contextualHelp, "Usa para mostrar ayudas")
+
+    Rel(leanCanvasForm, stateManagement, "Lee/actualiza estado")
+    Rel(financialInputForm, stateManagement, "Lee/actualiza estado")
+    Rel(resultsDisplay, stateManagement, "Lee estado")
+    Rel(historyList, stateManagement, "Lee estado")
+
+    Rel(stateManagement, simulationAPI, "Realiza llamadas a", "JSON/HTTP")
+
+    Rel(simulationAPI, calculationService, "Utiliza para calcular KPIs")
+    Rel(simulationAPI, validationService, "Utiliza para validar inputs")
+    Rel(simulationAPI, dataAccessLayer, "Utiliza para acceder a datos")
+
+    Rel(calculationService, validationService, "Utiliza para validar datos")
+    Rel(dataAccessLayer, database, "Lee/escribe")
+```
+
+- **Componentes de UI**:
+
+  - **Páginas (Pages)**: Componentes de nivel superior que definen las rutas de la aplicación. Gestionan la composición general de cada vista y el flujo de navegación.
+  - **Formulario Lean Canvas**: Componente especializado para capturar los 5 campos clave del Lean Canvas simplificado, con validación integrada y ayudas contextuales.
+  - **Formulario de Inputs Financieros**: Componente para la entrada de datos financieros con validación en tiempo real, tooltips explicativos y formateo automático.
+  - **Visualizador de Resultados**: Componente que muestra los KPIs calculados con representaciones visuales, codificación por colores e información contextual.
+  - **Historial de Simulaciones**: Componente que lista las simulaciones previas, permitiendo cargarlas o eliminarlas.
+  - **Componentes UI Base**: Biblioteca de componentes reutilizables como botones, inputs, tarjetas y modales que mantienen una experiencia consistente.
+
+- **Gestión de Estado**:
+
+  - **Context Providers**: Implementan el patrón de Context API de React para proporcionar estado global a diferentes partes de la aplicación.
+  - **Custom Hooks**: Encapsulan lógica reutilizable para gestionar efectos secundarios, llamadas a API y manipulación de estado local.
+  - **Form State Management**: Utiliza React Hook Form para la gestión eficiente del estado de formularios complejos, validación y manejo de errores.
+
+- **APIs y Servicios**:
+  - **API de Simulaciones**: Endpoints para crear, recuperar, actualizar y eliminar simulaciones completas.
+  - **Servicio de Cálculo Financiero**: Implementa los algoritmos y fórmulas para calcular todos los KPIs financieros basados en los inputs del usuario.
+  - **Servicio de Validación**: Valida todos los inputs del usuario según reglas de negocio específicas antes de procesarlos.
+  - **Acceso a Datos**: Capa que abstrae las operaciones de base de datos mediante Prisma Client, implementando el patrón repositorio.
+  - **Sistema de Ayudas Contextuales**: Servicio que gestiona y proporciona contenido educativo contextual para cada campo y concepto.
 
 ### **2.3. Descripción de alto nivel del proyecto y estructura de ficheros**
 
-> Representa la estructura del proyecto y explica brevemente el propósito de las carpetas principales, así como si obedece a algún patrón o arquitectura específica.
+La estructura de ficheros del proyecto LeanSim sigue las convenciones de Next.js con una organización adicional que refleja la arquitectura por capas descrita anteriormente. A continuación se detalla la estructura principal de carpetas:
+
+```
+leansim/
+├── src/                      # Carpeta opcional que contiene el código fuente principal
+│   ├── app/                  # App Router de Next.js (rutas y páginas basadas en archivos)
+│   │   ├── api/              # API Routes para operaciones del backend
+│   │   ├── (routes)/         # Rutas de la aplicación organizadas por funcionalidad
+│   │   ├── layout.tsx        # Layout principal compartido por todas las páginas
+│   │   └── page.tsx          # Página principal (Home)
+│   ├── components/           # Componentes de UI reutilizables
+│   │   ├── lean-canvas/      # Componentes específicos del Lean Canvas
+│   │   ├── financial-form/   # Formularios de datos financieros
+│   │   ├── results/          # Visualización de resultados y KPIs
+│   │   ├── ui/               # Componentes de UI genéricos (botones, inputs, etc.)
+│   │   └── layout/           # Componentes estructurales (headers, footers, etc.)
+│   ├── hooks/                # Hooks personalizados para gestión de estado y efectos
+│   ├── context/              # Contextos de React para estado global
+│   ├── lib/                  # Código compartido y utilidades
+│   │   ├── financial/        # Calculador financiero y lógica de negocio
+│   │   ├── validation/       # Servicios de validación
+│   │   ├── simulation/       # Gestor de simulaciones
+│   │   └── helpers/          # Funciones auxiliares
+│   ├── types/                # Definiciones de TypeScript
+│   └── utils/                # Utilidades generales
+│       ├── help-system/      # Sistema de ayudas contextuales
+│       └── storage/          # Utilidades de almacenamiento
+├── prisma/                   # Configuración de Prisma ORM
+│   ├── schema.prisma         # Modelo de datos
+│   └── migrations/           # Migraciones de la base de datos
+├── public/                   # Archivos estáticos (imágenes, favicon, etc.)
+├── next.config.js            # Configuración de Next.js
+├── tailwind.config.js        # Configuración de TailwindCSS
+├── tsconfig.json             # Configuración de TypeScript
+└── package.json              # Dependencias y scripts
+```
 
 ### **2.4. Infraestructura y despliegue**
 
-> Detalla la infraestructura del proyecto, incluyendo un diagrama en el formato que creas conveniente, y explica el proceso de despliegue que se sigue
+![](/docs/technical/infrastructure.png)
+
+# Infraestructura de Despliegue - LeanSim
+
+## Descripción General
+
+Este documento describe la infraestructura de despliegue de LeanSim, una aplicación Next.js alojada en la plataforma Vercel. La arquitectura está diseñada para proporcionar una experiencia de usuario óptima con rendimiento de carga rápido, mientras mantiene un flujo de desarrollo y despliegue eficiente.
+
+## Diagrama de Infraestructura
+
+![Diagrama de Infraestructura](./infrastructure.png)
+
+## Componentes Principales
+
+### 1. Repositorio GitHub y CI/CD
+
+- **Repositorio GitHub**: Almacena el código fuente de la aplicación con control de versiones.
+- **Pipeline CI/CD**: Automatiza los procesos de integración y despliegue continuo.
+- **Push/PR**: El flujo comienza cuando los desarrolladores envían código (push) o crean solicitudes de cambios (pull requests).
+- **Despliegue y Migraciones Prisma**: Durante el despliegue, se ejecutan automáticamente las migraciones de base de datos utilizando Prisma.
+
+### 2. Plataforma Vercel
+
+- **CDN de Vercel**: Distribuye contenido estático y dinámico a través de una red global de servidores.
+- **Cache y Contenido Dinámico**: Almacena en caché los recursos estáticos mientras sirve eficientemente el contenido dinámico.
+
+### 3. Edge Network
+
+- **Server-Side Rendering (SSR)**: Genera las páginas HTML en el servidor para una carga inicial más rápida y mejor SEO.
+- **Edge Functions**: Ejecuta código en ubicaciones cercanas al usuario para reducir la latencia.
+- **Optimización de Imágenes**: Procesa y sirve imágenes optimizadas para diferentes dispositivos y anchos de banda.
+- **Middleware/Optimización en el Edge**: Intercepta y modifica solicitudes en la capa edge para mejorar el rendimiento.
+
+### 4. API Routes
+
+- **API Interna**: Endpoints para operaciones CRUD y lógica de negocio.
+- **Prisma Client**: ORM que facilita la comunicación con la base de datos de manera segura y tipada.
+
+### 5. Base de Datos PostgreSQL
+
+- **PostgreSQL**: Sistema de gestión de bases de datos relacional utilizado en producción.
+- **Consultas SQL**: Gestionadas y optimizadas a través de Prisma Client.
+
+## Flujo de Datos y Solicitudes
+
+1. **Desarrollo y Despliegue**:
+
+   - Los desarrolladores envían código al repositorio GitHub
+   - El pipeline CI/CD se activa automáticamente
+   - Vercel despliega la aplicación y ejecuta las migraciones de Prisma
+
+2. **Flujo de Solicitudes del Usuario**:
+
+   - El navegador web envía una solicitud HTTP al CDN de Vercel
+   - El contenido estático se sirve desde el CDN
+   - Las peticiones dinámicas se procesan a través del Server-Side Rendering
+   - Las imágenes se optimizan automáticamente según las necesidades
+
+3. **Procesamiento de Datos**:
+   - Las API Routes manejan operaciones que requieren acceso a datos
+   - Prisma Client traduce las operaciones a consultas SQL optimizadas
+   - La base de datos PostgreSQL procesa las consultas y devuelve los resultados
+
+## Ventajas de esta Arquitectura
+
+- **Despliegue Continuo**: Actualización automática de la aplicación con cada push al repositorio
+- **Escalabilidad**: La infraestructura de Vercel escala automáticamente según la demanda
+- **Rendimiento Global**: La red edge distribuida garantiza baja latencia para usuarios en cualquier ubicación
+- **Seguridad**: Las credenciales de base de datos y secretos se gestionan de forma segura a través de variables de entorno en Vercel
+- **Productividad**: Los desarrolladores pueden centrarse en el código y las características, no en la gestión de infraestructura
+- **Preview Deployments**: Cada pull request genera un despliegue de vista previa para facilitar las pruebas
+
+## Configuración y Gestión
+
+La configuración de la infraestructura se gestiona principalmente a través de los siguientes archivos:
+
+- `next.config.js`: Configuración específica de Next.js
+- `vercel.json`: Configuración específica de Vercel (redirecciones, headers, etc.)
+- `schema.prisma`: Definición del modelo de datos y conexión a la base de datos
+- `.env.production`: Variables de entorno para el entorno de producción
+- `.github/workflows`: Configuración adicional de CI/CD si se requiere
 
 ### **2.5. Seguridad**
 
@@ -102,11 +440,149 @@ El objetivo del MVP es permitir que el usuario:
 
 ### **3.1. Diagrama del modelo de datos:**
 
-> Recomendamos usar mermaid para el modelo de datos, y utilizar todos los parámetros que permite la sintaxis para dar el máximo detalle, por ejemplo las claves primarias y foráneas.
+```mermaid
+erDiagram
+    Simulation {
+        String id PK
+        String name
+        DateTime createdAt
+        DateTime updatedAt
+        JSON calculatedKPIs
+        String deviceId
+    }
+
+    LeanCanvas {
+        String id PK
+        String problem
+        String valueProposition
+        String customerSegment
+        String channels
+        String costRevenueStructure
+        String simulationId FK
+    }
+
+    FinancialData {
+        String id PK
+        Float monthlyRevenue
+        Float fixedCosts
+        Float variableCostsPerCustomer
+        Float customerAcquisitionCost
+        Int estimatedCustomers
+        Float averagePricePerCustomer
+        Float customerLifetimeMonths
+        String simulationId FK
+    }
+
+    ContextualHelp {
+        String id PK
+        String fieldKey
+        String description
+        String example
+    }
+
+    Simulation ||--|| LeanCanvas : "has"
+    Simulation ||--|| FinancialData : "has"
+
+```
 
 ### **3.2. Descripción de entidades principales:**
 
-> Recuerda incluir el máximo detalle de cada entidad, como el nombre y tipo de cada atributo, descripción breve si procede, claves primarias y foráneas, relaciones y tipo de relación, restricciones (unique, not null…), etc.
+### 1. Entidad Simulation
+
+**Descripción:** Representa una simulación completa realizada por el usuario. Almacena metadatos e identificadores para mantener el historial de simulaciones.
+
+**Atributos:**
+
+- `id` (String): Identificador único de la simulación. **Clave primaria**, generado automáticamente usando CUID.
+- `name` (String): Nombre de la simulación. **Not null**, permite al usuario identificar cada simulación.
+- `createdAt` (DateTime): Fecha y hora de creación. **Not null**, valor por defecto: fecha/hora actual.
+- `updatedAt` (DateTime): Fecha y hora de la última actualización. **Not null**, se actualiza automáticamente.
+- `calculatedKPIs` (JSON): Almacena los resultados calculados de KPIs financieros. **Nullable**, permite flexibilidad en el formato de datos.
+- `deviceId` (String): Identificador del dispositivo que creó la simulación. **Not null**, permite identificar simulaciones del mismo usuario sin login.
+
+**Relaciones:**
+
+- Relación 1:1 con `LeanCanvas` (tiene un canvas)
+- Relación 1:1 con `FinancialData` (tiene un conjunto de datos financieros)
+
+**Restricciones:**
+
+- La entidad debe tener un nombre válido
+- El ID debe ser único en toda la base de datos
+- Se eliminan en cascada `LeanCanvas` y `FinancialData` al eliminar una simulación
+
+### 2. Entidad LeanCanvas
+
+**Descripción:** Almacena los 5 campos clave del Lean Canvas simplificado que definen la estrategia del negocio.
+
+**Atributos:**
+
+- `id` (String): Identificador único del Lean Canvas. **Clave primaria**, generado automáticamente usando CUID.
+- `problem` (String): Descripción del problema que resuelve el negocio. **Not null**.
+- `valueProposition` (String): Propuesta de valor única del negocio. **Not null**.
+- `customerSegment` (String): Segmento de clientes al que se dirige el negocio. **Not null**.
+- `channels` (String): Canales de distribución y comunicación. **Not null**.
+- `costRevenueStructure` (String): Estructura de costes e ingresos. **Not null**.
+- `simulationId` (String): Referencia a la simulación a la que pertenece. **Clave foránea y unique**.
+
+**Relaciones:**
+
+- Relación 1:1 con `Simulation` (pertenece a una simulación)
+
+**Restricciones:**
+
+- Todos los campos son obligatorios
+- Un canvas solo puede pertenecer a una simulación
+- El `simulationId` debe ser único (relación 1:1)
+- Se elimina en cascada cuando se elimina la simulación asociada (`onDelete: Cascade`)
+
+### 3. Entidad FinancialData
+
+**Descripción:** Contiene todos los inputs financieros necesarios para realizar los cálculos de KPIs y evaluar la viabilidad económica del negocio.
+
+**Atributos:**
+
+- `id` (String): Identificador único de los datos financieros. **Clave primaria**, generado automáticamente usando CUID.
+- `monthlyRevenue` (Float): Ingresos mensuales estimados. **Not null**, debe ser mayor o igual a 0.
+- `fixedCosts` (Float): Costes fijos mensuales. **Not null**, debe ser mayor o igual a 0.
+- `variableCostsPerCustomer` (Float): Costes variables por cliente. **Not null**, debe ser mayor o igual a 0.
+- `customerAcquisitionCost` (Float): Coste de adquisición de clientes (CAC). **Not null**, debe ser mayor o igual a 0.
+- `estimatedCustomers` (Int): Número estimado de clientes. **Not null**, debe ser entero positivo.
+- `averagePricePerCustomer` (Float): Precio medio por cliente. **Not null**, debe ser mayor que 0.
+- `customerLifetimeMonths` (Float): Duración media del cliente en meses. **Not null**, debe ser mayor que 0.
+- `simulationId` (String): Referencia a la simulación a la que pertenece. **Clave foránea y unique**.
+
+**Relaciones:**
+
+- Relación 1:1 con `Simulation` (pertenece a una simulación)
+
+**Restricciones:**
+
+- Todos los campos son obligatorios
+- Los valores numéricos deben cumplir con restricciones de rango específicas
+- Los datos financieros solo pueden pertenecer a una simulación
+- El `simulationId` debe ser único (relación 1:1)
+- Se elimina en cascada cuando se elimina la simulación asociada (`onDelete: Cascade`)
+
+### 4. Entidad ContextualHelp
+
+**Descripción:** Almacena las ayudas contextuales para cada campo o concepto de la aplicación, proporcionando soporte educativo a los usuarios.
+
+**Atributos:**
+
+- `id` (String): Identificador único de la ayuda contextual. **Clave primaria**, generado automáticamente usando CUID.
+- `fieldKey` (String): Clave única que identifica el campo al que pertenece la ayuda. **Not null y unique**.
+- `description` (String): Descripción explicativa del campo o concepto. **Not null**.
+- `example` (String): Ejemplo que ilustra el uso o significado del campo. **Not null**.
+
+**Relaciones:**
+
+- Sin relaciones directas (entidad de referencia)
+
+**Restricciones:**
+
+- Todos los campos son obligatorios
+- El campo `fieldKey` debe ser único en toda la tabla para permitir búsquedas rápidas
 
 ---
 
@@ -117,8 +593,6 @@ El objetivo del MVP es permitir que el usuario:
 ---
 
 ## 5. Historias de Usuario
-
-> Documenta 3 de las historias de usuario principales utilizadas durante el desarrollo, teniendo en cuenta las buenas prácticas de producto al respecto.
 
 **Historia de Usuario 1**
 

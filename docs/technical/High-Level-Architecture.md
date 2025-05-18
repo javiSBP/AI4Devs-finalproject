@@ -129,3 +129,65 @@ flowchart TB
 - El sistema está diseñado para ser desplegable en Vercel con mínima configuración.
 - Las operaciones de cálculo financiero se realizan en el servidor para proteger la lógica de negocio.
 - No se incluye autenticación de usuarios en esta fase, utilizando identificadores de dispositivo para las simulaciones.
+
+## Estructura del Proyecto
+
+La estructura de ficheros del proyecto LeanSim sigue las convenciones de Next.js con una organización adicional que refleja la arquitectura por capas descrita anteriormente. A continuación se detalla la estructura principal de carpetas:
+
+```
+leansim/
+├── src/                      # Carpeta opcional que contiene el código fuente principal
+│   ├── app/                  # App Router de Next.js (rutas y páginas basadas en archivos)
+│   │   ├── api/              # API Routes para operaciones del backend
+│   │   ├── (routes)/         # Rutas de la aplicación organizadas por funcionalidad
+│   │   ├── layout.tsx        # Layout principal compartido por todas las páginas
+│   │   └── page.tsx          # Página principal (Home)
+│   ├── components/           # Componentes de UI reutilizables
+│   │   ├── lean-canvas/      # Componentes específicos del Lean Canvas
+│   │   ├── financial-form/   # Formularios de datos financieros
+│   │   ├── results/          # Visualización de resultados y KPIs
+│   │   ├── ui/               # Componentes de UI genéricos (botones, inputs, etc.)
+│   │   └── layout/           # Componentes estructurales (headers, footers, etc.)
+│   ├── hooks/                # Hooks personalizados para gestión de estado y efectos
+│   ├── context/              # Contextos de React para estado global
+│   ├── lib/                  # Código compartido y utilidades
+│   │   ├── financial/        # Calculador financiero y lógica de negocio
+│   │   ├── validation/       # Servicios de validación
+│   │   ├── simulation/       # Gestor de simulaciones
+│   │   └── helpers/          # Funciones auxiliares
+│   ├── types/                # Definiciones de TypeScript
+│   └── utils/                # Utilidades generales
+│       ├── help-system/      # Sistema de ayudas contextuales
+│       └── storage/          # Utilidades de almacenamiento
+├── prisma/                   # Configuración de Prisma ORM
+│   ├── schema.prisma         # Modelo de datos
+│   └── migrations/           # Migraciones de la base de datos
+├── public/                   # Archivos estáticos (imágenes, favicon, etc.)
+├── next.config.js            # Configuración de Next.js
+├── tailwind.config.js        # Configuración de TailwindCSS
+├── tsconfig.json             # Configuración de TypeScript
+└── package.json              # Dependencias y scripts
+```
+
+### Patrones y Arquitectura
+
+La estructura del proyecto sigue varios patrones de diseño y convenciones:
+
+1. **Arquitectura por capas**: La organización de carpetas refleja la separación de responsabilidades en capas (presentación, lógica de negocio, datos y utilidades).
+
+2. **File-based Routing**: Se utiliza el sistema de enrutamiento basado en archivos de Next.js, donde la estructura de carpetas en `app/` define automáticamente las rutas de la aplicación.
+
+3. **Feature-based Organization**: Los componentes están organizados por funcionalidad o característica (lean-canvas, financial-form, results) en lugar de por tipo, facilitando la localización y mantenimiento del código.
+
+4. **Dependency Injection**: Se utilizan contextos de React para proporcionar servicios y estado a los componentes que los necesitan, permitiendo un acoplamiento débil entre componentes.
+
+5. **Repository Pattern**: La capa de datos utiliza Prisma Client como una implementación del patrón repositorio, abstrayendo las operaciones de la base de datos.
+
+6. **Service Pattern**: La lógica de negocio está encapsulada en servicios especializados (FinancialCalculator, ValidationService, SimulationManager).
+
+Esta estructura facilita:
+
+- La **escalabilidad** del proyecto a medida que crezca
+- La **mantenibilidad** al tener una clara separación de responsabilidades
+- El **testeo** al permitir probar cada capa de forma aislada
+- La **colaboración** entre desarrolladores al tener una organización clara y predecible

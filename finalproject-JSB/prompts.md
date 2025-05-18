@@ -247,7 +247,14 @@ Se ha optado por meta-prompting + zero-shot prompt y tras revisar la salida no h
 
 ### **2.3. Descripción de alto nivel del proyecto y estructura de ficheros**
 
-Se ha optado por meta-prompting + zero-shot prompt y tras revisar la salida no han sido necesarios más prompts.
+**Prompt 1:**
+Haz una descripción de alto nivel de la estructura del proyecto y explica brevemente el propósito de las carpetas principales, así como si obedece a algún patrón o arquitectura específica.
+Utiliza tanto el documento @High-Level-Architecture.md como la doc oficial de@NextJS.
+Crea una nueva entrada de Estructura del proyecto dentro de @High-Level-Architecture.md
+
+**Prompt 2:**
+
+**Prompt 3:**
 
 ### **2.4. Infraestructura y despliegue**
 
@@ -255,8 +262,33 @@ Se ha optado por meta-prompting + zero-shot prompt y tras revisar la salida no h
 Explíca detalladamente en un documento deployment.md dentro de , cual debe ser el proceso de despliegue en la plataforma vercel, asegúrate de usar la última documentación en el sitio web @Vercel.
 
 **Prompt 2:**
+Utilizando la información de @deployment.md , crea un prompt para @https://www.eraser.io/diagramgpt en el que pueda generar un diagrama de infraestructura
 
 **Prompt 3:**
+Genera un diagrama de infraestructura para una aplicación Next.js llamada "LeanSim" desplegada en Vercel con las siguientes características:
+
+- Cliente: Navegadores web accediendo a la aplicación
+- Plataforma: Vercel proporciona la infraestructura de despliegue
+- Aplicación: Next.js con App Router, API Routes y componentes React
+- Base de datos: PostgreSQL en producción (usando servicios como Neon, Supabase o Railway)
+- Flujos:
+  - Despliegue continuo desde GitHub con preview deployments para PRs
+  - Migraciones de base de datos automáticas con Prisma ORM durante el despliegue
+  - Edge Functions para mejora de rendimiento
+  - Optimización de imágenes mediante servicio integrado de Vercel
+
+Incluye los siguientes componentes con sus conexiones:
+
+1. Cliente/Navegador
+2. CDN de Vercel
+3. Vercel Edge Network
+4. Next.js Server-Side Rendering
+5. Next.js API Routes
+6. Prisma Client
+7. Base de datos PostgreSQL
+8. Repositorio Git y proceso de CI/CD
+
+El diagrama debe mostrar claramente el flujo de datos y solicitudes desde el cliente hasta la base de datos, así como el proceso de despliegue desde el repositorio Git hasta la puesta en producción.
 
 ### **2.5. Seguridad**
 
@@ -282,6 +314,12 @@ Explíca detalladamente en un documento deployment.md dentro de , cual debe ser 
 Explíca detalladamente en un documento database-management.md dentro de @technical , como proceder a la gestión de una base de datos para desarrollo SQLite y una PostgreSQL en producción. Incluye la configuración de Prisma y de Docker si fuera necesario.
 
 **Prompt 2:**
+Incluye los siguientes elementos en la descripción de entidades principales del fichero @Data-Model.md :
+
+- nombre y tipo de cada atributo, descripción breve si procede
+- claves primarias y foráneas
+- relaciones y tipo de relación
+- restricciones (unique, not null…).
 
 **Prompt 3:**
 
