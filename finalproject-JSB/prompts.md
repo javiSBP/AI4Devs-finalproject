@@ -293,6 +293,7 @@ El diagrama debe mostrar claramente el flujo de datos y solicitudes desde el cli
 ### **2.5. Seguridad**
 
 **Prompt 1:**
+Basándote en @technical , enumera y describe las prácticas de seguridad principales que podrian implementarse en el proyecto, por ejemplo CSF u OWASP y documentalo en security.md dentro de @technical
 
 **Prompt 2:**
 
@@ -328,6 +329,19 @@ Incluye los siguientes elementos en la descripción de entidades principales del
 ### 4. Especificación de la API
 
 **Prompt 1:**
+Diseña y documenta la API de LeanSim en un fichero api.md dentro de @technical.
+Teniendo en cuenta toda la documentación no solo@technical , sino también el @backlog describe todos los endpoints necesarios.
+Recuerda incluir:
+
+- Ruta
+- Cabeceras (si las hay)
+- Parámetros (si los hay)
+- Body (si lo hay)
+- Los tipos de cada uno
+- Validaciones a realizar
+- Casos de error
+- Seguridad (de ser necesaria para el @MVP.md )
+- Todo lo que consideres para que sea lo mas detallada posible
 
 **Prompt 2:**
 
