@@ -512,6 +512,7 @@ Como emprendedor necesito una forma sencilla de estructurar mi idea de negocio s
 ### 6. Tickets de Trabajo
 
 **Prompt 1:**
+mejora el prompt de @work-tickets-generation-prompt.md para que pueda ser usado dinámicamente con la historia de usuario que se le indique y haga referencia a la documentación técnica en la carpeta @technical
 
 **Prompt 2:**
 
