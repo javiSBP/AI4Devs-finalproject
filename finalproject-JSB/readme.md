@@ -344,17 +344,13 @@ leansim/
 
 ### **2.4. Infraestructura y despliegue**
 
-![](/docs/technical/infrastructure.png)
-
-# Infraestructura de Despliegue - LeanSim
-
 ## Descripción General
 
 Este documento describe la infraestructura de despliegue de LeanSim, una aplicación Next.js alojada en la plataforma Vercel. La arquitectura está diseñada para proporcionar una experiencia de usuario óptima con rendimiento de carga rápido, mientras mantiene un flujo de desarrollo y despliegue eficiente.
 
 ## Diagrama de Infraestructura
 
-![Diagrama de Infraestructura](./infrastructure.png)
+![Diagrama de Infraestructura](docs/technical/infrastructure.png)
 
 ## Componentes Principales
 
@@ -639,9 +635,7 @@ erDiagram
 
 ## 5. Historias de Usuario
 
-**Historia de Usuario 1**
-
-# Historia de Usuario: Completar Lean Canvas Simplificado
+**Historia de Usuario: Completar Lean Canvas Simplificado**
 
 **Como** emprendedor,
 **quiero** rellenar un Lean Canvas básico de forma guiada,
@@ -672,9 +666,7 @@ Como emprendedor necesito una forma sencilla de estructurar mi idea de negocio s
 - Formulario de inputs financieros
 - Sistema de ayudas contextuales
 
-**Historia de Usuario 2**
-
-# Historia de Usuario: Ingresar Datos Financieros Básicos
+**Historia de Usuario: Ingresar Datos Financieros Básicos**
 
 **Como** usuario sin formación financiera,
 **quiero** introducir mis ingresos y costes de forma simple,
@@ -707,9 +699,7 @@ Como usuario sin conocimientos financieros avanzados, necesito una forma sencill
 - Cálculo y visualización de KPIs
 - Sistema de ayudas contextuales
 
-**Historia de Usuario 3**
-
-# Historia de Usuario: Visualizar Métricas de Viabilidad
+**Historia de Usuario: Visualizar Métricas de Viabilidad**
 
 **Como** emprendedor,
 **quiero** ver automáticamente las métricas clave de mi negocio,
