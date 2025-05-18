@@ -122,9 +122,107 @@ El objetivo del MVP es permitir que el usuario:
 
 **Historia de Usuario 1**
 
+# Historia de Usuario: Completar Lean Canvas Simplificado
+
+**Como** emprendedor,
+**quiero** rellenar un Lean Canvas básico de forma guiada,
+**para** estructurar mi idea de negocio de manera estratégica.
+
+## Descripción
+
+Como emprendedor necesito una forma sencilla de estructurar mi idea de negocio siguiendo el marco del Lean Canvas, pero de manera simplificada con solo 5 campos esenciales. Quiero poder completar estos campos con ayudas que me expliquen qué debo incluir en cada uno, ya que no tengo experiencia previa con herramientas de planificación de negocios.
+
+## Criterios de Aceptación
+
+- El formulario debe contener los 5 campos clave: Problema, Propuesta de Valor, Segmento de Clientes, Canales, y Estructura de ingresos/costes
+- Cada campo debe tener un tooltip o ayuda contextual que explique qué información debe incluirse
+- El formulario debe validar que todos los campos estén completos antes de avanzar
+- El usuario debe poder navegar entre los campos y modificarlos fácilmente
+- Los datos ingresados deben guardarse temporalmente para no perderse al navegar entre secciones
+- El diseño debe ser intuitivo, con campos claramente etiquetados y espacio suficiente para escribir
+
+## Notas Adicionales
+
+- El diseño debe ser minimalista y amigable para usuarios sin experiencia previa con Lean Canvas
+- Considerar agregar ejemplos cortos para cada campo basados en casos reales
+- Limitar el texto en cada campo para mantener la simplicidad (máximo 300 caracteres por campo)
+- Implementar un indicador visual de progreso para que el usuario sepa en qué parte del proceso está
+
+## Historias de Usuario Relacionadas
+
+- Formulario de inputs financieros
+- Sistema de ayudas contextuales
+
 **Historia de Usuario 2**
 
+# Historia de Usuario: Ingresar Datos Financieros Básicos
+
+**Como** usuario sin formación financiera,
+**quiero** introducir mis ingresos y costes de forma simple,
+**para** evaluar si mi modelo de negocio es rentable.
+
+## Descripción
+
+Como usuario sin conocimientos financieros avanzados, necesito una forma sencilla e intuitiva de ingresar los datos financieros clave de mi negocio. Quiero poder introducir información básica como ingresos mensuales, costes fijos, costes variables, el coste de adquisición de clientes, número estimado de clientes y duración media de la relación con ellos. Necesito que el proceso sea guiado y comprensible para alguien sin formación especializada.
+
+## Criterios de Aceptación
+
+- El formulario debe incluir campos para: ingresos mensuales estimados, costes fijos, costes variables por cliente, CAC, número estimado de clientes, precio medio por cliente y duración media del cliente
+- Cada campo debe tener validación adecuada (no permitir valores negativos, formato numérico correcto)
+- Los campos deben tener valores por defecto o ejemplos para orientar al usuario
+- El formulario debe permitir guardar los datos parcialmente completados
+- El usuario debe poder volver atrás para modificar información sin perder los datos ya ingresados
+- Debe haber un botón claro para calcular los resultados una vez completados todos los campos requeridos
+
+## Notas Adicionales
+
+- Utilizar un lenguaje sencillo y no técnico en todas las etiquetas y explicaciones
+- Incluir ayudas visuales como iconos o mini-gráficos junto a cada campo para facilitar la comprensión
+- Considerar usar elementos interactivos como sliders para facilitar la entrada de algunos valores
+- Mantener el formulario visualmente simple para no abrumar al usuario
+- Mostrar un indicador de progreso para que el usuario sepa en qué punto del proceso se encuentra
+
+## Historias de Usuario Relacionadas
+
+- Completar Lean Canvas Simplificado
+- Cálculo y visualización de KPIs
+- Sistema de ayudas contextuales
+
 **Historia de Usuario 3**
+
+# Historia de Usuario: Visualizar Métricas de Viabilidad
+
+**Como** emprendedor,
+**quiero** ver automáticamente las métricas clave de mi negocio,
+**para** entender la viabilidad financiera de mi idea sin necesidad de cálculos manuales.
+
+## Descripción
+
+Como emprendedor sin experiencia en análisis financiero, necesito que el sistema calcule y me muestre de forma clara las métricas clave para evaluar la viabilidad de mi modelo de negocio. Quiero ver indicadores como el beneficio mensual, punto de equilibrio, valor del ciclo de vida del cliente (LTV), relación LTV/CAC y margen por cliente, basados en los datos financieros que he ingresado previamente. Necesito entender estos valores con explicaciones sencillas para tomar decisiones informadas.
+
+## Criterios de Aceptación
+
+- El sistema debe calcular automáticamente: beneficio mensual, punto de equilibrio, LTV, relación LTV/CAC y margen por cliente
+- Los resultados deben presentarse en tarjetas o paneles visuales claramente diferenciados
+- Cada métrica debe mostrarse con una breve explicación en lenguaje sencillo de lo que significa
+- Los valores críticos deben destacarse visualmente (ej. margen negativo en rojo)
+- Debe haber indicadores visuales de "salud" para cada métrica (bueno/medio/malo)
+- El usuario debe poder ver una explicación más detallada de cada métrica al hacer clic o pasar el cursor sobre ella
+- Debe haber opciones para compartir o guardar los resultados
+
+## Notas Adicionales
+
+- Usar visualizaciones simples como códigos de color, iconos o mini-gráficos para facilitar la comprensión
+- Evitar jerga financiera compleja en las explicaciones principales
+- Considerar incluir recomendaciones básicas basadas en los resultados (ej. "Tu CAC es demasiado alto en comparación con el LTV")
+- Mantener una estética limpia y no abrumadora, priorizando la claridad sobre la densidad de información
+- Proporcionar opciones para ver los resultados en diferentes formatos (tarjetas, tabla, gráfico)
+
+## Historias de Usuario Relacionadas
+
+- Ingresar Datos Financieros Básicos
+- Historial de simulaciones
+- Sistema de ayudas contextuales
 
 ---
 
