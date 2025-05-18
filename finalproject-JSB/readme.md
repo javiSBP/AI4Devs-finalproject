@@ -41,11 +41,24 @@ https://github.com/javiSBP/leansim
 
 ### **1.1. Objetivo:**
 
-> Propósito del producto. Qué valor aporta, qué soluciona, y para quién.
+**LeanSim** es una herramienta web que permite a emprendedores simular la viabilidad básica de su modelo de negocio sin conocimientos financieros.  
+El objetivo del MVP es permitir que el usuario:
+
+- Complete una versión simplificada del Lean Canvas.
+- Ingrese datos clave sobre su modelo financiero.
+- Visualice automáticamente métricas esenciales como beneficio mensual, CAC, LTV y punto de equilibrio.
+- Aprenda durante el proceso con ayudas contextuales.
 
 ### **1.2. Características y funcionalidades principales:**
 
-> Enumera y describe las características y funcionalidades específicas que tiene el producto para satisfacer las necesidades identificadas.
+| Función                          | Descripción                                          |
+| -------------------------------- | ---------------------------------------------------- |
+| Lean Canvas simplificado         | 5 campos clave con ayudas contextuales.              |
+| Formulario de inputs financieros | Ingresos, costes, CAC, nº clientes, duración media.  |
+| Cálculo de KPIs                  | Beneficio, punto de equilibrio, LTV, CAC, margen.    |
+| Visualización de resultados      | Tarjetas o tabla + texto explicativo corto.          |
+| Historial de simulaciones        | Guardado local o en base de datos.                   |
+| Tooltips educativos              | Breves descripciones accesibles en todos los campos. |
 
 ### **1.3. Diseño y experiencia de usuario:**
 

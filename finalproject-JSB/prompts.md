@@ -60,7 +60,22 @@ Vamos a realizar un **brainstorming** de posibles proyectos para realizar.
 
 **Prompt 3:**
 
-Vamos a incluir un análisis de la competencia, encontrar una posible ventaja competitiva y re-definir el MVP. Añádelo a los puntos pendientes sea cual sea el proyecto escogido.
+Estructura el PRD para que tenga las siguientes secciones fundamentales:
+
+```md
+- Introducción y Objetivos: Proporciona un resumen del producto, incluyendo el propósito, los objetivos y las metas que se espera alcanzar con el producto.
+- Stakeholders: Identifica a todas las partes interesadas, incluyendo usuarios, compradores, fabricantes, asistencia al cliente, marketing y ventas, socios externos, instancias reguladoras, minoristas, entre otros.
+- Historias de Usuarios: Describe cómo los diferentes usuarios interactúan con el producto, lo que ayuda a entender mejor las necesidades del usuario final.
+- Componentes Principales y Sitemaps: Detalla la estructura y organización del producto, incluyendo sus componentes principales y cómo se relacionan entre sí.
+- Características y Funcionalidades: Enumera y describe las características y funcionalidades específicas que el producto debe tener para satisfacer las necesidades identificadas.
+- Diseño y Experiencia del Usuario: Incluye especificaciones sobre el diseño del producto y la experiencia del usuario, asegurando que el producto sea usable y estéticamente agradable.
+- Requisitos Técnicos: Detalla los aspectos técnicos necesarios para el desarrollo del producto, incluyendo hardware, software, interactividad, personalización y normativas.
+- Planificación del Proyecto: Proporciona información sobre plazos, hitos y dependencias, crucial para la planificación y gestión efectiva del proyecto.
+- Criterios de aceptación: Define los estándares y condiciones bajo los cuales el producto será aceptado tras su finalización.
+- Apéndices y Recursos Adicionales: Puede incluir glosarios, explicaciones de términos, recursos externos, y otros documentos de referencia que apoyen el desarrollo del producto.
+```
+
+Puedes añadir cualquier sección que consideres para que el PRD tenga una calidad profesional. No es necesario extenderse mucho, prefiero que seas conciso en cada una de las secciones puesto que servirá como base para desarrollar el producto de manera asistida por IA.
 
 ---
 
@@ -69,6 +84,28 @@ Vamos a incluir un análisis de la competencia, encontrar una posible ventaja co
 ### **2.1. Diagrama de arquitectura:**
 
 **Prompt 1:**
+
+## Rol
+
+Eres un copiloto experto prompting para Claude 3.7, con conocimientos en producto, diseño, desarrollo y documentación técnica.
+
+## Contexto y objetivo
+
+Basándote en la documentación de negocio que hay en la carpeta @business, crea un prompt para que paso a paso se puedan generar los siguientes diagramas:
+
+- Definición de casos de uso en formato UML, de acuerdo a la sintaxis y buenas prácticas UML.
+- Modelo de datos que cubra entidades, atributos (nombre y tipo) y relaciones en formato mermaid.
+- Diseño de sistema y arquitectura de alto nivel en formato mermaid. Teniendo en cuenta las buenas prácticas como SOLID, KISS, DRY y YAGNI. Usa el sentido común para el diseño y evita hacer sobreeingeniería (por ejemplo, quizá para un MVP como el de este proyecto no sea necesario usar arquitectura hexagonal y DDD, o sí, hazme una propuesta).
+- Diagrama C4 que llegue en profundidad a cada uno de los componentes del sistema siguiendo las buenas prácticas y sintaxis de UML.
+
+## Salida
+
+El prompt debe indicar que queremos la siguiente salida.
+
+- Cada artefacto debe guardarse como un fichero markdown, en la carpeta technical de @docs.
+- Crea los diagramas que se especifican en cada punto en el fichero correspondiente.
+- Acompaña los diagramas de texto explicativo.
+- Tras la creación de cada artefacto. pideme validación para saber si estás en la dirección correcta y continuar con el siguiente.
 
 **Prompt 2:**
 
