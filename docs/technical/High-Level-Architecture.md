@@ -4,6 +4,18 @@
 
 Este diagrama representa la arquitectura de alto nivel propuesta para la aplicación LeanSim, mostrando los componentes principales, las capas de la aplicación, el flujo de datos entre componentes y las tecnologías utilizadas en cada uno.
 
+**Stack tecnológico principal:**
+
+- **Next.js** (Fullstack framework)
+- **React** (UI)
+- **TypeScript** (Tipado estático)
+- **TailwindCSS** (Estilos)
+- **Prisma ORM** (Acceso a datos)
+- **SQLite/PostgreSQL** (Bases de datos)
+- **Vercel** (Despliegue)
+- **Vitest** (Testing unitario e integración)
+- **Playwright** (Testing end-to-end/E2E)
+
 ## Decisiones de Diseño
 
 - Se ha elegido una arquitectura basada en Next.js que aprovecha sus capacidades fullstack para simplicidad del desarrollo MVP.
@@ -48,6 +60,11 @@ flowchart TB
         end
     end
 
+    subgraph Testing["Testing"]
+        Vitest["Vitest\n(Unitario/Integración)"]
+        Playwright["Playwright\n(E2E)"]
+    end
+
     subgraph Database["Base de Datos"]
         SQLite["SQLite (Desarrollo)"]
         PostgreSQL["PostgreSQL (Producción)"]
@@ -84,8 +101,15 @@ flowchart TB
 
     NextJS --> Vercel
 
+    %% Testing connections (no funcional, solo ilustrativo)
+    Pages -.-> Vitest
+    Components -.-> Vitest
+    APIRoutes -.-> Vitest
+    UI -.-> Playwright
+    Vercel -.-> Playwright
+
     classDef tech fill:#f9f9f9,stroke:#333,stroke-width:1px;
-    class UI,Components,Pages,Hooks,Contexts,FinancialCalculator,ValidationService,SimulationManager,APIRoutes,PrismaORM,HelpSystem,StorageUtils,SQLite,PostgreSQL,Vercel tech;
+    class UI,Components,Pages,Hooks,Contexts,FinancialCalculator,ValidationService,SimulationManager,APIRoutes,PrismaORM,HelpSystem,StorageUtils,SQLite,PostgreSQL,Vercel,Vitest,Playwright tech;
 ```
 
 ## Elementos Principales
@@ -129,6 +153,18 @@ flowchart TB
 - El sistema está diseñado para ser desplegable en Vercel con mínima configuración.
 - Las operaciones de cálculo financiero se realizan en el servidor para proteger la lógica de negocio.
 - No se incluye autenticación de usuarios en esta fase, utilizando identificadores de dispositivo para las simulaciones.
+
+### Testing
+
+- **Vitest** se utiliza para pruebas unitarias y de integración de lógica de negocio, hooks y componentes React. Permite un desarrollo rápido y feedback inmediato.
+- **Playwright** se emplea para pruebas end-to-end (E2E), validando flujos completos de usuario y accesibilidad en navegadores reales.
+- Ambos frameworks son compatibles con Next.js y recomendados para stacks modernos.
+- Se recomienda usar [@testing-library/react](https://testing-library.com/docs/react-testing-library/intro/) junto con Vitest para pruebas de componentes.
+
+#### Referencias
+
+- [Vitest + Next.js (guía oficial)](https://vitest.dev/guide/#next-js)
+- [Playwright + Next.js (guía oficial)](https://playwright.dev/docs/test-intro)
 
 ## Estructura del Proyecto
 

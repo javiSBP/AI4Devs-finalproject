@@ -298,9 +298,8 @@ Basándote en @technical , enumera y describe las prácticas de seguridad princi
 
 ### **2.6. Tests**
 
-> La fase de desarrollo aún no se ha comenzado
-
 **Prompt 1:**
+En la documentación técnica del proyecto@technical , falta elegir las librerías de testing unitarios e integración/e2e. Me gustaría usar tooling moderno como vitest y playwright ¿son compatibles con Nextjs?
 
 **Prompt 2:**
 
