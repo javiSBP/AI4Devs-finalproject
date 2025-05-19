@@ -737,13 +737,154 @@ Como emprendedor sin experiencia en análisis financiero, necesito que el sistem
 
 ## 6. Tickets de Trabajo
 
-> Documenta 3 de los tickets de trabajo principales del desarrollo, uno de backend, uno de frontend, y uno de bases de datos. Da todo el detalle requerido para desarrollar la tarea de inicio a fin teniendo en cuenta las buenas prácticas al respecto.
+**Ticket: KPI-001 - Desarrollar Motor de Cálculo de Métricas Financieras**
 
-**Ticket 1**
+## Historia de Usuario Relacionada
 
-**Ticket 2**
+Visualizar Métricas de Viabilidad (@docs/backlog/calculos-kpis/historia-usuario.md)
 
-**Ticket 3**
+## Descripción
+
+Implementar un motor de cálculo que procese los datos financieros del usuario y calcule automáticamente las métricas clave de viabilidad: beneficio mensual, punto de equilibrio, valor del ciclo de vida del cliente (LTV), relación LTV/CAC y margen por cliente. Este motor debe incluir las fórmulas necesarias y validaciones para asegurar resultados precisos y significativos.
+
+## Tareas
+
+- [ ] Definir las fórmulas matemáticas para cada métrica a calcular
+- [ ] Implementar funciones de cálculo para beneficio mensual, punto de equilibrio, LTV, ratio LTV/CAC y margen por cliente
+- [ ] Desarrollar validaciones para detectar valores extremos o inconsistentes
+- [ ] Crear estructura para clasificar los resultados según niveles de salud (bueno/medio/malo)
+- [ ] Implementar lógica para generar recomendaciones básicas basadas en los resultados
+- [ ] Desarrollar pruebas unitarias para verificar la precisión de los cálculos
+- [ ] Crear una API interna para que los componentes frontend puedan consumir estos cálculos
+
+## Criterios de Aceptación Técnicos
+
+- Las fórmulas deben seguir estándares financieros reconocidos
+- Los cálculos deben manejar correctamente casos especiales (división por cero, valores negativos)
+- El motor debe detectar y señalar resultados potencialmente problemáticos
+- La precisión numérica debe ser adecuada para datos financieros
+- El código debe ser modular para facilitar la adición de nuevas métricas en el futuro
+- Las funciones deben estar bien documentadas explicando cada fórmula y sus parámetros
+
+## Referencias Técnicas
+
+- Implementar como módulo TypeScript con funciones puras
+- Utilizar bibliotecas para manejo preciso de cálculos financieros
+- Desarrollar pruebas exhaustivas para cada fórmula
+- Implementar manejo de errores robusto
+
+## Dependencias
+
+- Estructura de datos de inputs financieros (ticket FIN-001)
+
+## Estimación
+
+Medio (6h)
+
+## Asignado a
+
+TBD
+
+**# Ticket: LEAN-002 - Crear Componentes UI para Lean Canvas Simplificado**
+
+## Historia de Usuario Relacionada
+
+Completar Lean Canvas Simplificado (@docs/backlog/lean-canvas-simplificado/historia-usuario.md)
+
+## Descripción
+
+Desarrollar los componentes React para el formulario del Lean Canvas simplificado con los 5 campos clave (Problema, Propuesta de Valor, Segmento de Clientes, Canales, y Estructura de ingresos/costes). Estos componentes deben ser intuitivos, seguir un diseño minimalista y prepararse para las ayudas contextuales.
+
+## Tareas
+
+- [ ] Crear componente contenedor `LeanCanvasForm` con estructura base
+- [ ] Desarrollar componentes para cada uno de los 5 campos del Lean Canvas
+- [ ] Crear indicador visual de progreso para mostrar la posición en el flujo
+- [ ] Implementar validación básica de entrada para límite de 300 caracteres por campo
+- [ ] Desarrollar navegación intuitiva entre campos (botones anterior/siguiente)
+- [ ] Diseñar UI responsive siguiendo principios de TailwindCSS
+- [ ] Preparar la estructura para tooltips/ayudas contextuales (implementación en ticket posterior)
+
+## Criterios de Aceptación Técnicos
+
+- Los componentes deben ser completamente responsive
+- La interfaz debe seguir un diseño minimalista y amigable
+- El formulario debe prepararse para mantener estado local básico
+- El indicador de progreso debe mostrar claramente en qué parte del proceso está el usuario
+- Los componentes deben permitir integración posterior con gestión de estado y API
+
+## Referencias Técnicas
+
+- Seguir patrones de componentes React con TypeScript
+- Implementar estilos usando TailwindCSS
+- Preparar estructura para React Hook Form (implementación completa en ticket posterior)
+
+## Dependencias
+
+- Configuración inicial del proyecto Next.js
+- Configuración de TailwindCSS
+- Ticket LEAN-001 (API y Backend) para comprender la estructura de datos
+
+## Estimación
+
+Medio (6h)
+
+## Asignado a
+
+TBD
+
+**# Ticket: SETUP-002 - Configurar Base de Datos, Prisma ORM y Docker**
+
+## Historia de Usuario Relacionada
+
+Configurar Entorno de Desarrollo (@docs/backlog/setup-inicial/historia-usuario.md)
+
+## Descripción
+
+Implementar la configuración de la base de datos con Prisma ORM, crear los modelos iniciales basados en Data-Model.md, y configurar Docker para proporcionar un entorno de desarrollo consistente para todos los desarrolladores. Esto incluye la configuración de variables de entorno y la documentación del proceso.
+
+## Tareas
+
+- [ ] Configurar Prisma ORM en el proyecto
+- [ ] Implementar modelos de datos siguiendo Data-Model.md
+- [ ] Crear scripts de migración iniciales
+- [ ] Configurar contenedor Docker para PostgreSQL
+- [ ] Crear archivo docker-compose.yml para el entorno de desarrollo
+- [ ] Configurar variables de entorno para desarrollo (.env.local y .env.example)
+- [ ] Implementar scripts para seed de datos iniciales
+- [ ] Configurar conexión de la aplicación con la base de datos
+- [ ] Documentar el proceso de inicialización y migración de la base de datos
+- [ ] Implementar herramientas para inspección de la base de datos (Prisma Studio)
+
+## Criterios de Aceptación Técnicos
+
+- Prisma debe estar correctamente configurado con el esquema según el modelo de datos
+- Los scripts de migración deben ejecutarse sin errores
+- La aplicación debe conectarse correctamente a la base de datos
+- Los contenedores Docker deben iniciarse y detenerse correctamente
+- Las variables de entorno deben estar correctamente documentadas
+- La base de datos debe ser accesible mediante Prisma Studio
+- El proceso de setup debe estar documentado y ser reproducible
+
+## Referencias Técnicas
+
+- Seguir el modelo de datos definido en docs/technical/Data-Model.md
+- Utilizar Prisma ORM con PostgreSQL
+- Implementar siguiendo las mejores prácticas de Docker para entornos de desarrollo
+- Utilizar técnicas de manejo seguro de variables de entorno
+
+## Dependencias
+
+- Ticket SETUP-001 (Configurar Next.js, TypeScript y Dependencias Principales)
+- Documentación técnica actualizada
+
+## Estimación
+
+Medio (6h)
+
+## Asignado a
+
+TBD
 
 ---
 
