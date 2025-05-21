@@ -10,26 +10,25 @@ Configurar el proyecto base con Next.js, TypeScript, React, TailwindCSS y todas 
 
 ## Tareas
 
-- [ ] Inicializar proyecto Next.js con TypeScript utilizando `create-next-app`
-- [ ] Configurar TailwindCSS y PostCSS
-- [ ] Instalar y configurar ESLint y Prettier para linting y formateo de código
-- [ ] Instalar dependencias principales (react-hook-form, zod, etc.)
-- [ ] Configurar husky para pre-commit hooks
-- [ ] Estructurar carpetas según la arquitectura definida en High-Level-Architecture.md
-- [ ] Configurar archivos base (\_app.tsx, \_document.tsx)
-- [ ] Implementar estructura básica de componentes compartidos
-- [ ] Crear scripts de desarrollo, build y start en package.json
-- [ ] Documentar el proceso de instalación y ejecución
+- [x] Inicializar proyecto Next.js con TypeScript utilizando `create-next-app`
+- [x] Configurar TailwindCSS y PostCSS
+- [x] Instalar y configurar ESLint y Prettier para linting y formateo de código
+- [x] Instalar dependencias principales (react-hook-form, zod, etc.)
+- [x] Configurar husky para pre-commit hooks
+- [x] Estructurar carpetas según la arquitectura definida en High-Level-Architecture.md
+- [x] Implementar estructura básica de componentes compartidos
+- [x] Crear scripts de desarrollo, build y start en package.json
+- [x] Documentar el proceso de instalación y ejecución
 
 ## Criterios de Aceptación Técnicos
 
-- La aplicación debe iniciar correctamente con `npm run dev`
-- La estructura de carpetas debe seguir la arquitectura definida en la documentación
-- TailwindCSS debe estar correctamente configurado y funcional
-- El linting y formateo deben funcionar correctamente
-- Los pre-commit hooks deben ejecutarse al hacer commit
-- La configuración debe ser compatible con los IDEs principales (VS Code, etc.)
-- La documentación debe ser clara y suficiente para nuevos desarrolladores
+- ✅ La aplicación debe iniciar correctamente con `npm run dev`
+- ✅ La estructura de carpetas debe seguir la arquitectura definida en la documentación
+- ✅ TailwindCSS debe estar correctamente configurado y funcional
+- ✅ El linting y formateo deben funcionar correctamente
+- ✅ Los pre-commit hooks deben ejecutarse al hacer commit
+- ✅ La configuración debe ser compatible con los IDEs principales (VS Code, etc.)
+- ✅ La documentación debe ser clara y suficiente para nuevos desarrolladores
 
 ## Referencias Técnicas
 
@@ -48,4 +47,4 @@ Medio (6h)
 
 ## Asignado a
 
-TBD
+Completado ✅
