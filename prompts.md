@@ -691,9 +691,15 @@ Por favor, borra o reescribe los tickets teniendo en cuenta el orden de implenet
 
 ### 7. Pull Requests
 
-> La fase de desarrollo aún no se ha comenzado
-
 **Prompt 1:**
+realiza el ticket de setup @ticket-1.md de la user story @historia-usuario.md
+
+- Instala Next.js siguiendo la documentación @NextJS
+- Utiliza la referencia de @TypeScript para su correcta configuración
+- Instala y configura @Tailwind CSS
+- Crea la estructura de ficheros definida en @## Estructura del Proyecto
+- Realiza todas la tareas del ticket utilizando siguiendo las guías en @technical
+- La documentación que crees debe ir en la carpeta @docs en un directorio llamado dev
 
 **Prompt 2:**
 
