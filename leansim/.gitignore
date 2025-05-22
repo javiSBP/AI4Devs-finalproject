@@ -70,3 +70,8 @@ logs
 
 # Cache
 .eslintcache
+
+# Test reports and outputs
+/playwright-report/
+/test-results/
+/coverage/

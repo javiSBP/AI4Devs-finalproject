@@ -10,16 +10,16 @@ Implementar y configurar el entorno de pruebas completo, incluyendo tests unitar
 
 ## Tareas
 
-- [ ] Instalar y configurar Vitest para tests unitarios
-- [ ] Configurar React Testing Library para pruebas de componentes
-- [ ] Implementar configuración para tests de API y endpoints
-- [ ] Configurar mocks para servicios externos y base de datos
-- [ ] Implementar Cypress o Playwright para tests end-to-end
-- [ ] Crear ejemplos de tests para cada tipo (unitarios, integración, e2e)
-- [ ] Configurar scripts de testing en package.json (test, test:watch, test:coverage)
-- [ ] Implementar integración con husky para ejecutar tests en pre-push
-- [ ] Configurar reporte de cobertura de código
-- [ ] Documentar prácticas y estándares de testing para el proyecto
+- [x] Instalar y configurar Vitest para tests unitarios
+- [x] Configurar React Testing Library para pruebas de componentes
+- [x] Implementar configuración para tests de API y endpoints
+- [x] Configurar mocks para servicios externos y base de datos
+- [x] Implementar Playwright para tests end-to-end
+- [x] Crear ejemplos de tests para cada tipo (unitarios, integración, e2e)
+- [x] Configurar scripts de testing en package.json (test, test:watch, test:coverage)
+- [x] Implementar integración con husky para ejecutar tests en pre-push
+- [x] Configurar reporte de cobertura de código
+- [x] Documentar prácticas y estándares de testing para el proyecto
 
 ## Criterios de Aceptación Técnicos
 
