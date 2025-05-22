@@ -25,7 +25,7 @@ El esquema de la base de datos incluye las siguientes entidades principales:
 
 ### 1. Variables de Entorno
 
-Crea un archivo `.env.local` en la raíz del proyecto con el siguiente contenido:
+Crea un archivo `.env` en la raíz del proyecto con el siguiente contenido:
 
 ```
 # Base de datos
