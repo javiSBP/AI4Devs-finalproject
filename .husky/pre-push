@@ -4,7 +4,7 @@
 echo "🧪 Running tests before push..."
 
 # Run unit and integration tests
-npm run test -- --run
+npm run test
 
 # Check test results
 if [ $? -ne 0 ]; then
