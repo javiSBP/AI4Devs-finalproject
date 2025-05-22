@@ -890,9 +890,48 @@ TBD
 
 ## 7. Pull Requests
 
-> Documenta 3 de las Pull Requests realizadas durante la ejecución del proyecto
+**Pull Request 1: feat: Configuración inicial del proyecto LeanSim con Next.js, TypeScript y dependencias principales**
 
-**Pull Request 1**
+**Commit:** 65c5dfebe397885fdf4f7cb4ef24517af4d8eb1c
+
+**Descripción:**
+Implementación completa del ticket SETUP-001 para establecer la base del proyecto LeanSim. Esta PR incluye la configuración completa del entorno de desarrollo con Next.js 15, TypeScript, TailwindCSS y todas las dependencias necesarias para el desarrollo del simulador de modelos de negocio.
+
+**Cambios principales:**
+
+- Inicialización del proyecto Next.js con TypeScript usando `create-next-app`
+- Configuración de TailwindCSS para el sistema de diseño
+- Setup de ESLint y Prettier para mantener la calidad del código
+- Instalación de dependencias principales: React Hook Form, Zod, Prisma, Vitest
+- Configuración de Husky para pre-commit hooks con lint-staged
+- Estructura completa de carpetas siguiendo la arquitectura definida en la documentación técnica
+- Implementación de componente Button reutilizable con tests
+- Setup de Vitest como framework de testing con React Testing Library
+- Configuración de Prisma ORM con esquema inicial de base de datos
+- Calculadora financiera básica con tests unitarios
+- Documentación completa del setup en `docs/dev/setup-documentation.md`
+
+**Archivos modificados:**
+
+- `package.json` - Scripts y dependencias del proyecto
+- `tailwind.config.js` - Configuración de TailwindCSS
+- `vitest.config.ts` - Configuración del framework de testing
+- `prisma/schema.prisma` - Esquema inicial de base de datos
+- `src/` - Estructura completa de carpetas y archivos base
+- `.husky/pre-commit` - Hook para validación de código
+- `.prettierrc` - Configuración de formateo de código
+- `README.md` - Documentación del proyecto
+
+**Testing:**
+
+- ✅ 10 tests pasando (componentes UI y lógica de negocio)
+- ✅ Build del proyecto exitoso
+- ✅ Servidor de desarrollo funcionando en http://localhost:3000
+- ✅ Linting y formateo funcionando correctamente
+- ✅ Pre-commit hooks ejecutándose correctamente
+
+**Review notes:**
+Esta PR establece las bases sólidas para el desarrollo del proyecto, siguiendo las mejores prácticas de Next.js y las especificaciones técnicas definidas. Todos los criterios de aceptación del ticket SETUP-001 han sido cumplidos.
 
 **Pull Request 2**
 
