@@ -10,16 +10,16 @@ Implementar la configuración de la base de datos con Prisma ORM, crear los mode
 
 ## Tareas
 
-- [ ] Configurar Prisma ORM en el proyecto
-- [ ] Implementar modelos de datos siguiendo Data-Model.md
-- [ ] Crear scripts de migración iniciales
-- [ ] Configurar contenedor Docker para PostgreSQL
-- [ ] Crear archivo docker-compose.yml para el entorno de desarrollo
-- [ ] Configurar variables de entorno para desarrollo (.env.local y .env.example)
-- [ ] Implementar scripts para seed de datos iniciales
-- [ ] Configurar conexión de la aplicación con la base de datos
-- [ ] Documentar el proceso de inicialización y migración de la base de datos
-- [ ] Implementar herramientas para inspección de la base de datos (Prisma Studio)
+- [x] Configurar Prisma ORM en el proyecto
+- [x] Implementar modelos de datos siguiendo Data-Model.md
+- [x] Crear scripts de migración iniciales
+- [x] Configurar contenedor Docker para PostgreSQL
+- [x] Crear archivo docker-compose.yml para el entorno de desarrollo
+- [x] Configurar variables de entorno para desarrollo (.env.local y .env.example)
+- [x] Implementar scripts para seed de datos iniciales
+- [x] Configurar conexión de la aplicación con la base de datos
+- [x] Documentar el proceso de inicialización y migración de la base de datos
+- [x] Implementar herramientas para inspección de la base de datos (Prisma Studio)
 
 ## Criterios de Aceptación Técnicos
 
