@@ -10,7 +10,7 @@ Implementar y configurar el entorno de pruebas completo, incluyendo tests unitar
 
 ## Tareas
 
-- [ ] Instalar y configurar Jest para tests unitarios
+- [ ] Instalar y configurar Vitest para tests unitarios
 - [ ] Configurar React Testing Library para pruebas de componentes
 - [ ] Implementar configuración para tests de API y endpoints
 - [ ] Configurar mocks para servicios externos y base de datos
@@ -33,7 +33,7 @@ Implementar y configurar el entorno de pruebas completo, incluyendo tests unitar
 
 ## Referencias Técnicas
 
-- Utilizar Jest como framework principal de testing
+- Utilizar Vitest como framework principal de testing
 - Implementar React Testing Library para tests de componentes
 - Configurar MSW (Mock Service Worker) para mockear APIs
 - Seguir principios de TDD (Test-Driven Development)

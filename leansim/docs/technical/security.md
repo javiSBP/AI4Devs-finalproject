@@ -67,12 +67,10 @@ This document outlines the key security practices that should be implemented in 
 - Implement proper authorization checks in API routes
 - Use middleware to validate access rights to resources
 - Example:
+
   ```typescript
   // API route with authorization check
-  export default async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse
-  ) {
+  export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Check if device ID matches simulation owner
     const simulation = await prisma.simulation.findUnique({
       where: { id: req.query.id as string },
@@ -354,6 +352,7 @@ This document outlines the key security practices that should be implemented in 
 - Collect only necessary data for the functionality
 - Implement proper data retention policies
 - Example:
+
   ```typescript
   // Automatic data pruning for old simulations
   const pruneOldSimulations = async () => {
@@ -381,9 +380,7 @@ This document outlines the key security practices that should be implemented in 
   // Setting secure cookies
   res.setHeader(
     "Set-Cookie",
-    `deviceId=${deviceId}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${
-      60 * 60 * 24 * 30
-    }`
+    `deviceId=${deviceId}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${60 * 60 * 24 * 30}`
   );
   ```
 
@@ -449,7 +446,7 @@ This document outlines the key security practices that should be implemented in 
 - Example:
   ```yaml
   # In test script
-  "scripts": { "test:security": "jest --config jest.security.config.js" }
+  "scripts": { "test:security": "vitest --config vitest.security.config.ts" }
   ```
 
 ## 7. Compliance Considerations
@@ -461,6 +458,7 @@ This document outlines the key security practices that should be implemented in 
 - Provide clear privacy policies
 - Implement data subject rights (export, deletion)
 - Example data export endpoint:
+
   ```typescript
   // API route for data export
   export default async function handler(req, res) {
@@ -510,6 +508,7 @@ This document outlines the key security practices that should be implemented in 
 - Set up alerts for suspicious activities
 - Monitor application performance and availability
 - Example:
+
   ```typescript
   // Monitoring middleware
   export function monitoringMiddleware(req, res, next) {

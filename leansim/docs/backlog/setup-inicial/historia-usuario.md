@@ -15,7 +15,7 @@ Como desarrollador necesito contar con un entorno de desarrollo correctamente co
 - La configuración de Docker debe incluir contenedores para la aplicación y la base de datos
 - La base de datos local debe estar configurada con Prisma ORM y tener scripts de migración
 - Las variables de entorno deben estar documentadas en un archivo .env.example
-- El framework de testing debe estar configurado y funcionando (Jest, React Testing Library)
+- El framework de testing debe estar configurado y funcionando (Vitest, React Testing Library)
 - Los scripts de desarrollo, test y build deben estar definidos y funcionar correctamente
 - Debe existir documentación clara sobre cómo iniciar el entorno de desarrollo
 
