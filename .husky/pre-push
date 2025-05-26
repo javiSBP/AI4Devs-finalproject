@@ -1,5 +1,5 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+#!/bin/sh
+command -v fnm >/dev/null 2>&1 && eval "$(fnm env --use-on-cd)" || true
 
 echo "🧪 Running tests before push..."
 

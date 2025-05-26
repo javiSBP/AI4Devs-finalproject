@@ -22,23 +22,26 @@ interface LeanCanvasFormProps {
 }
 
 const formSchema = z.object({
-  problem: z.string().optional(),
-  solution: z.string().optional(),
-  uniqueValueProposition: z.string().optional(),
-  customerSegments: z.string().optional(),
-  channels: z.string().optional(),
-  revenueStreams: z.string().optional(),
+  problem: z.string(),
+  solution: z.string(),
+  uniqueValueProposition: z.string(),
+  customerSegments: z.string(),
+  channels: z.string(),
+  revenueStreams: z.string(),
 });
 
 const LeanCanvasForm: React.FC<LeanCanvasFormProps> = ({ initialData, onSubmit }) => {
-  const form = useForm<LeanCanvasData>({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData,
   });
 
-  const handleSubmit = (data: LeanCanvasData) => {
-    onSubmit(data);
-  };
+  const handleSubmit = React.useCallback(
+    (data: LeanCanvasData) => {
+      onSubmit(data);
+    },
+    [onSubmit]
+  );
 
   // This is triggered when the next button in the wizard is clicked
   React.useEffect(() => {

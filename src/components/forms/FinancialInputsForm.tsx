@@ -23,23 +23,26 @@ interface FinancialInputsFormProps {
 }
 
 const formSchema = z.object({
-  averagePrice: z.coerce.number().min(0).optional(),
-  costPerUnit: z.coerce.number().min(0).optional(),
-  fixedCosts: z.coerce.number().min(0).optional(),
-  customerAcquisitionCost: z.coerce.number().min(0).optional(),
-  monthlyNewCustomers: z.coerce.number().min(0).optional(),
-  averageCustomerLifetime: z.coerce.number().min(0).optional(),
+  averagePrice: z.coerce.number().min(0),
+  costPerUnit: z.coerce.number().min(0),
+  fixedCosts: z.coerce.number().min(0),
+  customerAcquisitionCost: z.coerce.number().min(0),
+  monthlyNewCustomers: z.coerce.number().min(0),
+  averageCustomerLifetime: z.coerce.number().min(0),
 });
 
 const FinancialInputsForm: React.FC<FinancialInputsFormProps> = ({ initialData, onSubmit }) => {
-  const form = useForm<FinancialData>({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData,
   });
 
-  const handleSubmit = (data: FinancialData) => {
-    onSubmit(data);
-  };
+  const handleSubmit = React.useCallback(
+    (data: FinancialData) => {
+      onSubmit(data);
+    },
+    [onSubmit]
+  );
 
   // This is triggered when the next button in the wizard is clicked
   React.useEffect(() => {
