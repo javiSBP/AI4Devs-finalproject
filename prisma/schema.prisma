@@ -26,41 +26,54 @@ model User {
 
 // Modelo para el Lean Canvas
 model LeanCanvas {
-  id               String       @id @default(cuid())
-  name             String
-  description      String?
-  problem          String?      @db.Text
-  solution         String?      @db.Text
-  uniqueValueProp  String?      @db.Text
-  keyMetrics       String?      @db.Text
-  unfairAdvantage  String?      @db.Text
-  channels         String?      @db.Text
-  customerSegments String?      @db.Text
-  costStructure    String?      @db.Text
-  revenueStreams   String?      @db.Text
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
-  userId           String
-  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  simulations      Simulation[]
+  id                     String       @id @default(cuid())
+  name                   String
+  description            String?
+  problem                String?      @db.Text
+  solution               String?      @db.Text
+  uniqueValueProposition String?      @db.Text
+  customerSegments       String?      @db.Text
+  channels               String?      @db.Text
+  revenueStreams         String?      @db.Text
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+  userId                 String? // Make optional for anonymous users
+  deviceId               String? // Add deviceId for anonymous users
+  user                   User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  simulations            Simulation[]
+
+  @@index([deviceId])
+  @@index([userId])
 }
 
 // Modelo para simulaciones financieras
 model Simulation {
-  id                String      @id @default(cuid())
-  name              String
-  description       String?
-  initialInvestment Float
-  monthlyExpenses   Float
-  avgRevenue        Float
-  growthRate        Float
-  timeframeMonths   Int
-  otherParams       Json?
-  results           Json?
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
-  userId            String
-  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  leanCanvasId      String?
-  leanCanvas        LeanCanvas? @relation(fields: [leanCanvasId], references: [id], onDelete: SetNull)
+  id                      String      @id @default(cuid())
+  name                    String
+  description             String?
+  // Financial data fields matching frontend
+  averagePrice            Float?
+  costPerUnit             Float?
+  fixedCosts              Float?
+  customerAcquisitionCost Float?
+  monthlyNewCustomers     Float?
+  averageCustomerLifetime Float?
+  // Legacy fields for backward compatibility
+  initialInvestment       Float?
+  monthlyExpenses         Float?
+  avgRevenue              Float?
+  growthRate              Float?
+  timeframeMonths         Int?
+  otherParams             Json?
+  results                 Json?
+  createdAt               DateTime    @default(now())
+  updatedAt               DateTime    @updatedAt
+  userId                  String? // Make optional for anonymous users
+  deviceId                String? // Add deviceId for anonymous users
+  user                    User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  leanCanvasId            String?
+  leanCanvas              LeanCanvas? @relation(fields: [leanCanvasId], references: [id], onDelete: SetNull)
+
+  @@index([deviceId])
+  @@index([userId])
 }

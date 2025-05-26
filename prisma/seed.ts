@@ -27,10 +27,9 @@ async function main() {
         "Los emprendedores tienen dificultades para evaluar la viabilidad financiera de sus ideas",
       solution:
         "Una herramienta simple que permite simular resultados financieros con pocos datos de entrada",
-      uniqueValueProp: "Evaluación financiera simplificada para no expertos",
+      uniqueValueProposition: "Evaluación financiera simplificada para no expertos",
       customerSegments: "Emprendedores primerizos, Estudiantes de negocios, Pequeñas startups",
       channels: "Plataforma web, Redes sociales, Universidades",
-      costStructure: "Hosting, Desarrollo, Marketing",
       revenueStreams: "Suscripción premium, Servicios de consultoría",
       userId: user.id,
     },

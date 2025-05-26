@@ -302,6 +302,7 @@ Basándote en @technical , enumera y describe las prácticas de seguridad princi
 En la documentación técnica del proyecto@technical , falta elegir las librerías de testing unitarios e integración/e2e. Me gustaría usar tooling moderno como vitest y playwright ¿son compatibles con Nextjs?
 
 **Prompt 2:**
+Ejecuta el comando de coverage para ver si es cierto que todos los casos están cubiertos por los tests
 
 **Prompt 3:**
 
@@ -702,5 +703,14 @@ realiza el ticket de setup @ticket-1.md de la user story @historia-usuario.md
 - La documentación que crees debe ir en la carpeta @docs en un directorio llamado dev
 
 **Prompt 2:**
+Implementa el @ticket-1.md de @historia-usuario.md:
+
+- Revisa toda la documentación de @business y @technical
+- Revisa el modelo de datos @schema.prisma para verificar que encaja con @LeanCanvasForm.tsx
+- Utiliza las mejores prácticas de @Prisma para la gestión del modelos de datos
+- Utiliza los conocimientos en @NextJS para la creación de los endpoints, controladores necesarios
+- Utiliza las mejores prácticas de @Zod para las validaciones
+- No olvides los critetios de @security.md definidos
+- Utiliza la API de@Vitest para las validaciones
 
 **Prompt 3:**
