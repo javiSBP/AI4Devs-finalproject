@@ -1,7 +1,14 @@
 #!/bin/sh
 command -v fnm >/dev/null 2>&1 && eval "$(fnm env --use-on-cd)" || true
 
+# Skip tests if SKIP_TESTS environment variable is set
+if [ "$SKIP_TESTS" = "true" ]; then
+    echo "⏭️  Skipping tests (SKIP_TESTS=true)"
+    exit 0
+fi
+
 echo "🧪 Running tests before push..."
+echo "💡 To skip tests, use: SKIP_TESTS=true git push"
 
 # Run unit and integration tests
 npm run test
