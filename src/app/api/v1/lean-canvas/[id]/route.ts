@@ -11,9 +11,9 @@ import {
 } from "@/lib/validation/lean-canvas";
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 // Helper function to check if Lean Canvas belongs to device
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     const { deviceId } = middlewareResult;
-    const { id } = params;
+    const { id } = await params;
 
     // Check ownership
     const ownership = await checkLeanCanvasOwnership(id, deviceId);
@@ -98,7 +98,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     const { deviceId } = middlewareResult;
-    const { id } = params;
+    const { id } = await params;
 
     // Check ownership
     const ownership = await checkLeanCanvasOwnership(id, deviceId);
@@ -173,7 +173,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     const { deviceId } = middlewareResult;
-    const { id } = params;
+    const { id } = await params;
 
     // Check ownership
     const ownership = await checkLeanCanvasOwnership(id, deviceId);
@@ -245,7 +245,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     }
 
     const { deviceId } = middlewareResult;
-    const { id } = params;
+    const { id } = await params;
 
     // Check ownership
     const ownership = await checkLeanCanvasOwnership(id, deviceId);

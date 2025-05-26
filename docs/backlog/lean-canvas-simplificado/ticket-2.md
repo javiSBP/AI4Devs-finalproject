@@ -10,13 +10,13 @@ Desarrollar los componentes React para el formulario del Lean Canvas simplificad
 
 ## Tareas
 
-- [ ] Crear componente contenedor `LeanCanvasForm` con estructura base
-- [ ] Desarrollar componentes para cada uno de los 5 campos del Lean Canvas
-- [ ] Crear indicador visual de progreso para mostrar la posición en el flujo
-- [ ] Implementar validación básica de entrada para límite de 300 caracteres por campo
-- [ ] Desarrollar navegación intuitiva entre campos (botones anterior/siguiente)
-- [ ] Diseñar UI responsive siguiendo principios de TailwindCSS
-- [ ] Preparar la estructura para tooltips/ayudas contextuales (implementación en ticket posterior)
+- [x] Crear componente contenedor `LeanCanvasForm` con estructura base
+- [x] Desarrollar componentes para cada uno de los 5 campos del Lean Canvas
+- [x] Crear indicador visual de progreso para mostrar la posición en el flujo
+- [x] Implementar validación básica de entrada para límite de 300 caracteres por campo
+- [x] Desarrollar navegación intuitiva entre campos (botones anterior/siguiente)
+- [x] Diseñar UI responsive siguiendo principios de TailwindCSS
+- [x] Preparar la estructura para tooltips/ayudas contextuales (implementación en ticket posterior)
 
 ## Criterios de Aceptación Técnicos
 

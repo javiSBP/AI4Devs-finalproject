@@ -3,7 +3,6 @@
 import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
 import { LeanCanvasData } from "@/app/simulation/page";
 import {
   Form,
@@ -15,45 +14,33 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import InfoTooltip from "@/components/ui/info-tooltip";
+import { SharedLeanCanvasSchema, LEAN_CANVAS_LIMITS } from "@/lib/validation/shared/lean-canvas";
 
 interface LeanCanvasFormProps {
   initialData: LeanCanvasData;
   onSubmit: (data: LeanCanvasData) => void;
 }
 
-const formSchema = z.object({
-  problem: z.string(),
-  solution: z.string(),
-  uniqueValueProposition: z.string(),
-  customerSegments: z.string(),
-  channels: z.string(),
-  revenueStreams: z.string(),
-});
-
 const LeanCanvasForm: React.FC<LeanCanvasFormProps> = ({ initialData, onSubmit }) => {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<LeanCanvasData>({
+    resolver: zodResolver(SharedLeanCanvasSchema),
     defaultValues: initialData,
   });
 
-  const handleSubmit = React.useCallback(
-    (data: LeanCanvasData) => {
-      onSubmit(data);
-    },
-    [onSubmit]
-  );
-
-  // This is triggered when the next button in the wizard is clicked
+  // Watch for changes and update parent component
   React.useEffect(() => {
-    const subscription = form.watch(() => {
-      form.handleSubmit(handleSubmit)();
+    const subscription = form.watch((data) => {
+      // Only call onSubmit with valid data, without triggering form validation
+      if (data) {
+        onSubmit(data as LeanCanvasData);
+      }
     });
     return () => subscription.unsubscribe();
-  }, [form, handleSubmit]);
+  }, [form, onSubmit]);
 
   return (
     <Form {...form}>
-      <form className="space-y-8" onChange={() => form.handleSubmit(handleSubmit)()}>
+      <form className="space-y-8">
         <div className="grid gap-6 md:grid-cols-2">
           <FormField
             control={form.control}
@@ -69,9 +56,15 @@ const LeanCanvasForm: React.FC<LeanCanvasFormProps> = ({ initialData, onSubmit }
                     placeholder="Describe el problema que resuelves..."
                     {...field}
                     className="h-32"
+                    maxLength={LEAN_CANVAS_LIMITS.problem}
                   />
                 </FormControl>
-                <FormMessage />
+                <div className="flex justify-between items-center">
+                  <FormMessage />
+                  <span className="text-xs text-muted-foreground">
+                    {field.value?.length || 0}/{LEAN_CANVAS_LIMITS.problem} caracteres
+                  </span>
+                </div>
               </FormItem>
             )}
           />
@@ -85,9 +78,19 @@ const LeanCanvasForm: React.FC<LeanCanvasFormProps> = ({ initialData, onSubmit }
                   <InfoTooltip content="¿Cómo resuelve tu producto o servicio el problema identificado?" />
                 </FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Describe tu solución..." {...field} className="h-32" />
+                  <Textarea
+                    placeholder="Describe tu solución..."
+                    {...field}
+                    className="h-32"
+                    maxLength={LEAN_CANVAS_LIMITS.solution}
+                  />
                 </FormControl>
-                <FormMessage />
+                <div className="flex justify-between items-center">
+                  <FormMessage />
+                  <span className="text-xs text-muted-foreground">
+                    {field.value?.length || 0}/{LEAN_CANVAS_LIMITS.solution} caracteres
+                  </span>
+                </div>
               </FormItem>
             )}
           />
@@ -103,9 +106,18 @@ const LeanCanvasForm: React.FC<LeanCanvasFormProps> = ({ initialData, onSubmit }
                 <InfoTooltip content="¿Qué hace diferente a tu producto o servicio? ¿Por qué deberían elegirte?" />
               </FormLabel>
               <FormControl>
-                <Textarea placeholder="Define tu propuesta de valor..." {...field} />
+                <Textarea
+                  placeholder="Define tu propuesta de valor..."
+                  {...field}
+                  maxLength={LEAN_CANVAS_LIMITS.uniqueValueProposition}
+                />
               </FormControl>
-              <FormMessage />
+              <div className="flex justify-between items-center">
+                <FormMessage />
+                <span className="text-xs text-muted-foreground">
+                  {field.value?.length || 0}/{LEAN_CANVAS_LIMITS.uniqueValueProposition} caracteres
+                </span>
+              </div>
             </FormItem>
           )}
         />
@@ -121,9 +133,18 @@ const LeanCanvasForm: React.FC<LeanCanvasFormProps> = ({ initialData, onSubmit }
                   <InfoTooltip content="¿Quiénes son tus clientes ideales? Define sus características principales." />
                 </FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Define tus segmentos de cliente..." {...field} />
+                  <Textarea
+                    placeholder="Define tus segmentos de cliente..."
+                    {...field}
+                    maxLength={LEAN_CANVAS_LIMITS.customerSegments}
+                  />
                 </FormControl>
-                <FormMessage />
+                <div className="flex justify-between items-center">
+                  <FormMessage />
+                  <span className="text-xs text-muted-foreground">
+                    {field.value?.length || 0}/{LEAN_CANVAS_LIMITS.customerSegments} caracteres
+                  </span>
+                </div>
               </FormItem>
             )}
           />
@@ -137,9 +158,18 @@ const LeanCanvasForm: React.FC<LeanCanvasFormProps> = ({ initialData, onSubmit }
                   <InfoTooltip content="¿Cómo llegas a tus clientes? Canales de distribución, comunicación y venta." />
                 </FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Define tus canales..." {...field} />
+                  <Textarea
+                    placeholder="Define tus canales..."
+                    {...field}
+                    maxLength={LEAN_CANVAS_LIMITS.channels}
+                  />
                 </FormControl>
-                <FormMessage />
+                <div className="flex justify-between items-center">
+                  <FormMessage />
+                  <span className="text-xs text-muted-foreground">
+                    {field.value?.length || 0}/{LEAN_CANVAS_LIMITS.channels} caracteres
+                  </span>
+                </div>
               </FormItem>
             )}
           />
@@ -158,9 +188,15 @@ const LeanCanvasForm: React.FC<LeanCanvasFormProps> = ({ initialData, onSubmit }
                 <Textarea
                   placeholder="Define tus fuentes de ingresos y estructura de costes..."
                   {...field}
+                  maxLength={LEAN_CANVAS_LIMITS.revenueStreams}
                 />
               </FormControl>
-              <FormMessage />
+              <div className="flex justify-between items-center">
+                <FormMessage />
+                <span className="text-xs text-muted-foreground">
+                  {field.value?.length || 0}/{LEAN_CANVAS_LIMITS.revenueStreams} caracteres
+                </span>
+              </div>
             </FormItem>
           )}
         />

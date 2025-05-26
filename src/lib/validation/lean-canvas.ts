@@ -1,41 +1,14 @@
 import { z } from "zod";
+import {
+  SharedLeanCanvasSchema,
+  SharedLeanCanvasUpdateSchema,
+  type SharedLeanCanvasInput,
+  type SharedLeanCanvasUpdateInput,
+} from "./shared/lean-canvas";
 
-// Base Lean Canvas validation schema
-export const LeanCanvasSchema = z.object({
-  problem: z
-    .string()
-    .min(1, "El problema es requerido")
-    .max(1000, "El problema no puede exceder 1000 caracteres")
-    .trim(),
-  solution: z
-    .string()
-    .min(1, "La solución es requerida")
-    .max(1000, "La solución no puede exceder 1000 caracteres")
-    .trim(),
-  uniqueValueProposition: z
-    .string()
-    .min(1, "La propuesta de valor única es requerida")
-    .max(1000, "La propuesta de valor única no puede exceder 1000 caracteres")
-    .trim(),
-  customerSegments: z
-    .string()
-    .min(1, "Los segmentos de cliente son requeridos")
-    .max(1000, "Los segmentos de cliente no pueden exceder 1000 caracteres")
-    .trim(),
-  channels: z
-    .string()
-    .min(1, "Los canales son requeridos")
-    .max(1000, "Los canales no pueden exceder 1000 caracteres")
-    .trim(),
-  revenueStreams: z
-    .string()
-    .min(1, "Las fuentes de ingresos son requeridas")
-    .max(1000, "Las fuentes de ingresos no pueden exceder 1000 caracteres")
-    .trim(),
-});
-
-// Partial schema for updates (all fields optional)
-export const LeanCanvasUpdateSchema = LeanCanvasSchema.partial();
+// Re-export shared schemas for backward compatibility
+export const LeanCanvasSchema = SharedLeanCanvasSchema;
+export const LeanCanvasUpdateSchema = SharedLeanCanvasUpdateSchema;
 
 // Schema for creating a new Lean Canvas with name
 export const CreateLeanCanvasSchema = z
@@ -108,9 +81,9 @@ export const ListQuerySchema = z.object({
     .refine((val) => ["asc", "desc"].includes(val), "Orden inválido"),
 });
 
-// Type exports
-export type LeanCanvasInput = z.infer<typeof LeanCanvasSchema>;
-export type LeanCanvasUpdateInput = z.infer<typeof LeanCanvasUpdateSchema>;
+// Type exports (using shared types)
+export type LeanCanvasInput = SharedLeanCanvasInput;
+export type LeanCanvasUpdateInput = SharedLeanCanvasUpdateInput;
 export type CreateLeanCanvasInput = z.infer<typeof CreateLeanCanvasSchema>;
 export type UpdateLeanCanvasInput = z.infer<typeof UpdateLeanCanvasSchema>;
 export type ListQueryInput = z.infer<typeof ListQuerySchema>;
