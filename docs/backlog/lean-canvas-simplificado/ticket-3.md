@@ -10,13 +10,13 @@ Desarrollar la lógica de gestión de estado y conectar los componentes UI con l
 
 ## Tareas
 
-- [ ] Crear tipos TypeScript para el modelo de datos del Lean Canvas simplificado basados en el modelo de API
-- [ ] Implementar esquemas de validación con Zod para cada campo
-- [ ] Desarrollar Custom Hook para gestionar el estado del formulario con React Hook Form
-- [ ] Crear función para guardar temporalmente los datos durante la navegación (localStorage)
-- [ ] Integrar los componentes UI con los endpoints de API para operaciones CRUD
-- [ ] Implementar manejo de errores y feedback al usuario para problemas de API
-- [ ] Desarrollar pruebas para validar integración frontend-backend
+- [x] Crear tipos TypeScript para el modelo de datos del Lean Canvas simplificado basados en el modelo de API
+- [x] Implementar esquemas de validación con Zod para cada campo
+- [x] Desarrollar Custom Hook para gestionar el estado del formulario con React Hook Form
+- [x] Crear función para guardar temporalmente los datos durante la navegación (localStorage)
+- [x] Integrar los componentes UI con los endpoints de API para operaciones CRUD
+- [x] Implementar manejo de errores y feedback al usuario para problemas de API
+- [x] Desarrollar pruebas para validar integración frontend-backend
 
 ## Criterios de Aceptación Técnicos
 

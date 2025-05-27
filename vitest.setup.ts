@@ -4,7 +4,7 @@ import { setupServer } from "msw/node";
 import { handlers } from "./src/mocks/handlers";
 
 // Setup MSW server
-const server = setupServer(...handlers);
+export const server = setupServer(...handlers);
 
 // Start server before all tests
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
