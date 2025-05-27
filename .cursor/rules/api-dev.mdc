@@ -1,0 +1,61 @@
+---
+description: 
+globs: **/api/**
+alwaysApply: false
+---
+# API Development Guidelines
+
+## Route Structure
+
+Follow Next.js 15 App Router conventions for API routes:
+
+### Route Parameters
+
+For dynamic routes like [src/app/api/v1/lean-canvas/[id]/route.ts](mdc:src/app/api/v1/lean-canvas/[id]/route.ts), use this pattern:
+
+```typescript
+interface RouteParams {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+export async function GET(request: NextRequest, { params }: RouteParams) {
+  const { id } = await params; // ✅ Await params in Next.js 15
+  // ... rest of implementation
+}
+```
+
+### Validation
+
+- Always use shared validation schemas from [src/lib/validation/shared/](mdc:src/lib/validation/shared/)
+- Import through re-exports in [src/lib/validation/lean-canvas.ts](mdc:src/lib/validation/lean-canvas.ts)
+- Handle Zod validation errors consistently
+
+### Security
+
+- Apply middleware from [src/lib/api/middleware.ts](mdc:src/lib/api/middleware.ts)
+- Check device ownership for all operations
+- Use security headers from `getSecurityHeaders()`
+
+### Error Handling
+
+Use standardized error responses from [src/lib/api/response.ts](mdc:src/lib/api/response.ts):
+- `CommonErrors.NOT_FOUND()`
+- `CommonErrors.FORBIDDEN()`
+- `CommonErrors.INTERNAL_ERROR()`
+- `validationErrorResponse(error)` for Zod errors
+
+### Database Operations
+
+- Use Prisma client from [src/lib/prisma.ts](mdc:src/lib/prisma.ts)
+- Always select only needed fields for performance
+- Handle database errors gracefully
+
+### Testing
+
+- Write comprehensive tests for all endpoints
+- Test both success and error scenarios
+- Mock database operations for error testing
+
+- Verify security middleware integration

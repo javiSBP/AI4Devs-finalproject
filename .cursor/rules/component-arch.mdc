@@ -1,0 +1,57 @@
+---
+description: 
+globs: *.tsx
+alwaysApply: false
+---
+# Component Architecture Guidelines
+
+## Form Components
+
+### Performance Optimization
+
+When creating form components, avoid performance issues:
+- **Never** use `form.handleSubmit()` in `onChange` events
+- **Never** use `form.handleSubmit()` in `form.watch()` callbacks
+- Use `form.watch()` for data synchronization without validation triggers
+
+Example of correct implementation in [src/components/forms/LeanCanvasForm.tsx](mdc:src/components/forms/LeanCanvasForm.tsx):
+
+```typescript
+// ✅ Correct: Watch for changes without triggering validation
+React.useEffect(() => {
+  const subscription = form.watch((data) => {
+    if (data) {
+      onSubmit(data as LeanCanvasData);
+    }
+  });
+  return () => subscription.unsubscribe();
+}, [form, onSubmit]);
+```
+
+### Component Structure
+
+Follow this structure for form components:
+```
+src/components/
+├── forms/           # Form components (LeanCanvasForm, FinancialInputsForm)
+├── layout/          # Layout components (MainLayout, ThemeToggle)
+├── results/         # Result display components
+├── tips/            # Help and tip components
+├── ui/              # Reusable UI components (shadcn/ui)
+└── wizard/          # Wizard navigation components
+```
+
+### UI Components
+
+- Use shadcn/ui components from [src/components/ui/](mdc:src/components/ui/)
+- Follow YAGNI principle: only include components that are actually used
+- Remove unused components to avoid build issues
+
+### Wizard Pattern
+
+The wizard layout in [src/components/wizard/WizardLayout.tsx](mdc:src/components/wizard/WizardLayout.tsx) provides:
+- Tab navigation with progress indicator
+- Previous/Next button navigation
+- Responsive design
+
+- Automatic scroll to top on step change

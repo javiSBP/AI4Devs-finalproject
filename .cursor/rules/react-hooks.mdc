@@ -1,0 +1,359 @@
+---
+description: 
+globs: **/hooks/**
+alwaysApply: false
+---
+# React Hooks Development Guide
+
+## Overview
+
+LeanSim uses custom React hooks to encapsulate complex business logic, particularly for form management and API integration. The primary example is [src/hooks/useLeanCanvas.ts](mdc:src/hooks/useLeanCanvas.ts).
+
+## Hook Architecture
+
+### Core Hook Structure
+```typescript
+interface UseHookOptions {
+  id?: string;
+  autoSave?: boolean;
+  autoSaveDelay?: number;
+  loadFromStorage?: boolean;
+}
+
+interface UseHookReturn {
+  form: ReturnType<typeof useForm>;
+  formState: FormState;
+  actions: {
+    save: () => Promise<boolean>;
+    // ... other actions
+  };
+  api: {
+    isLoading: boolean;
+    error: ApiError | null;
+    lastSaved: Date | null;
+  };
+}
+```
+
+### Hook Responsibilities
+1. **Form Management**: React Hook Form integration with validation
+2. **State Management**: Loading states, errors, and API responses
+3. **Storage Integration**: Temporary localStorage operations
+4. **API Operations**: CRUD operations with error handling
+5. **Auto-save Logic**: Debounced form persistence
+
+## Development Patterns
+
+### 1. Form Integration
+Use React Hook Form with Zod validation:
+```typescript
+const form = useForm<DataType>({
+  resolver: zodResolver(ValidationSchema),
+  defaultValues,
+  mode: "onChange",
+});
+
+const { watch, formState, reset, getValues } = form;
+const { isValid, isDirty, isSubmitting } = formState;
+```
+
+### 2. Auto-save Implementation
+```typescript
+// Auto-save with debouncing
+useEffect(() => {
+  if (!autoSave || !id || !isDirty) return;
+
+  if (autoSaveTimeout) {
+    clearTimeout(autoSaveTimeout);
+  }
+
+  const timeout = setTimeout(() => {
+    saveTemporarily();
+  }, autoSaveDelay);
+
+  setAutoSaveTimeout(timeout);
+
+  return () => {
+    if (timeout) clearTimeout(timeout);
+  };
+}, [watch(), autoSave, autoSaveDelay, id, isDirty, saveTemporarily]);
+```
+
+### 3. API State Management
+```typescript
+const [isLoading, setIsLoading] = useState(false);
+const [error, setError] = useState<ApiError | null>(null);
+const [lastSaved, setLastSaved] = useState<Date | null>(null);
+
+// In API operations
+const save = useCallback(async (): Promise<boolean> => {
+  setIsLoading(true);
+  setError(null);
+  
+  try {
+    // API call
+    setLastSaved(new Date());
+    return true;
+  } catch (err) {
+    setError(/* error handling */);
+    return false;
+  } finally {
+    setIsLoading(false);
+  }
+}, [dependencies]);
+```
+
+### 4. Storage Integration
+```typescript
+// Load from storage on mount
+useEffect(() => {
+  if (loadFromStorage && id) {
+    const storedData = loadFromStorage(id);
+    if (storedData) {
+      reset(storedData);
+      toast.info("Data loaded from temporary storage");
+    }
+  }
+}, [id, loadFromStorage, reset]);
+
+// Save temporarily
+const saveTemporarily = useCallback(() => {
+  if (!id) return;
+  const data = getValues();
+  saveToStorage(id, data);
+}, [getValues, id]);
+```
+
+## Performance Considerations
+
+### 1. Callback Optimization
+Always wrap functions in `useCallback` when they're dependencies:
+```typescript
+const save = useCallback(async () => {
+  // Implementation
+}, [dependencies]);
+
+const loadFromApi = useCallback(async (apiId: string) => {
+  // Implementation
+}, []);
+```
+
+### 2. Effect Dependencies
+Be explicit about effect dependencies:
+```typescript
+// ✅ Good: Clear dependencies
+useEffect(() => {
+  // Effect logic
+}, [watch(), autoSave, autoSaveDelay, id, isDirty, saveTemporarily]);
+
+// ❌ Avoid: Missing dependencies or unnecessary ones
+useEffect(() => {
+  // Effect logic
+}, []); // Missing dependencies
+```
+
+### 3. State Updates
+Batch related state updates:
+```typescript
+// ✅ Good: Batch updates
+setIsLoading(true);
+setError(null);
+
+// ✅ Good: Use functional updates for dependent state
+setError(prev => prev ? null : prev);
+```
+
+## Error Handling
+
+### 1. API Error Handling
+```typescript
+try {
+  const response = await apiCall(data);
+  
+  if (response.success) {
+    setLastSaved(new Date());
+    toast.success("Operation successful");
+    return true;
+  } else {
+    setError(response.error || { code: "UNKNOWN", message: "Unknown error" });
+    toast.error(response.error?.message || "Operation failed");
+    return false;
+  }
+} catch (err) {
+  const errorMessage = err instanceof Error ? err.message : "Unexpected error";
+  setError({ code: "UNEXPECTED", message: errorMessage });
+  toast.error(errorMessage);
+  return false;
+}
+```
+
+### 2. Form Validation
+```typescript
+const save = useCallback(async (): Promise<boolean> => {
+  if (!isValid) {
+    toast.error("Please complete all required fields");
+    return false;
+  }
+  
+  // Proceed with save
+}, [isValid, /* other deps */]);
+```
+
+## Testing Considerations
+
+### 1. Testable Structure
+Design hooks with testing in mind:
+```typescript
+// ✅ Good: Separate concerns
+const actions = {
+  save: useCallback(/* ... */),
+  saveTemporarily: useCallback(/* ... */),
+  loadFromStorage: useCallback(/* ... */),
+  clearStorage: useCallback(/* ... */),
+  reset: useCallback(/* ... */),
+  loadFromApi: useCallback(/* ... */),
+};
+
+return {
+  form,
+  formState: { isValid, isDirty, isSubmitting, errors },
+  actions,
+  api: { isLoading, error, lastSaved },
+};
+```
+
+### 2. Mock-Friendly Dependencies
+Use dependency injection patterns:
+```typescript
+// ✅ Good: External dependencies are easily mockable
+import { createLeanCanvas, patchLeanCanvas } from "@/lib/api/lean-canvas";
+import { saveLeanCanvasTemporarily } from "@/utils/storage/lean-canvas";
+```
+
+### 3. Testing Limitations
+Document what's difficult to test:
+```typescript
+// Auto-save testing is complex due to:
+// 1. React Hook Form watch() function behavior
+// 2. useEffect dependency array changes
+// 3. Timer coordination with form state
+// 
+// Better tested through:
+// - Component integration tests
+// - E2E tests with real user interactions
+```
+
+## Best Practices
+
+### 1. Single Responsibility
+Each hook should have a clear, single purpose:
+- ✅ `useLeanCanvas` - Lean Canvas form management
+- ✅ `useFinancialCalculator` - Financial calculations
+- ❌ `useEverything` - Multiple unrelated concerns
+
+### 2. Consistent Return Structure
+Use consistent return object structure:
+```typescript
+return {
+  // Core functionality (form, data, etc.)
+  form,
+  formState,
+  
+  // User actions
+  actions: {
+    save,
+    reset,
+    // ...
+  },
+  
+  // API/async state
+  api: {
+    isLoading,
+    error,
+    lastSaved,
+  },
+};
+```
+
+### 3. Options Pattern
+Use options object for configuration:
+```typescript
+// ✅ Good: Flexible and extensible
+useLeanCanvas({
+  id: "canvas-123",
+  autoSave: true,
+  autoSaveDelay: 2000,
+  loadFromStorage: true,
+});
+
+// ❌ Avoid: Too many positional parameters
+useLeanCanvas("canvas-123", true, 2000, true);
+```
+
+### 4. TypeScript Integration
+Provide comprehensive TypeScript types:
+```typescript
+interface UseLeanCanvasOptions {
+  id?: string;
+  autoSave?: boolean;
+  autoSaveDelay?: number;
+  loadFromStorage?: boolean;
+}
+
+interface UseLeanCanvasReturn {
+  // Detailed return type
+}
+
+export function useLeanCanvas(
+  options: UseLeanCanvasOptions = {}
+): UseLeanCanvasReturn {
+  // Implementation
+}
+```
+
+## Integration with Components
+
+### 1. Component Usage
+```typescript
+function LeanCanvasForm() {
+  const {
+    form,
+    formState,
+    actions,
+    api
+  } = useLeanCanvas({
+    id: canvasId,
+    autoSave: true,
+    loadFromStorage: true,
+  });
+
+  return (
+    <form onSubmit={form.handleSubmit(actions.save)}>
+      {/* Form fields */}
+      <button 
+        type="submit" 
+        disabled={api.isLoading || !formState.isValid}
+      >
+        {api.isLoading ? "Saving..." : "Save"}
+      </button>
+    </form>
+  );
+}
+```
+
+### 2. Error Display
+```typescript
+{api.error && (
+  <div className="error">
+    {api.error.message}
+  </div>
+)}
+```
+
+## Future Enhancements
+
+- **Optimistic Updates**: Implement optimistic UI updates
+- **Offline Support**: Add offline capability with sync
+- **Real-time Collaboration**: WebSocket integration for live updates
+- **Undo/Redo**: Command pattern for form history
+

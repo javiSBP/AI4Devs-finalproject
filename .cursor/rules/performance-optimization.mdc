@@ -1,0 +1,356 @@
+---
+description: 
+globs: *.test.ts
+alwaysApply: false
+---
+# Performance Optimization Guide
+
+## Overview
+
+LeanSim prioritizes performance across all aspects of development, from test execution to runtime performance. Our test suite optimization reduced execution time from 45+ seconds (hanging) to under 5 seconds.
+
+## Test Performance
+
+### Performance Targets
+- **Total test suite**: < 5 seconds
+- **Individual test files**: < 500ms
+- **Hook tests**: < 200ms
+- **API tests**: < 300ms
+
+### Optimization Strategies
+
+#### 1. Timer Management
+```typescript
+// ✅ Good: Use fake timers for consistent, fast execution
+beforeEach(() => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date('2024-01-01T00:00:00Z'));
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
+
+// ❌ Avoid: Real timers in tests (slow and flaky)
+setTimeout(() => {
+  // Test logic
+}, 1000); // This will actually wait 1 second
+```
+
+#### 2. Mock Complexity
+```typescript
+// ✅ Good: Lightweight mocking
+vi.mock("react-hook-form", () => ({
+  useForm: vi.fn(() => mockFormMethods),
+}));
+
+// ❌ Avoid: Complex form state simulation
+vi.mock("react-hook-form", () => ({
+  useForm: vi.fn(() => ({
+    // Complex state management that slows tests
+    watch: vi.fn(() => complexStateLogic()),
+    formState: new Proxy(/* complex proxy logic */),
+  })),
+}));
+```
+
+#### 3. Strategic Test Skipping
+```typescript
+// Skip tests that require complex setup
+it.skip("should handle complex auto-save scenarios", () => {
+  // This test requires:
+  // 1. Complex React Hook Form mocking
+  // 2. Timer coordination
+  // 3. Form state simulation
+  // 
+  // Better tested through integration/E2E tests
+});
+```
+
+### MSW Optimization
+
+#### Efficient Handler Setup
+```typescript
+// ✅ Good: Simple, focused handlers
+export const handlers = [
+  http.get('/api/v1/lean-canvas/:id', ({ params }) => {
+    if (params.id === 'nonexistent-id') {
+      return HttpResponse.json(
+        { error: { code: 'NOT_FOUND', message: 'Canvas not found' } },
+        { status: 404 }
+      );
+    }
+    return HttpResponse.json({ success: true, data: mockData });
+  }),
+];
+
+// ❌ Avoid: Complex conditional logic in handlers
+export const handlers = [
+  http.get('/api/v1/lean-canvas/:id', async ({ request, params }) => {
+    // Complex async logic
+    // Multiple database simulations
+    // Heavy computation
+    return complexResponse;
+  }),
+];
+```
+
+#### Error Injection Patterns
+```typescript
+// ✅ Good: Header-based error injection
+http.post('/api/v1/lean-canvas', ({ request }) => {
+  if (request.headers.get('x-test-error') === 'validation') {
+    return HttpResponse.json({ error: 'Validation failed' }, { status: 400 });
+  }
+  return HttpResponse.json({ success: true });
+});
+
+// Use in tests:
+fetch('/api/v1/lean-canvas', {
+  headers: { 'x-test-error': 'validation' }
+});
+```
+
+## Runtime Performance
+
+### React Hook Optimization
+
+#### 1. Callback Memoization
+```typescript
+// ✅ Good: Memoize callbacks to prevent unnecessary re-renders
+const save = useCallback(async () => {
+  // Implementation
+}, [dependencies]);
+
+const handleSubmit = useCallback((data) => {
+  // Implementation
+}, [save]);
+
+// ❌ Avoid: Inline functions in JSX
+<form onSubmit={(data) => {
+  // This creates a new function on every render
+}}>
+```
+
+#### 2. Effect Dependencies
+```typescript
+// ✅ Good: Minimal, specific dependencies
+useEffect(() => {
+  if (autoSave && isDirty) {
+    saveTemporarily();
+  }
+}, [autoSave, isDirty, saveTemporarily]);
+
+// ❌ Avoid: Unnecessary dependencies
+useEffect(() => {
+  if (autoSave && isDirty) {
+    saveTemporarily();
+  }
+}, [autoSave, isDirty, saveTemporarily, formData, user, settings]); // Too many deps
+```
+
+#### 3. State Updates
+```typescript
+// ✅ Good: Batch related updates
+const handleSave = async () => {
+  setIsLoading(true);
+  setError(null);
+  
+  try {
+    await save();
+    setLastSaved(new Date());
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+// ❌ Avoid: Multiple separate state updates
+const handleSave = async () => {
+  setIsLoading(true);
+  // ... other logic
+  setIsLoading(false);
+  setError(null);
+  setLastSaved(new Date());
+  // Each setState causes a re-render
+};
+```
+
+### Form Performance
+
+#### 1. React Hook Form Optimization
+```typescript
+// ✅ Good: Optimized form configuration
+const form = useForm({
+  resolver: zodResolver(schema),
+  defaultValues,
+  mode: "onChange", // Only validate on change, not on blur
+});
+
+// ✅ Good: Selective watching
+const watchedFields = form.watch(['problem', 'solution']); // Only watch needed fields
+
+// ❌ Avoid: Watching entire form
+const allFields = form.watch(); // Triggers on any field change
+```
+
+#### 2. Debounced Operations
+```typescript
+// ✅ Good: Debounce expensive operations
+useEffect(() => {
+  if (!autoSave || !isDirty) return;
+
+  const timeout = setTimeout(() => {
+    saveTemporarily();
+  }, autoSaveDelay);
+
+  return () => clearTimeout(timeout);
+}, [watch(), autoSave, isDirty, saveTemporarily, autoSaveDelay]);
+```
+
+### API Performance
+
+#### 1. Request Optimization
+```typescript
+// ✅ Good: Selective field updates
+const patchData = {
+  problem: formData.problem,
+  solution: formData.solution,
+  // Only send changed fields
+};
+
+// ❌ Avoid: Sending entire object
+const patchData = {
+  ...formData, // Sends all fields even if unchanged
+  updatedAt: new Date(),
+};
+```
+
+#### 2. Error Handling
+```typescript
+// ✅ Good: Fast-fail error handling
+if (!isValid) {
+  toast.error("Please complete required fields");
+  return false; // Exit early
+}
+
+// ❌ Avoid: Expensive validation before early checks
+const validationResult = await expensiveValidation(formData);
+if (!isValid) {
+  return false;
+}
+```
+
+## Storage Performance
+
+### LocalStorage Optimization
+```typescript
+// ✅ Good: Efficient storage operations
+const saveTemporarily = useCallback((id: string, data: LeanCanvasData) => {
+  try {
+    const key = `leansim-canvas-${id}`;
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (error) {
+    console.warn('Failed to save to localStorage:', error);
+  }
+}, []);
+
+// ✅ Good: Cleanup old data
+const cleanupOldData = useCallback(() => {
+  const keys = Object.keys(localStorage);
+  const oldKeys = keys.filter(key => 
+    key.startsWith('leansim-canvas-') && 
+    isOlderThan(key, 7) // 7 days
+  );
+  oldKeys.forEach(key => localStorage.removeItem(key));
+}, []);
+```
+
+## Bundle Performance
+
+### Import Optimization
+```typescript
+// ✅ Good: Specific imports
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+
+// ❌ Avoid: Barrel imports of large libraries
+import * as zod from "zod"; // Imports entire library
+import { everything } from "@/lib"; // Large barrel export
+```
+
+### Code Splitting
+```typescript
+// ✅ Good: Lazy loading for large components
+const LeanCanvasForm = lazy(() => import("@/components/forms/LeanCanvasForm"));
+const FinancialCalculator = lazy(() => import("@/components/FinancialCalculator"));
+
+// Use with Suspense
+<Suspense fallback={<Loading />}>
+  <LeanCanvasForm />
+</Suspense>
+```
+
+## Monitoring and Measurement
+
+### Performance Metrics
+- **Test execution time**: Monitor with `npm test`
+- **Bundle size**: Check with `npm run build`
+- **Runtime performance**: Use React DevTools Profiler
+- **Core Web Vitals**: Monitor in production
+
+### Performance Testing
+```typescript
+// Add performance assertions to tests
+it("should complete save operation quickly", async () => {
+  const start = performance.now();
+  
+  await actions.save();
+  
+  const duration = performance.now() - start;
+  expect(duration).toBeLessThan(100); // Should complete in < 100ms
+});
+```
+
+### Continuous Monitoring
+```typescript
+// Add performance logging
+const performanceLogger = {
+  logTestDuration: (testName: string, duration: number) => {
+    if (duration > 500) {
+      console.warn(`Slow test detected: ${testName} took ${duration}ms`);
+    }
+  },
+  
+  logApiCall: (endpoint: string, duration: number) => {
+    if (duration > 1000) {
+      console.warn(`Slow API call: ${endpoint} took ${duration}ms`);
+    }
+  },
+};
+```
+
+## Best Practices
+
+1. **Measure First**: Always measure before optimizing
+2. **Optimize Bottlenecks**: Focus on the slowest parts first
+3. **Test Performance**: Include performance tests in your suite
+4. **Monitor Continuously**: Set up alerts for performance regressions
+5. **Document Optimizations**: Explain why optimizations were made
+
+## Performance Checklist
+
+### Before Committing
+- [ ] Test suite runs in < 5 seconds
+- [ ] No hanging or flaky tests
+- [ ] Bundle size hasn't increased significantly
+- [ ] No unnecessary re-renders in components
+- [ ] API calls are optimized (minimal payloads)
+- [ ] LocalStorage operations are efficient
+
+### Regular Maintenance
+- [ ] Review and cleanup old test mocks
+- [ ] Monitor test execution times
+- [ ] Update dependencies for performance improvements
+- [ ] Profile React components for unnecessary renders
+- [ ] Audit bundle size and remove unused code
+
