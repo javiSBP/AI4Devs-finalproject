@@ -13,7 +13,7 @@ import {
 } from "recharts";
 import InfoTooltip from "@/components/ui/info-tooltip";
 import LeanCanvasVisual from "./LeanCanvasVisual";
-import { LeanCanvasData } from "@/app/simulation/page";
+import { LeanCanvasData } from "@/types/lean-canvas";
 
 interface ResultsDisplayProps {
   results: {

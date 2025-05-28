@@ -13,8 +13,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import InfoTooltip from "@/components/ui/info-tooltip";
+import EnhancedInfoTooltip from "@/components/ui/enhanced-info-tooltip";
 import { SharedLeanCanvasSchema, LEAN_CANVAS_LIMITS } from "@/lib/validation/shared/lean-canvas";
+import { LEAN_CANVAS_HELP } from "@/lib/content/lean-canvas-help";
 
 interface LeanCanvasFormProps {
   initialData: LeanCanvasData;
@@ -62,12 +63,16 @@ const LeanCanvasForm: React.FC<LeanCanvasFormProps> = ({ initialData, onSubmit }
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="flex items-center gap-2">
-                  Problema
-                  <InfoTooltip content="¿Qué problema o necesidad resuelve tu producto o servicio?" />
+                  {LEAN_CANVAS_HELP.problem.label}
+                  <EnhancedInfoTooltip
+                    content={LEAN_CANVAS_HELP.problem.description}
+                    example={LEAN_CANVAS_HELP.problem.example}
+                    tips={LEAN_CANVAS_HELP.problem.tips}
+                  />
                 </FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="Describe el problema que resuelves..."
+                    placeholder={LEAN_CANVAS_HELP.problem.placeholder}
                     {...field}
                     className="h-32"
                     maxLength={LEAN_CANVAS_LIMITS.problem}
@@ -88,12 +93,16 @@ const LeanCanvasForm: React.FC<LeanCanvasFormProps> = ({ initialData, onSubmit }
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="flex items-center gap-2">
-                  Solución
-                  <InfoTooltip content="¿Cómo resuelve tu producto o servicio el problema identificado?" />
+                  {LEAN_CANVAS_HELP.solution.label}
+                  <EnhancedInfoTooltip
+                    content={LEAN_CANVAS_HELP.solution.description}
+                    example={LEAN_CANVAS_HELP.solution.example}
+                    tips={LEAN_CANVAS_HELP.solution.tips}
+                  />
                 </FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="Describe tu solución..."
+                    placeholder={LEAN_CANVAS_HELP.solution.placeholder}
                     {...field}
                     className="h-32"
                     maxLength={LEAN_CANVAS_LIMITS.solution}
@@ -116,12 +125,16 @@ const LeanCanvasForm: React.FC<LeanCanvasFormProps> = ({ initialData, onSubmit }
           render={({ field }) => (
             <FormItem>
               <FormLabel className="flex items-center gap-2">
-                Propuesta de Valor Única
-                <InfoTooltip content="¿Qué hace diferente a tu producto o servicio? ¿Por qué deberían elegirte?" />
+                {LEAN_CANVAS_HELP.uniqueValueProposition.label}
+                <EnhancedInfoTooltip
+                  content={LEAN_CANVAS_HELP.uniqueValueProposition.description}
+                  example={LEAN_CANVAS_HELP.uniqueValueProposition.example}
+                  tips={LEAN_CANVAS_HELP.uniqueValueProposition.tips}
+                />
               </FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Define tu propuesta de valor..."
+                  placeholder={LEAN_CANVAS_HELP.uniqueValueProposition.placeholder}
                   {...field}
                   maxLength={LEAN_CANVAS_LIMITS.uniqueValueProposition}
                 />
@@ -143,12 +156,16 @@ const LeanCanvasForm: React.FC<LeanCanvasFormProps> = ({ initialData, onSubmit }
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="flex items-center gap-2">
-                  Segmentos de Cliente
-                  <InfoTooltip content="¿Quiénes son tus clientes ideales? Define sus características principales." />
+                  {LEAN_CANVAS_HELP.customerSegments.label}
+                  <EnhancedInfoTooltip
+                    content={LEAN_CANVAS_HELP.customerSegments.description}
+                    example={LEAN_CANVAS_HELP.customerSegments.example}
+                    tips={LEAN_CANVAS_HELP.customerSegments.tips}
+                  />
                 </FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="Define tus segmentos de cliente..."
+                    placeholder={LEAN_CANVAS_HELP.customerSegments.placeholder}
                     {...field}
                     maxLength={LEAN_CANVAS_LIMITS.customerSegments}
                   />
@@ -168,12 +185,16 @@ const LeanCanvasForm: React.FC<LeanCanvasFormProps> = ({ initialData, onSubmit }
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="flex items-center gap-2">
-                  Canales
-                  <InfoTooltip content="¿Cómo llegas a tus clientes? Canales de distribución, comunicación y venta." />
+                  {LEAN_CANVAS_HELP.channels.label}
+                  <EnhancedInfoTooltip
+                    content={LEAN_CANVAS_HELP.channels.description}
+                    example={LEAN_CANVAS_HELP.channels.example}
+                    tips={LEAN_CANVAS_HELP.channels.tips}
+                  />
                 </FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="Define tus canales..."
+                    placeholder={LEAN_CANVAS_HELP.channels.placeholder}
                     {...field}
                     maxLength={LEAN_CANVAS_LIMITS.channels}
                   />
@@ -195,12 +216,16 @@ const LeanCanvasForm: React.FC<LeanCanvasFormProps> = ({ initialData, onSubmit }
           render={({ field }) => (
             <FormItem>
               <FormLabel className="flex items-center gap-2">
-                Estructura de Ingresos/Costes
-                <InfoTooltip content="¿Cómo vas a ganar dinero? Suscripciones, ventas directas, etc. y principales costes asociados." />
+                {LEAN_CANVAS_HELP.revenueStreams.label}
+                <EnhancedInfoTooltip
+                  content={LEAN_CANVAS_HELP.revenueStreams.description}
+                  example={LEAN_CANVAS_HELP.revenueStreams.example}
+                  tips={LEAN_CANVAS_HELP.revenueStreams.tips}
+                />
               </FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Define tus fuentes de ingresos y estructura de costes..."
+                  placeholder={LEAN_CANVAS_HELP.revenueStreams.placeholder}
                   {...field}
                   maxLength={LEAN_CANVAS_LIMITS.revenueStreams}
                 />

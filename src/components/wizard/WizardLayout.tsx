@@ -87,9 +87,13 @@ const WizardLayout: React.FC<WizardLayoutProps> = ({ steps, onComplete }) => {
           <Card className="wizard-card">{steps[currentStep].component}</Card>
         </div>
 
-        {/* Tips sidebar */}
+        {/* Tips sidebar - aligned with form content */}
         <div className="lg:col-span-1">
-          <TipCard stepIndex={currentStep} />
+          <div className="lg:mt-[calc(2rem+1.5rem)]">
+            {" "}
+            {/* 2rem (text-2xl) + 1.5rem (mb-6) = height of title + margin */}
+            <TipCard stepIndex={currentStep} />
+          </div>
         </div>
       </div>
 

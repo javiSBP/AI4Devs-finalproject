@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { LeanCanvasData } from "@/app/simulation/page";
+import { LeanCanvasData } from "@/types/lean-canvas";
 import { Card } from "@/components/ui/card";
 
 interface LeanCanvasVisualProps {

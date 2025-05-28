@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Lightbulb } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Lightbulb, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface TipCardProps {
   stepIndex: number;
@@ -46,29 +47,133 @@ const resultsTips = [
 
 const stepTips = [leanCanvasTips, financialTips, resultsTips];
 
+// Colores diferentes para cada paso
+const stepColors = [
+  {
+    bg: "bg-blue-50 dark:bg-blue-950/30",
+    border: "border-l-4 border-blue-500",
+    icon: "text-blue-600 dark:text-blue-400",
+    accent: "#3b82f6",
+  },
+  {
+    bg: "bg-emerald-50 dark:bg-emerald-950/30",
+    border: "border-l-4 border-emerald-500",
+    icon: "text-emerald-600 dark:text-emerald-400",
+    accent: "#10b981",
+  },
+  {
+    bg: "bg-purple-50 dark:bg-purple-950/30",
+    border: "border-l-4 border-purple-500",
+    icon: "text-purple-600 dark:text-purple-400",
+    accent: "#8b5cf6",
+  },
+];
+
 const TipCard: React.FC<TipCardProps> = ({ stepIndex }) => {
   const [tipIndex, setTipIndex] = useState(0);
+  const [autoRotate, setAutoRotate] = useState(true);
+  const [isVisible, setIsVisible] = useState(true);
   const tips = stepTips[stepIndex] || leanCanvasTips;
+  const colors = stepColors[stepIndex] || stepColors[0];
 
   useEffect(() => {
     // Reset tip index when step changes
     setTipIndex(0);
+    setAutoRotate(true);
+    setIsVisible(true);
+  }, [stepIndex]);
 
-    // Change tip every 10 seconds
+  useEffect(() => {
+    if (!autoRotate) return;
+
+    // Change tip every 7 seconds
     const interval = setInterval(() => {
-      setTipIndex((prevIndex) => (prevIndex + 1) % tips.length);
-    }, 10000);
+      setIsVisible(false);
+      setTimeout(() => {
+        setTipIndex((prevIndex) => (prevIndex + 1) % tips.length);
+        setIsVisible(true);
+      }, 300); // Wait for fade out before changing content
+    }, 7000);
 
     return () => clearInterval(interval);
-  }, [stepIndex, tips.length]);
+  }, [tipIndex, tips.length, autoRotate]);
+
+  const goToTip = (index: number) => {
+    setIsVisible(false);
+    setTimeout(() => {
+      setTipIndex(index);
+      setAutoRotate(false); // Pausar auto-rotación cuando el usuario navega manualmente
+      setIsVisible(true);
+    }, 300);
+  };
+
+  const goToPrevious = () => {
+    const newIndex = tipIndex === 0 ? tips.length - 1 : tipIndex - 1;
+    goToTip(newIndex);
+  };
+
+  const goToNext = () => {
+    const newIndex = (tipIndex + 1) % tips.length;
+    goToTip(newIndex);
+  };
 
   return (
-    <Card className="p-4 bg-accent/50 border border-accent shadow-sm">
-      <div className="flex items-start gap-3">
-        <Lightbulb className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-        <div>
-          <h4 className="font-medium text-sm mb-1">Tip</h4>
-          <p className="text-sm text-muted-foreground">{tips[tipIndex]}</p>
+    <Card
+      className={`p-4 h-52 ${colors.bg} ${colors.border} shadow-md transition-all duration-300 hover:shadow-lg flex flex-col`}
+    >
+      <div className="flex flex-col h-full">
+        {/* Header con navegación */}
+        <div className="flex items-center justify-between mb-3 flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <Lightbulb className={`h-5 w-5 ${colors.icon} flex-shrink-0`} />
+            <h4 className="font-semibold text-sm text-foreground">Consejos</h4>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={goToPrevious}
+              className={`h-6 w-6 p-0 ${colors.icon} hover:bg-current/10`}
+            >
+              <ChevronLeft className="h-3 w-3" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={goToNext}
+              className={`h-6 w-6 p-0 ${colors.icon} hover:bg-current/10`}
+            >
+              <ChevronRight className="h-3 w-3" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Contenido del tip con animación fade */}
+        <div className="flex-1 flex items-center min-h-0 mb-4">
+          <p
+            className={`text-sm text-muted-foreground leading-relaxed transition-opacity duration-300 ${
+              isVisible ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            {tips[tipIndex]}
+          </p>
+        </div>
+
+        {/* Indicadores clickables */}
+        <div className="flex justify-center space-x-1 flex-shrink-0 pb-1">
+          {tips.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToTip(index)}
+              className={`h-2 w-2 rounded-full transition-all duration-300 hover:scale-125 focus:outline-none focus:ring-2 focus:ring-current focus:ring-offset-1 ${
+                index === tipIndex
+                  ? "bg-current opacity-100 scale-110"
+                  : "bg-current opacity-30 hover:opacity-60"
+              }`}
+              style={{ color: colors.accent }}
+              aria-label={`Ir al consejo ${index + 1}`}
+            />
+          ))}
         </div>
       </div>
     </Card>
