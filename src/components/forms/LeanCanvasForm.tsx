@@ -3,7 +3,7 @@
 import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { LeanCanvasData } from "@/app/simulation/page";
+import { LeanCanvasData } from "@/types/lean-canvas";
 import {
   Form,
   FormControl,
@@ -26,6 +26,20 @@ const LeanCanvasForm: React.FC<LeanCanvasFormProps> = ({ initialData, onSubmit }
     resolver: zodResolver(SharedLeanCanvasSchema),
     defaultValues: initialData,
   });
+
+  // Initialize form with initialData only once on mount or when initialData changes
+  React.useEffect(() => {
+    if (initialData) {
+      const currentData = form.getValues();
+      const currentDataString = JSON.stringify(currentData);
+      const initialDataString = JSON.stringify(initialData);
+
+      // Solo resetear si los datos son realmente diferentes
+      if (currentDataString !== initialDataString) {
+        form.reset(initialData);
+      }
+    }
+  }, [initialData, form]);
 
   // Watch for changes and update parent component
   React.useEffect(() => {

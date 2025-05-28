@@ -5,15 +5,7 @@ import WizardLayout from "@/components/wizard/WizardLayout";
 import LeanCanvasForm from "@/components/forms/LeanCanvasForm";
 import FinancialInputsForm from "@/components/forms/FinancialInputsForm";
 import ResultsDisplay from "@/components/results/ResultsDisplay";
-
-export interface LeanCanvasData {
-  problem: string;
-  solution: string;
-  uniqueValueProposition: string;
-  customerSegments: string;
-  channels: string;
-  revenueStreams: string;
-}
+import { LeanCanvasData } from "@/types/lean-canvas";
 
 export interface FinancialData {
   averagePrice: number;
