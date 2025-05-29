@@ -26,6 +26,8 @@ const LeanCanvasForm: React.FC<LeanCanvasFormProps> = ({ initialData, onSubmit }
   const form = useForm<LeanCanvasData>({
     resolver: zodResolver(SharedLeanCanvasSchema),
     defaultValues: initialData,
+    mode: "onBlur",
+    reValidateMode: "onChange",
   });
 
   // Initialize form with initialData only once on mount or when initialData changes
