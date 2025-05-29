@@ -4,9 +4,11 @@ import userEvent from "@testing-library/user-event";
 import FinancialInputsForm from "./FinancialInputsForm";
 import { FinancialData } from "@/app/simulation/page";
 
-// Mock the InfoTooltip component
-vi.mock("@/components/ui/info-tooltip", () => ({
-  default: ({ content }: { content: string }) => <span data-testid="info-tooltip">{content}</span>,
+// Mock the EnhancedInfoTooltip component
+vi.mock("@/components/ui/enhanced-info-tooltip", () => ({
+  default: ({ content }: { content: string }) => (
+    <button data-testid="enhanced-info-tooltip">{content}</button>
+  ),
 }));
 
 describe("FinancialInputsForm", () => {
@@ -27,12 +29,23 @@ describe("FinancialInputsForm", () => {
   it("renders all form fields correctly", () => {
     render(<FinancialInputsForm initialData={defaultData} onSubmit={mockOnSubmit} />);
 
-    expect(screen.getByLabelText(/precio medio por unidad/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/coste variable por cliente/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/costes fijos mensuales/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/coste de adquisición de cliente/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/nuevos clientes por mes/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/duración media del cliente/i)).toBeInTheDocument();
+    // Use more specific selectors to avoid multiple element issues
+    expect(
+      screen.getByRole("spinbutton", { name: /precio medio por unidad/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("spinbutton", { name: /coste variable por cliente/i })
+    ).toBeInTheDocument();
+    expect(screen.getByRole("spinbutton", { name: /costes fijos mensuales/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("spinbutton", { name: /coste de adquisición de cliente/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("spinbutton", { name: /nuevos clientes por mes/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("spinbutton", { name: /duración media del cliente/i })
+    ).toBeInTheDocument();
   });
 
   it("renders all input fields with correct types", () => {
@@ -50,7 +63,9 @@ describe("FinancialInputsForm", () => {
     const user = userEvent.setup();
     render(<FinancialInputsForm initialData={defaultData} onSubmit={mockOnSubmit} />);
 
-    const priceInput = screen.getByLabelText(/precio medio por unidad\/servicio/i);
+    const priceInput = screen.getByRole("spinbutton", {
+      name: /precio medio por unidad\/servicio/i,
+    });
 
     await user.type(priceInput, "50");
 
@@ -90,10 +105,10 @@ describe("FinancialInputsForm", () => {
     expect(screen.getByPlaceholderText("ej: 12")).toBeInTheDocument();
   });
 
-  it("renders info tooltips for all fields", () => {
+  it("renders enhanced info tooltips for all fields", () => {
     render(<FinancialInputsForm initialData={defaultData} onSubmit={mockOnSubmit} />);
 
-    const tooltips = screen.getAllByTestId("info-tooltip");
+    const tooltips = screen.getAllByTestId("enhanced-info-tooltip");
     expect(tooltips).toHaveLength(6); // One for each field
   });
 
