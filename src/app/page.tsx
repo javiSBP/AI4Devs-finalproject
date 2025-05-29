@@ -9,7 +9,7 @@ export default function Home() {
   return (
     <MainLayout>
       <div className="min-h-[80vh] flex items-center">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-12 items-center">
           <div className="space-y-6">
             <div className="inline-block rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
               Simulador de viabilidad
@@ -51,15 +51,16 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="bg-accent rounded-xl p-8 border shadow-md hidden lg:block">
-            {" "}
-            <Image
-              src="/assets/startup-dashboard.svg"
-              alt="LeanSim Dashboard Preview"
-              className="w-full rounded-lg"
-              width={500}
-              height={400}
-            />{" "}
+          <div className="flex justify-center items-center w-full h-full hidden lg:block">
+            <div className="relative w-full aspect-square">
+              <Image
+                src="/assets/leansim-rocket.png"
+                alt="LeanSim Rocket Illustration"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
           </div>
         </div>
       </div>
