@@ -15,7 +15,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import InfoTooltip from "@/components/ui/info-tooltip";
+import EnhancedInfoTooltip from "@/components/ui/enhanced-info-tooltip";
+import { FINANCIAL_INPUTS_HELP } from "@/lib/content/financial-inputs-help";
 
 interface FinancialInputsFormProps {
   initialData: FinancialData;
@@ -191,11 +192,19 @@ const FinancialInputsForm: React.FC<FinancialInputsFormProps> = ({ initialData, 
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="flex items-center gap-2">
-                  Precio medio por unidad/servicio (€)
-                  <InfoTooltip content="Precio neto que ingresa tu empresa por cada venta, excluyendo IVA. Necesario para calcular márgenes reales y viabilidad del negocio." />
+                  {FINANCIAL_INPUTS_HELP.averagePrice.label}
+                  <EnhancedInfoTooltip
+                    content={FINANCIAL_INPUTS_HELP.averagePrice.description}
+                    example={FINANCIAL_INPUTS_HELP.averagePrice.example}
+                    tips={FINANCIAL_INPUTS_HELP.averagePrice.tips}
+                  />
                 </FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="ej: 29.99" {...field} />
+                  <Input
+                    type="number"
+                    placeholder={FINANCIAL_INPUTS_HELP.averagePrice.placeholder}
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -207,11 +216,19 @@ const FinancialInputsForm: React.FC<FinancialInputsFormProps> = ({ initialData, 
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="flex items-center gap-2">
-                  Coste variable por cliente (€)
-                  <InfoTooltip content="Coste directo para producir una unidad o prestar un servicio a un cliente, excluyendo costes fijos." />
+                  {FINANCIAL_INPUTS_HELP.costPerUnit.label}
+                  <EnhancedInfoTooltip
+                    content={FINANCIAL_INPUTS_HELP.costPerUnit.description}
+                    example={FINANCIAL_INPUTS_HELP.costPerUnit.example}
+                    tips={FINANCIAL_INPUTS_HELP.costPerUnit.tips}
+                  />
                 </FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="ej: 12.50" {...field} />
+                  <Input
+                    type="number"
+                    placeholder={FINANCIAL_INPUTS_HELP.costPerUnit.placeholder}
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -226,11 +243,19 @@ const FinancialInputsForm: React.FC<FinancialInputsFormProps> = ({ initialData, 
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="flex items-center gap-2">
-                  Costes fijos mensuales (€)
-                  <InfoTooltip content="Gastos que no varían con el volumen de ventas: alquiler, salarios, suministros, etc." />
+                  {FINANCIAL_INPUTS_HELP.fixedCosts.label}
+                  <EnhancedInfoTooltip
+                    content={FINANCIAL_INPUTS_HELP.fixedCosts.description}
+                    example={FINANCIAL_INPUTS_HELP.fixedCosts.example}
+                    tips={FINANCIAL_INPUTS_HELP.fixedCosts.tips}
+                  />
                 </FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="ej: 2000" {...field} />
+                  <Input
+                    type="number"
+                    placeholder={FINANCIAL_INPUTS_HELP.fixedCosts.placeholder}
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -242,11 +267,19 @@ const FinancialInputsForm: React.FC<FinancialInputsFormProps> = ({ initialData, 
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="flex items-center gap-2">
-                  Coste de adquisición de cliente - CAC (€)
-                  <InfoTooltip content="Cuánto cuesta conseguir un nuevo cliente (marketing, ventas, etc)." />
+                  {FINANCIAL_INPUTS_HELP.customerAcquisitionCost.label}
+                  <EnhancedInfoTooltip
+                    content={FINANCIAL_INPUTS_HELP.customerAcquisitionCost.description}
+                    example={FINANCIAL_INPUTS_HELP.customerAcquisitionCost.example}
+                    tips={FINANCIAL_INPUTS_HELP.customerAcquisitionCost.tips}
+                  />
                 </FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="ej: 15" {...field} />
+                  <Input
+                    type="number"
+                    placeholder={FINANCIAL_INPUTS_HELP.customerAcquisitionCost.placeholder}
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -261,11 +294,19 @@ const FinancialInputsForm: React.FC<FinancialInputsFormProps> = ({ initialData, 
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="flex items-center gap-2">
-                  Nuevos clientes por mes
-                  <InfoTooltip content="Número estimado de nuevos clientes que conseguirás cada mes." />
+                  {FINANCIAL_INPUTS_HELP.monthlyNewCustomers.label}
+                  <EnhancedInfoTooltip
+                    content={FINANCIAL_INPUTS_HELP.monthlyNewCustomers.description}
+                    example={FINANCIAL_INPUTS_HELP.monthlyNewCustomers.example}
+                    tips={FINANCIAL_INPUTS_HELP.monthlyNewCustomers.tips}
+                  />
                 </FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="ej: 50" {...field} />
+                  <Input
+                    type="number"
+                    placeholder={FINANCIAL_INPUTS_HELP.monthlyNewCustomers.placeholder}
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -277,11 +318,19 @@ const FinancialInputsForm: React.FC<FinancialInputsFormProps> = ({ initialData, 
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="flex items-center gap-2">
-                  Duración media del cliente (meses)
-                  <InfoTooltip content="Durante cuántos meses un cliente típico seguirá comprando tu producto o servicio." />
+                  {FINANCIAL_INPUTS_HELP.averageCustomerLifetime.label}
+                  <EnhancedInfoTooltip
+                    content={FINANCIAL_INPUTS_HELP.averageCustomerLifetime.description}
+                    example={FINANCIAL_INPUTS_HELP.averageCustomerLifetime.example}
+                    tips={FINANCIAL_INPUTS_HELP.averageCustomerLifetime.tips}
+                  />
                 </FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="ej: 12" {...field} />
+                  <Input
+                    type="number"
+                    placeholder={FINANCIAL_INPUTS_HELP.averageCustomerLifetime.placeholder}
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
