@@ -47,34 +47,19 @@ const resultsTips = [
 
 const stepTips = [leanCanvasTips, financialTips, resultsTips];
 
-// Colores diferentes para cada paso
-const stepColors = [
-  {
-    bg: "bg-blue-50 dark:bg-blue-950/30",
-    border: "border-l-4 border-blue-500",
-    icon: "text-blue-600 dark:text-blue-400",
-    accent: "#3b82f6",
-  },
-  {
-    bg: "bg-emerald-50 dark:bg-emerald-950/30",
-    border: "border-l-4 border-emerald-500",
-    icon: "text-emerald-600 dark:text-emerald-400",
-    accent: "#10b981",
-  },
-  {
-    bg: "bg-purple-50 dark:bg-purple-950/30",
-    border: "border-l-4 border-purple-500",
-    icon: "text-purple-600 dark:text-purple-400",
-    accent: "#8b5cf6",
-  },
-];
+// Color azul uniforme para todos los pasos
+const cardColors = {
+  bg: "bg-blue-50 dark:bg-blue-950/30",
+  border: "border-l-4 border-blue-500",
+  icon: "text-blue-600 dark:text-blue-400",
+  accent: "#3b82f6",
+};
 
 const TipCard: React.FC<TipCardProps> = ({ stepIndex }) => {
   const [tipIndex, setTipIndex] = useState(0);
   const [autoRotate, setAutoRotate] = useState(true);
   const [isVisible, setIsVisible] = useState(true);
   const tips = stepTips[stepIndex] || leanCanvasTips;
-  const colors = stepColors[stepIndex] || stepColors[0];
 
   useEffect(() => {
     // Reset tip index when step changes
@@ -119,13 +104,13 @@ const TipCard: React.FC<TipCardProps> = ({ stepIndex }) => {
 
   return (
     <Card
-      className={`p-4 h-52 ${colors.bg} ${colors.border} shadow-md transition-all duration-300 hover:shadow-lg flex flex-col`}
+      className={`p-4 h-52 ${cardColors.bg} ${cardColors.border} shadow-md transition-all duration-300 hover:shadow-lg flex flex-col`}
     >
       <div className="flex flex-col h-full">
         {/* Header con navegación */}
         <div className="flex items-center justify-between mb-3 flex-shrink-0">
           <div className="flex items-center gap-2">
-            <Lightbulb className={`h-5 w-5 ${colors.icon} flex-shrink-0`} />
+            <Lightbulb className={`h-5 w-5 ${cardColors.icon} flex-shrink-0`} />
             <h4 className="font-semibold text-sm text-foreground">Consejos</h4>
           </div>
           <div className="flex items-center gap-1">
@@ -133,7 +118,7 @@ const TipCard: React.FC<TipCardProps> = ({ stepIndex }) => {
               variant="ghost"
               size="sm"
               onClick={goToPrevious}
-              className={`h-6 w-6 p-0 ${colors.icon} hover:bg-current/10`}
+              className={`h-6 w-6 p-0 ${cardColors.icon} hover:bg-current/10`}
             >
               <ChevronLeft className="h-3 w-3" />
             </Button>
@@ -141,7 +126,7 @@ const TipCard: React.FC<TipCardProps> = ({ stepIndex }) => {
               variant="ghost"
               size="sm"
               onClick={goToNext}
-              className={`h-6 w-6 p-0 ${colors.icon} hover:bg-current/10`}
+              className={`h-6 w-6 p-0 ${cardColors.icon} hover:bg-current/10`}
             >
               <ChevronRight className="h-3 w-3" />
             </Button>
@@ -170,7 +155,7 @@ const TipCard: React.FC<TipCardProps> = ({ stepIndex }) => {
                   ? "bg-current opacity-100 scale-110"
                   : "bg-current opacity-30 hover:opacity-60"
               }`}
-              style={{ color: colors.accent }}
+              style={{ color: cardColors.accent }}
               aria-label={`Ir al consejo ${index + 1}`}
             />
           ))}

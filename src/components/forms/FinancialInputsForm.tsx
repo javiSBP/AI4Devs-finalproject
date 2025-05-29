@@ -37,24 +37,20 @@ const FinancialInputsForm: React.FC<FinancialInputsFormProps> = ({ initialData, 
     defaultValues: initialData,
   });
 
-  const handleSubmit = React.useCallback(
-    (data: FinancialData) => {
-      onSubmit(data);
-    },
-    [onSubmit]
-  );
-
-  // This is triggered when the next button in the wizard is clicked
+  // Watch for changes and update parent component without triggering validation
   React.useEffect(() => {
-    const subscription = form.watch(() => {
-      form.handleSubmit(handleSubmit)();
+    const subscription = form.watch((data) => {
+      // Only call onSubmit with valid data, without triggering form validation
+      if (data) {
+        onSubmit(data as FinancialData);
+      }
     });
     return () => subscription.unsubscribe();
-  }, [form, handleSubmit]);
+  }, [form, onSubmit]);
 
   return (
     <Form {...form}>
-      <form className="space-y-8" onChange={() => form.handleSubmit(handleSubmit)()}>
+      <form className="space-y-8">
         <div className="grid gap-6 md:grid-cols-2">
           <FormField
             control={form.control}
