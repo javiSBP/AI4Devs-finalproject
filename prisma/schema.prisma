@@ -22,6 +22,8 @@ model User {
   updatedAt    DateTime     @updatedAt
   simulations  Simulation[]
   leanCanvases LeanCanvas[]
+
+  @@map("users")
 }
 
 // Modelo para el Lean Canvas
@@ -44,36 +46,104 @@ model LeanCanvas {
 
   @@index([deviceId])
   @@index([userId])
+  @@map("lean_canvases")
 }
 
-// Modelo para simulaciones financieras
+// Modelo para simulaciones (contenedor principal)
 model Simulation {
-  id                      String      @id @default(cuid())
-  name                    String
-  description             String?
-  // Financial data fields matching frontend
+  id           String      @id @default(cuid())
+  name         String
+  description  String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  userId       String? // Make optional for anonymous users
+  deviceId     String? // Add deviceId for anonymous users
+  user         User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  leanCanvasId String?
+  leanCanvas   LeanCanvas? @relation(fields: [leanCanvasId], references: [id], onDelete: SetNull)
+
+  // Relaciones con inputs y resultados
+  financialInputs FinancialInputs?
+  results         SimulationResults?
+
+  // Legacy fields for backward compatibility - will be deprecated
   averagePrice            Float?
   costPerUnit             Float?
   fixedCosts              Float?
   customerAcquisitionCost Float?
   monthlyNewCustomers     Float?
   averageCustomerLifetime Float?
-  // Legacy fields for backward compatibility
   initialInvestment       Float?
   monthlyExpenses         Float?
   avgRevenue              Float?
   growthRate              Float?
   timeframeMonths         Int?
   otherParams             Json?
-  results                 Json?
-  createdAt               DateTime    @default(now())
-  updatedAt               DateTime    @updatedAt
-  userId                  String? // Make optional for anonymous users
-  deviceId                String? // Add deviceId for anonymous users
-  user                    User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  leanCanvasId            String?
-  leanCanvas              LeanCanvas? @relation(fields: [leanCanvasId], references: [id], onDelete: SetNull)
+  results_legacy          Json?  @map("results")
 
   @@index([deviceId])
   @@index([userId])
+  @@index([createdAt])
+  @@map("simulations")
+}
+
+// Nuevo modelo para inputs financieros separado
+model FinancialInputs {
+  id           String     @id @default(cuid())
+  simulationId String     @unique
+  simulation   Simulation @relation(fields: [simulationId], references: [id], onDelete: Cascade)
+
+  // Financial input fields
+  averagePrice            Float
+  costPerUnit             Float
+  fixedCosts              Float
+  customerAcquisitionCost Float
+  monthlyNewCustomers     Float
+  averageCustomerLifetime Float
+
+  // Additional validation metadata
+  validationWarnings Json? // Store validation warnings/notes
+  calculationNotes   String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("financial_inputs")
+}
+
+// Nuevo modelo para resultados de simulación separado
+model SimulationResults {
+  id           String     @id @default(cuid())
+  simulationId String     @unique
+  simulation   Simulation @relation(fields: [simulationId], references: [id], onDelete: Cascade)
+
+  // Calculated KPI results
+  unitMargin      Float
+  monthlyRevenue  Float
+  monthlyProfit   Float
+  ltv             Float
+  cac             Float
+  cacLtvRatio     Float
+  breakEvenUnits  Float
+  breakEvenMonths Float
+
+  // Health indicators and classifications
+  profitabilityHealth String // "good" | "medium" | "bad"
+  ltvCacHealth        String // "good" | "medium" | "bad"
+  overallHealth       String // "good" | "medium" | "bad"
+
+  // Recommendations and insights
+  recommendations Json // Array of recommendation objects
+  insights        Json // Additional insights and warnings
+
+  // Calculation metadata
+  calculatedAt       DateTime @default(now())
+  calculationVersion String   @default("1.0") // Track calculation method version
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([overallHealth])
+  @@index([calculatedAt])
+  @@map("simulation_results")
 }
