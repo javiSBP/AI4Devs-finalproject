@@ -58,7 +58,7 @@ describe("Simulations API Service", () => {
     growthRate: null,
     timeframeMonths: null,
     otherParams: null,
-    results: null,
+    results_legacy: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     leanCanvas: null,
@@ -395,7 +395,7 @@ describe("Simulations API Service", () => {
           growthRate: mockSimulation.growthRate,
           timeframeMonths: mockSimulation.timeframeMonths,
           otherParams: expect.any(Object),
-          results: expect.any(Object),
+          results_legacy: expect.any(Object),
         },
         include: {
           leanCanvas: true,
