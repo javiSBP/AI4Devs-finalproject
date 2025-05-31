@@ -1,6 +1,6 @@
 ---
-description: 
-globs: **/hooks/**
+description: react hooks development
+globs: 
 alwaysApply: false
 ---
 # React Hooks Development Guide

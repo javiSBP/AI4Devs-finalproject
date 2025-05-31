@@ -1,6 +1,6 @@
 ---
-description: 
-globs: **/api/**
+description: api or backend development
+globs: 
 alwaysApply: false
 ---
 # API Development Guidelines
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
 ### Validation
 
-- Always use shared validation schemas from [src/lib/validation/shared/](mdc:src/lib/validation/shared/)
+- Always use shared validation schemas from [src/lib/validation/shared/](mdc:src/lib/validation/shared)
 - Import through re-exports in [src/lib/validation/lean-canvas.ts](mdc:src/lib/validation/lean-canvas.ts)
 - Handle Zod validation errors consistently
 

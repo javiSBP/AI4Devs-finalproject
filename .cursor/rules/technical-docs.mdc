@@ -1,0 +1,151 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# LeanSim Project - Cursor Rules
+
+## Technical Documentation Compliance
+
+**MANDATORY: Before performing ANY project-related action, you MUST:**
+
+1. **Check @technical documentation** in `docs/technical/` for relevant information
+2. **Review compliance** with established patterns and standards after implementation
+3. **Follow the documented architecture** and avoid deviations without justification
+
+## Project Context
+
+**LeanSim** is a financial simulation tool for entrepreneurs built with:
+- **Frontend**: Next.js 14, React, TypeScript, TailwindCSS
+- **Backend**: Next.js API Routes
+- **Database**: SQLite (dev) / PostgreSQL (prod) with Prisma ORM
+- **Deployment**: Vercel
+- **Testing**: Vitest (unit/integration), Playwright (E2E)
+
+## Architecture Compliance Rules
+
+### 1. Data Model Compliance
+- **ALWAYS** check `docs/technical/Data-Model.md` before modifying database schema
+- **FOLLOW** the established entity relationships (Simulation, LeanCanvas, FinancialData, ContextualHelp)
+- **USE** Prisma ORM patterns as documented in `docs/technical/database-management.md`
+- **VALIDATE** all data model changes against the existing schema
+
+### 2. API Standards
+- **REFERENCE** `docs/technical/api.md` for all API endpoint implementations
+- **MAINTAIN** the established response format: `{ success: true/false, data/error: ... }`
+- **INCLUDE** proper error handling with appropriate HTTP status codes
+- **USE** `X-Device-ID` header for device identification as specified
+- **IMPLEMENT** proper validation using the documented schemas
+
+### 3. Architecture Patterns
+- **FOLLOW** the layered architecture from `docs/technical/High-Level-Architecture.md`:
+  - **Presentation Layer**: Pages, Components, Hooks, Contexts
+  - **Business Logic Layer**: FinancialCalculator, ValidationService, SimulationManager
+  - **Data Layer**: API Routes, Prisma Client
+  - **Utilities Layer**: HelpSystem, StorageUtils
+- **RESPECT** the C4 model structure from `docs/technical/C4-Model.md`
+- **MAINTAIN** proper separation of concerns
+
+### 4. Component Structure
+- **ORGANIZE** components by feature (lean-canvas, financial-form, results, ui)
+- **USE** established naming conventions and file structure
+- **IMPLEMENT** proper TypeScript interfaces and types
+- **FOLLOW** React best practices with hooks and context
+
+### 5. Financial Calculations
+- **IMPLEMENT** KPI calculations according to business requirements
+- **USE** the established financial formulas and validation rules
+- **ENSURE** proper error handling for financial operations
+- **MAINTAIN** type safety for all numerical calculations
+
+## Implementation Guidelines
+
+### Before Making Changes:
+1. **Read relevant technical docs** from `docs/technical/`
+2. **Understand the impact** on existing architecture
+3. **Check for existing patterns** to follow or extend
+4. **Verify compatibility** with current database schema
+
+### During Implementation:
+1. **Follow established patterns** from the codebase
+2. **Use proper TypeScript typing** throughout
+3. **Implement proper error handling** as documented
+4. **Add contextual help** for new user-facing fields
+5. **Maintain API consistency** with documented endpoints
+
+### After Implementation:
+1. **Review against technical docs** to ensure compliance
+2. **Check database migrations** if schema was modified
+3. **Verify API responses** match documented format
+4. **Test financial calculations** if business logic was modified
+5. **Update documentation** if new patterns were introduced
+
+## Code Quality Standards
+
+### TypeScript
+- **USE** strict typing everywhere
+- **DEFINE** proper interfaces for all data structures
+- **AVOID** `any` types unless absolutely necessary
+- **IMPLEMENT** proper error handling with typed errors
+
+### React/Next.js
+- **USE** App Router (not Pages Router)
+- **IMPLEMENT** proper SEO with metadata API
+- **OPTIMIZE** for performance with proper caching
+- **FOLLOW** Next.js best practices for SSR/SSG
+
+### Database
+- **USE** Prisma migrations for all schema changes
+- **IMPLEMENT** proper transaction handling
+- **FOLLOW** established naming conventions
+- **VALIDATE** all inputs before database operations
+
+### Testing
+- **WRITE** unit tests with Vitest for business logic
+- **IMPLEMENT** integration tests for API routes
+- **ADD** E2E tests with Playwright for critical user flows
+- **MAINTAIN** test coverage for financial calculations
+
+## Security and Validation
+
+- **VALIDATE** all user inputs according to documented schemas
+- **IMPLEMENT** proper sanitization for text inputs
+- **USE** rate limiting as specified in API documentation
+- **PROTECT** financial calculation logic on server side
+- **MAINTAIN** device-based session management
+
+## Performance Requirements
+
+- **OPTIMIZE** for Core Web Vitals
+- **IMPLEMENT** proper caching strategies
+- **USE** Next.js Image optimization
+- **MINIMIZE** bundle size and loading times
+- **ENSURE** mobile responsiveness
+
+## Deployment Compliance
+
+- **FOLLOW** Vercel deployment guidelines from `docs/technical/vercel-deployment.md`
+- **USE** proper environment variables management
+- **IMPLEMENT** database migrations in deployment pipeline
+- **ENSURE** proper error monitoring and logging
+
+## Documentation Updates
+
+When introducing new patterns or significant changes:
+1. **UPDATE** relevant technical documentation
+2. **ADD** new architectural decisions to appropriate docs
+3. **MAINTAIN** consistency with existing documentation style
+4. **ENSURE** all examples and code snippets are current
+
+## Emergency Protocols
+
+If documentation is unclear or missing:
+1. **ASK** for clarification before proceeding
+2. **FOLLOW** existing codebase patterns as reference
+3. **DOCUMENT** new decisions made
+4. **PRIORITIZE** maintainability and consistency
+
+---
+
+
+**Remember**: The technical documentation in `docs/technical/` is the source of truth for this project. Always consult it first and ensure your implementations align with the established architecture and standards.

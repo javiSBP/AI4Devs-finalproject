@@ -1,6 +1,6 @@
 ---
-description: 
-globs: *.test.ts
+description: unit testing
+globs: 
 alwaysApply: false
 ---
 # Performance Optimization Guide

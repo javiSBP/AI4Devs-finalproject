@@ -1,6 +1,6 @@
 ---
-description: 
-globs: *.tsx
+description: components or frontend development
+globs: 
 alwaysApply: false
 ---
 # Component Architecture Guidelines
@@ -43,7 +43,7 @@ src/components/
 
 ### UI Components
 
-- Use shadcn/ui components from [src/components/ui/](mdc:src/components/ui/)
+- Use shadcn/ui components from [src/components/ui/](mdc:src/components/ui)
 - Follow YAGNI principle: only include components that are actually used
 - Remove unused components to avoid build issues
 

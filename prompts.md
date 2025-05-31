@@ -692,7 +692,7 @@ Por favor, borra o reescribe los tickets teniendo en cuenta el orden de implenet
 
 ### 7. Pull Requests
 
-**Prompt 1:**
+**Prompt 1 (Cursor):**
 realiza el ticket de setup @ticket-1.md de la user story @historia-usuario.md
 
 - Instala Next.js siguiendo la documentación @NextJS
@@ -702,7 +702,60 @@ realiza el ticket de setup @ticket-1.md de la user story @historia-usuario.md
 - Realiza todas la tareas del ticket utilizando siguiendo las guías en @technical
 - La documentación que crees debe ir en la carpeta @docs en un directorio llamado dev
 
-**Prompt 2:**
+**Prompt 2 (Lovable):**
+Crea el diseño de la herramienta LeanSim, basándote en el siguiente PRD
+
+# 📄 Product Requirements Document (PRD) – LeanSim
+
+## 🧭 Introducción y Objetivos
+
+**LeanSim** es una herramienta web que permite a emprendedores simular la viabilidad básica de su modelo de negocio sin conocimientos financieros.  
+El objetivo del MVP es permitir que el usuario:
+
+- Complete una versión simplificada del Lean Canvas.
+- Ingrese datos clave sobre su modelo financiero.
+- Visualice automáticamente métricas esenciales como beneficio mensual, CAC, LTV y punto de equilibrio.
+- Aprenda durante el proceso con ayudas contextuales.
+
+## 🧱 Componentes Principales y Sitemap
+
+### Componentes
+
+- **Home / Landing**
+- **Paso 1**: Lean Canvas simplificado (5 campos)
+- **Paso 2**: Inputs financieros clave
+- **Paso 3**: Resultados (KPIs + explicaciones)
+- **Historial**: Listado de simulaciones anteriores
+- **Ayudas contextuales**: Tooltips y mini-glosario
+
+### Sitemap
+
+Home → Lean Canvas → Inputs Financieros → Resultados → Historial
+
+---
+
+## ⚙️ Características y Funcionalidades
+
+| Función                          | Descripción                                          |
+| -------------------------------- | ---------------------------------------------------- |
+| Lean Canvas simplificado         | 5 campos clave con ayudas contextuales.              |
+| Formulario de inputs financieros | Ingresos, costes, CAC, nº clientes, duración media.  |
+| Cálculo de KPIs                  | Beneficio, punto de equilibrio, LTV, CAC, margen.    |
+| Visualización de resultados      | Tarjetas o tabla + texto explicativo corto.          |
+| Historial de simulaciones        | Guardado local o en base de datos.                   |
+| Tooltips educativos              | Breves descripciones accesibles en todos los campos. |
+
+---
+
+## 🎨 Diseño y Experiencia del Usuario
+
+- **Estilo visual**: Minimalista, moderno, claro.
+- **UX**: Flujo en pasos tipo asistente (wizard).
+- **Responsive**: Optimizado para escritorio y tablets.
+- **Contenido**: En lenguaje claro, orientado a usuarios no técnicos.
+- **Accesibilidad**: Colores legibles, campos bien definidos, explicaciones simples.
+
+**Prompt 3 (Cursor):**
 Implementa el @ticket-1.md de @historia-usuario.md:
 
 - Revisa toda la documentación de @business y @technical
@@ -712,5 +765,3 @@ Implementa el @ticket-1.md de @historia-usuario.md:
 - Utiliza las mejores prácticas de @Zod para las validaciones
 - No olvides los critetios de @security.md definidos
 - Utiliza la API de@Vitest para las validaciones
-
-**Prompt 3:**
