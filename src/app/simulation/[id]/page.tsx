@@ -214,6 +214,14 @@ export default function SimulationDetailPage() {
             <ResultsDisplay
               calculationResult={calculationResult}
               leanCanvasData={simulation.leanCanvas}
+              financialInputs={{
+                averagePrice: simulation.financial.averagePrice,
+                costPerUnit: simulation.financial.costPerUnit,
+                fixedCosts: simulation.financial.fixedCosts,
+                customerAcquisitionCost: simulation.financial.customerAcquisitionCost,
+                monthlyNewCustomers: simulation.financial.monthlyNewCustomers,
+                averageCustomerLifetime: simulation.financial.averageCustomerLifetime,
+              }}
             />
           </div>
         </div>

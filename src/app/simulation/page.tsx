@@ -81,7 +81,18 @@ export default function SimulationPage() {
       component: (
         <div className="space-y-4">
           <p className="text-muted-foreground">Analiza los resultados de tu simulación</p>
-          <ResultsDisplay calculationResult={calculationResult} leanCanvasData={leanCanvasData} />
+          <ResultsDisplay
+            calculationResult={calculationResult}
+            leanCanvasData={leanCanvasData}
+            financialInputs={{
+              averagePrice: financialData.averagePrice,
+              costPerUnit: financialData.costPerUnit,
+              fixedCosts: financialData.fixedCosts,
+              customerAcquisitionCost: financialData.customerAcquisitionCost,
+              monthlyNewCustomers: financialData.monthlyNewCustomers,
+              averageCustomerLifetime: financialData.averageCustomerLifetime,
+            }}
+          />
         </div>
       ),
     },

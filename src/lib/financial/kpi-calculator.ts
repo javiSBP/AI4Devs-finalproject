@@ -95,24 +95,37 @@ export function classifyHealth(kpis: KPIResults): HealthClassification {
   if (kpis.monthlyProfit > 0 && kpis.unitMargin > 0) {
     profitabilityHealth = "good";
   } else if (kpis.unitMargin > 0) {
-    profitabilityHealth = "medium";
+    // Para pérdidas mensuales con margen positivo, evaluar magnitud relativa
+    const lossThreshold = Math.min(kpis.monthlyRevenue * 0.1, 500); // 10% de ingresos o 500€, lo que sea menor
+    if (Math.abs(kpis.monthlyProfit) <= lossThreshold) {
+      profitabilityHealth = "medium"; // Pérdidas pequeñas
+    } else {
+      profitabilityHealth = "bad"; // Pérdidas significativas
+    }
   } else {
+    // Margen negativo siempre es malo
     profitabilityHealth = "bad";
   }
 
-  // LTV/CAC health
+  // LTV/CAC health - Corregir lógica invertida
   let ltvCacHealth: "good" | "medium" | "bad";
-  if (kpis.cacLtvRatio < 0.33) {
-    ltvCacHealth = "good";
-  } else if (kpis.cacLtvRatio < 1) {
-    ltvCacHealth = "medium";
+  const ltvCacRatio = kpis.cacLtvRatio > 0 ? 1 / kpis.cacLtvRatio : 0; // Convertir a LTV/CAC real
+
+  if (ltvCacRatio >= 3) {
+    ltvCacHealth = "good"; // LTV/CAC >= 3 es excelente
+  } else if (ltvCacRatio >= 1) {
+    ltvCacHealth = "medium"; // LTV/CAC >= 1 es aceptable
   } else {
-    ltvCacHealth = "bad";
+    ltvCacHealth = "bad"; // LTV/CAC < 1 es malo
   }
 
   // Overall health (most restrictive)
   let overallHealth: "good" | "medium" | "bad";
-  if (profitabilityHealth === "good" && ltvCacHealth === "good") {
+
+  // Caso especial: si CAC > LTV, el negocio es inviable independientemente de otros factores
+  if (kpis.cac > kpis.ltv && kpis.ltv > 0) {
+    overallHealth = "bad";
+  } else if (profitabilityHealth === "good" && ltvCacHealth === "good") {
     overallHealth = "good";
   } else if (profitabilityHealth === "bad" || ltvCacHealth === "bad") {
     overallHealth = "bad";
@@ -132,9 +145,20 @@ export function classifyHealth(kpis: KPIResults): HealthClassification {
  */
 export function generateRecommendations(
   kpis: KPIResults,
-  health: HealthClassification
+  health: HealthClassification,
+  inputs: FinancialInputs
 ): Recommendation[] {
   const recommendations: Recommendation[] = [];
+
+  // Alerta crítica: CAC mayor que LTV
+  if (kpis.cac > kpis.ltv && kpis.ltv > 0) {
+    recommendations.push({
+      type: "viability",
+      title: "⚠️ ALERTA CRÍTICA: Modelo inviable",
+      message: `Tu coste de adquisición (€${kpis.cac}) es <strong>mayor que el valor del cliente (€${kpis.ltv})</strong>. Esto significa que <strong>pierdes dinero con cada cliente nuevo</strong>. Debes reducir urgentemente el CAC o aumentar el LTV antes de seguir invirtiendo en marketing.`,
+      status: "negative",
+    });
+  }
 
   // Viabilidad económica
   if (health.profitabilityHealth === "good") {
@@ -199,13 +223,17 @@ export function generateRecommendations(
         "¡Excelente! Tu modelo financiero muestra <strong>buena salud</strong>. Para seguir mejorando, considera optimizar procesos, reducir costes operativos o explorar nuevas oportunidades de crecimiento.",
       status: "positive",
     });
-  } else if (Number.isFinite(kpis.breakEvenMonths) && kpis.breakEvenMonths > 24) {
-    recommendations.push({
-      type: "optimization",
-      title: "Punto de equilibrio",
-      message: `Tu punto de equilibrio está <strong>muy lejos</strong> (${Math.ceil(kpis.breakEvenMonths)} meses). Considera estrategias para acelerar las ventas o reducir la estructura de costes.`,
-      status: "warning",
-    });
+  } else if (Number.isFinite(kpis.breakEvenMonths) && kpis.breakEvenMonths > 0) {
+    // Umbral dinámico: si tardas más de 2 años O más del doble de tu ciclo de vida de cliente
+    const dynamicThreshold = Math.max(24, inputs.averageCustomerLifetime * 2);
+    if (kpis.breakEvenMonths > dynamicThreshold) {
+      recommendations.push({
+        type: "optimization",
+        title: "Punto de equilibrio",
+        message: `Tu punto de equilibrio está <strong>muy lejos</strong> (${Math.ceil(kpis.breakEvenMonths)} meses). Considera estrategias para acelerar las ventas o reducir la estructura de costes.`,
+        status: "warning",
+      });
+    }
   }
 
   // Próximos pasos
@@ -231,7 +259,7 @@ export function calculateFinancialMetrics(inputs: FinancialInputs): CalculationR
   const health = classifyHealth(kpis);
 
   // Generate recommendations
-  const recommendations = generateRecommendations(kpis, health);
+  const recommendations = generateRecommendations(kpis, health, inputs);
 
   return {
     kpis,

@@ -81,7 +81,7 @@ describe("KPI Calculator", () => {
         monthlyProfit: 2000,
         ltv: 600,
         cac: 25,
-        cacLtvRatio: 0.0417, // <0.33
+        cacLtvRatio: 0.0417, // CAC/LTV = 0.0417, so LTV/CAC = 24 (>3, good)
         breakEvenUnits: 20,
         breakEvenMonths: 0.4,
       };
@@ -136,7 +136,7 @@ describe("KPI Calculator", () => {
         monthlyProfit: 2000,
         ltv: 600,
         cac: 300,
-        cacLtvRatio: 0.5, // Between 0.33 and 1
+        cacLtvRatio: 0.5, // CAC/LTV = 0.5, so LTV/CAC = 2 (between 1 and 3, medium)
         breakEvenUnits: 20,
         breakEvenMonths: 0.4,
       };
@@ -154,7 +154,7 @@ describe("KPI Calculator", () => {
         monthlyProfit: 2000,
         ltv: 600,
         cac: 800,
-        cacLtvRatio: 1.33, // >1
+        cacLtvRatio: 1.33, // CAC/LTV = 1.33, so LTV/CAC = 0.75 (<1, bad)
         breakEvenUnits: 20,
         breakEvenMonths: 0.4,
       };
@@ -185,7 +185,7 @@ describe("KPI Calculator", () => {
     };
 
     it("should generate positive recommendations for good health", () => {
-      const recommendations = generateRecommendations(goodKpis, goodHealth);
+      const recommendations = generateRecommendations(goodKpis, goodHealth, validInputs);
 
       expect(recommendations).toHaveLength(4); // viability, acquisition, optimization, next_steps
 
@@ -214,7 +214,7 @@ describe("KPI Calculator", () => {
         overallHealth: "medium" as const,
       };
 
-      const recommendations = generateRecommendations(mediumKpis, mediumHealth);
+      const recommendations = generateRecommendations(mediumKpis, mediumHealth, validInputs);
 
       const viabilityRec = recommendations.find((r) => r.type === "viability");
       expect(viabilityRec?.status).toBe("warning");
@@ -231,7 +231,7 @@ describe("KPI Calculator", () => {
         overallHealth: "bad" as const,
       };
 
-      const recommendations = generateRecommendations(badKpis, badHealth);
+      const recommendations = generateRecommendations(badKpis, badHealth, validInputs);
 
       const viabilityRec = recommendations.find((r) => r.type === "viability");
       expect(viabilityRec?.status).toBe("negative");
@@ -249,7 +249,7 @@ describe("KPI Calculator", () => {
         overallHealth: "medium" as const,
       };
 
-      const recommendations = generateRecommendations(longBreakEvenKpis, mediumHealth);
+      const recommendations = generateRecommendations(longBreakEvenKpis, mediumHealth, validInputs);
 
       const optimizationRec = recommendations.find((r) => r.type === "optimization");
       expect(optimizationRec?.title).toBe("Punto de equilibrio");
@@ -260,7 +260,11 @@ describe("KPI Calculator", () => {
     it("should handle infinite break-even months", () => {
       const infiniteBreakEvenKpis = { ...goodKpis, breakEvenMonths: Infinity };
 
-      const recommendations = generateRecommendations(infiniteBreakEvenKpis, goodHealth);
+      const recommendations = generateRecommendations(
+        infiniteBreakEvenKpis,
+        goodHealth,
+        validInputs
+      );
 
       // Should not generate break-even warning for Infinity
       const optimizationRec = recommendations.find((r) => r.type === "optimization");
@@ -321,6 +325,135 @@ describe("KPI Calculator", () => {
       expect(result.calculatedAt).toBeInstanceOf(Date);
       expect(result.calculationVersion).toBe("1.0");
       expect(Math.abs(result.calculatedAt.getTime() - Date.now())).toBeLessThan(1000); // Within 1 second
+    });
+  });
+
+  describe("Updated Health Classification Logic", () => {
+    it("should classify profitability health correctly with dynamic thresholds", () => {
+      // Caso 1: Margen positivo con pérdidas pequeñas (< 10% de ingresos)
+      const smallLossCase = calculateKPIs({
+        averagePrice: 100,
+        costPerUnit: 80,
+        fixedCosts: 500, // Reducido para que la pérdida sea menor
+        customerAcquisitionCost: 10,
+        monthlyNewCustomers: 10,
+        averageCustomerLifetime: 12,
+      });
+
+      const smallLossHealth = classifyHealth(smallLossCase);
+      // Revenue = 1000€, VariableCosts = 800€, CAC = 100€, FixedCosts = 500€
+      // Profit = 1000 - 800 - 100 - 500 = -400€ (threshold = 100€, so this is "bad")
+      expect(smallLossHealth.profitabilityHealth).toBe("bad"); // Corrijo expectativa
+
+      // Caso 1b: Pérdidas realmente pequeñas
+      const actualSmallLossCase = calculateKPIs({
+        averagePrice: 100,
+        costPerUnit: 80,
+        fixedCosts: 50, // Muy bajo para pérdidas pequeñas
+        customerAcquisitionCost: 5,
+        monthlyNewCustomers: 10,
+        averageCustomerLifetime: 12,
+      });
+
+      const actualSmallLossHealth = classifyHealth(actualSmallLossCase);
+      // Revenue = 1000€, VariableCosts = 800€, CAC = 50€, FixedCosts = 50€
+      // Profit = 1000 - 800 - 50 - 50 = 100€ (positivo = good)
+      expect(actualSmallLossHealth.profitabilityHealth).toBe("good");
+
+      // Caso 2: Margen positivo con pérdidas significativas (> 10% de ingresos)
+      const largeLossCase = calculateKPIs({
+        averagePrice: 100,
+        costPerUnit: 80,
+        fixedCosts: 2000,
+        customerAcquisitionCost: 10,
+        monthlyNewCustomers: 10,
+        averageCustomerLifetime: 12,
+      });
+
+      const largeLossHealth = classifyHealth(largeLossCase);
+      // Revenue = 1000€, Loss = 1600€ (much > 10% threshold)
+      expect(largeLossHealth.profitabilityHealth).toBe("bad");
+
+      // Caso 3: Beneficio positivo
+      const profitCase = calculateKPIs({
+        averagePrice: 100,
+        costPerUnit: 30,
+        fixedCosts: 500,
+        customerAcquisitionCost: 10,
+        monthlyNewCustomers: 10,
+        averageCustomerLifetime: 12,
+      });
+
+      const profitHealth = classifyHealth(profitCase);
+      expect(profitHealth.profitabilityHealth).toBe("good");
+    });
+
+    it("should handle edge cases in profitability classification", () => {
+      // Margen negativo siempre debe ser "bad"
+      const negativeMarginCase = calculateKPIs({
+        averagePrice: 50,
+        costPerUnit: 80,
+        fixedCosts: 100,
+        customerAcquisitionCost: 5,
+        monthlyNewCustomers: 10,
+        averageCustomerLifetime: 12,
+      });
+
+      const negativeMarginHealth = classifyHealth(negativeMarginCase);
+      expect(negativeMarginHealth.profitabilityHealth).toBe("bad");
+
+      // Pérdidas exactamente en el umbral del 10%
+      const thresholdCase = calculateKPIs({
+        averagePrice: 100,
+        costPerUnit: 90,
+        fixedCosts: 195, // Ajustado para generar pérdida pequeña
+        customerAcquisitionCost: 0,
+        monthlyNewCustomers: 10,
+        averageCustomerLifetime: 12,
+      });
+
+      const thresholdHealth = classifyHealth(thresholdCase);
+      // Revenue = 1000€, VariableCosts = 900€, FixedCosts = 195€
+      // Profit = 1000 - 900 - 195 = -95€ (< 10% threshold = 100€)
+      expect(thresholdHealth.profitabilityHealth).toBe("medium");
+    });
+
+    it("should detect critical CAC > LTV scenarios like in the user image", () => {
+      // Caso de la imagen del usuario: precio 7€, coste 5€, CAC 50€, duración 6 meses
+      const criticalCase = calculateKPIs({
+        averagePrice: 7,
+        costPerUnit: 5,
+        fixedCosts: 570,
+        customerAcquisitionCost: 50,
+        monthlyNewCustomers: 20,
+        averageCustomerLifetime: 6,
+      });
+
+      const criticalHealth = classifyHealth(criticalCase);
+      const criticalRecommendations = generateRecommendations(criticalCase, criticalHealth, {
+        averagePrice: 7,
+        costPerUnit: 5,
+        fixedCosts: 570,
+        customerAcquisitionCost: 50,
+        monthlyNewCustomers: 20,
+        averageCustomerLifetime: 6,
+      });
+
+      // Verificar cálculos
+      expect(criticalCase.unitMargin).toBe(2); // 7 - 5
+      expect(criticalCase.ltv).toBe(12); // 2 * 6
+      expect(criticalCase.cac).toBe(50);
+      expect(criticalCase.monthlyProfit).toBe(-1530); // 140 - 100 - 570 - 1000
+
+      // Verificar que se detecta el caso crítico
+      expect(criticalCase.cac).toBeGreaterThan(criticalCase.ltv); // 50 > 12
+      expect(criticalHealth.overallHealth).toBe("bad"); // Debe ser bad por CAC > LTV
+
+      // Verificar que hay alerta crítica
+      const criticalAlert = criticalRecommendations.find((r) => r.title.includes("ALERTA CRÍTICA"));
+      expect(criticalAlert).toBeDefined();
+      expect(criticalAlert?.status).toBe("negative");
+      expect(criticalAlert?.message).toContain("pierdes dinero con cada cliente nuevo");
     });
   });
 });
