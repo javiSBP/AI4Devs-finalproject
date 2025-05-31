@@ -1,4 +1,4 @@
-# Ticket: KPI-006 - API y Modelo de Datos para Persistencia de Métricas
+# Ticket: KPI-006 - Limpieza de Modelo de Datos y Depreciación de Campos Legacy
 
 ## Historia de Usuario Relacionada
 
@@ -6,11 +6,13 @@ Visualizar Métricas de Viabilidad (@docs/backlog/calculos-kpis/historia-usuario
 
 ## Descripción
 
-Desarrollar la infraestructura de API necesaria para persistir y recuperar simulaciones completas que incluyen datos del Lean Canvas, inputs financieros y resultados calculados. El objetivo es centralizar toda la información en un único endpoint, eliminando la API de lean-canvas actual que no está siendo utilizada y simplificando la arquitectura del proyecto.
+Limpiar y normalizar el modelo de datos eliminando completamente los campos legacy del modelo Simulation y las APIs no utilizadas. El objetivo es aprovechar que no estamos en producción para deprecar completamente la arquitectura legacy y usar exclusivamente las nuevas tablas FinancialInputs y SimulationResults.
 
-**Contexto actual**: Los datos se guardan únicamente en localStorage y se calculan en tiempo real. Los formularios `LeanCanvasForm.tsx`, `FinancialInputsForm.tsx` y los resultados de `ResultsDisplay.tsx` están integrados en un wizard pero sin persistencia en base de datos.
+**Contexto actual**: Los datos se guardan únicamente en localStorage y se calculan en tiempo real. Tenemos campos legacy en el modelo Simulation que duplican funcionalidad con las nuevas tablas especializadas.
 
-## Tareas (Movidas desde Ticket-2)
+**IMPORTANTE**: Aprovecharemos que no estamos en producción para **deprecar completamente los campos legacy** del modelo Simulation y usar exclusivamente las nuevas tablas FinancialInputs y SimulationResults.
+
+## Tareas
 
 ### Revisión de Modelo de Datos
 
@@ -18,6 +20,19 @@ Desarrollar la infraestructura de API necesaria para persistir y recuperar simul
 - [ ] **Revisar campos de `SimulationResults`**: Verificar que coinciden con los KPIs de `kpi-calculator.ts` y `ResultsDisplay.tsx`
 - [ ] **Revisar campos de `LeanCanvas`**: Verificar que el modelo existente coincide con `LeanCanvasForm.tsx`
 - [ ] Configurar relaciones entre los modelos para la simulación completa
+
+### Depreciación de Campos Legacy
+
+- [ ] **Migrar datos existentes**: Script para migrar simulaciones legacy a nuevas tablas
+- [ ] **Limpiar uso de campos legacy en API**: Eliminar referencias en `src/lib/api/simulations.ts`
+- [ ] **Actualizar schema Prisma**: Eliminar todos los campos legacy de `Simulation`:
+  - `averagePrice`, `costPerUnit`, `fixedCosts`, `customerAcquisitionCost`
+  - `monthlyNewCustomers`, `averageCustomerLifetime`, `initialInvestment`
+  - `monthlyExpenses`, `avgRevenue`, `growthRate`, `timeframeMonths`
+  - `otherParams`, `results_legacy`
+- [ ] **Crear migración Prisma**: Nueva migración para eliminar columnas legacy
+- [ ] **Actualizar tipos TypeScript**: Limpiar interfaces que referencien campos legacy
+- [ ] **Verificar formularios frontend**: Asegurar que usan únicamente nuevas tablas
 
 ### Eliminación de API Actual
 
@@ -27,39 +42,23 @@ Desarrollar la infraestructura de API necesaria para persistir y recuperar simul
 - [ ] **Mantener validaciones shared**: Conservar `/src/lib/validation/shared/` intacto (usado por formularios frontend)
 - [ ] **Simplificar validaciones nivel superior**: Limpiar esquemas no usados en `/src/lib/validation/` tras eliminar APIs de lean-canvas
 
-### Endpoints API Centralizados
-
-- [ ] **POST /api/v1/simulations**: Crear simulación completa con:
-  - Datos del Lean Canvas (`LeanCanvasForm.tsx`)
-  - Inputs financieros (`FinancialInputsForm.tsx`)
-  - Resultados calculados (`ResultsDisplay.tsx` + `kpi-calculator.ts`)
-- [ ] **GET /api/v1/simulations/[id]**: Recuperar simulación completa
-- [ ] **PUT /api/v1/simulations/[id]**: Actualizar simulación completa
-- [ ] **GET /api/v1/simulations**: Listar simulaciones con paginación (para historial)
-
-### Integración con Frontend
-
-- [ ] **Actualizar `src/app/simulation/page.tsx`**: Reemplazar localStorage con llamadas API
-- [ ] **Migrar de cálculo inline**: Usar `kpi-calculator.ts` en lugar del cálculo directo en el componente
-- [ ] **Mantener cálculo en tiempo real**: Los KPIs se calculan en frontend, persistencia es opcional
-
 ## Criterios de Aceptación Técnicos
 
-- **Centralización**: Un único endpoint maneja toda la información de la simulación
+- **Modelo limpio**: Simulation solo contiene metadatos y relaciones
 - **Validaciones backend**: Reutilizar esquemas Zod existentes en `src/lib/validation/`
-- **Compatibilidad**: Mantener interfaces TypeScript existentes
-- **Simplificación**: Eliminar APIs no utilizadas (lean-canvas actual)
-- **Migración limpia**: Datos de localStorage pueden importarse al nuevo sistema
-- **Manejo de errores**: Respuestas API consistentes y robustas
+- **Compatibilidad**: Mantener interfaces TypeScript existentes para nuevas tablas
+- **Simplificación**: Eliminar APIs no utilizadas (lean-canvas actual) y campos legacy
+- **Migración completa**: Todos los datos legacy migrados a nuevas tablas
+- **Sin campos legacy**: Modelo Simulation limpio, solo metadatos y relaciones
 
 ## Referencias Técnicas
 
 - **Eliminar completamente**: API endpoints y funciones de `lean-canvas.ts` actual
-- **Reutilizar modelos**: `Simulation`, `LeanCanvas`, `FinancialInputs`, `SimulationResults` existentes
+- **Deprecar completamente**: Todos los campos legacy de `Simulation` (aprovechando que no estamos en producción)
+- **Reutilizar modelos**: `Simulation` (limpio), `LeanCanvas`, `FinancialInputs`, `SimulationResults` existentes
 - **Mantener validaciones shared**: Esquemas en `/src/lib/validation/shared/` (usados por formularios)
 - **Simplificar validaciones nivel superior**: Limpiar esquemas de APIs eliminadas
 - **Integrar con**: `kpi-calculator.ts` para cálculos consistentes
-- **Seguir patrón**: APIs existentes de `/api/v1/` para consistencia
 
 ## Dependencias
 
@@ -68,17 +67,13 @@ Desarrollar la infraestructura de API necesaria para persistir y recuperar simul
 - ✅ Validaciones Zod: `lean-canvas.ts`, `financial-inputs.ts`, `shared/`
 - ✅ Formularios frontend: `LeanCanvasForm.tsx`, `FinancialInputsForm.tsx`
 
-## Estimación
-
-~~Medio (3-4h)~~ **REDUCIDO A 2-3h** - Los modelos ya existen, eliminamos código no usado
-
 ## Asignado a
 
 TBD
 
 ## Tareas Específicas Detalladas
 
-### Verificación de Modelos (30min)
+### Verificación de Modelos
 
 - [ ] **FinancialInputs vs FinancialInputsForm**:
   - ✅ 6 campos númericos coinciden exactamente
@@ -90,7 +85,25 @@ TBD
   - ✅ 6 campos de texto coinciden exactamente
   - ✅ Límites de caracteres consistentes
 
-### Limpieza de Código No Usado (45min)
+### Migración y Limpieza de Campos Legacy
+
+- [ ] **Script de migración de datos**:
+  - Identificar simulaciones existentes con datos legacy
+  - Migrar `averagePrice`, `costPerUnit`, etc. a tabla `FinancialInputs`
+  - Migrar `results_legacy` JSON a tabla `SimulationResults` (recalculando con `kpi-calculator.ts`)
+- [ ] **Actualizar `src/lib/api/simulations.ts`**:
+  - Eliminar todas las referencias a campos legacy en `duplicateSimulation()`
+  - Usar únicamente relaciones con `FinancialInputs` y `SimulationResults`
+- [ ] **Nueva migración Prisma**:
+  ```sql
+  -- Eliminar campos legacy tras migración de datos
+  ALTER TABLE "simulations" DROP COLUMN "averagePrice";
+  ALTER TABLE "simulations" DROP COLUMN "costPerUnit";
+  -- ... (todos los campos legacy)
+  ```
+- [ ] **Limpiar tipos TypeScript**: Eliminar campos legacy de interfaces de simulación
+
+### Limpieza de Código No Usado
 
 - [ ] **Eliminar archivos**:
   - `src/lib/api/lean-canvas.ts` (154 líneas)
@@ -102,38 +115,19 @@ TBD
   - Limpiar `src/lib/validation/lean-canvas.ts` de esquemas API no usados (`CreateLeanCanvasSchema`, etc.)
   - Mantener `src/lib/validation/financial-inputs.ts` para APIs de simulations
 
-### API Endpoints Nuevos (60-90min)
-
-- [ ] **POST /api/v1/simulations**: Endpoint unificado que guarda:
-  ```typescript
-  {
-    name: string,
-    leanCanvas: LeanCanvasData,
-    financialInputs: FinancialData,
-    results: CalculationResult
-  }
-  ```
-- [ ] **GET endpoints**: Para recuperación y listado
-- [ ] **Integración**: Con `kpi-calculator.ts` para validar resultados
-
-### Frontend Migration (30min)
-
-- [ ] **Actualizar `simulation/page.tsx`**: Reemplazar localStorage con API calls
-- [ ] **Usar kpi-calculator**: Reemplazar `calculateResults()` inline
-
 ## Beneficios de esta Aproximación
 
-1. **Simplificación**: Un solo endpoint en lugar de múltiples APIs
-2. **Consistency**: Datos relacionados se guardan juntos atómicamente
-3. **Eliminación de dead code**: API de lean-canvas no está en uso
-4. **Validaciones centralizadas**: Backend mantiene todas las validaciones Zod
-5. **Migración gradual**: localStorage puede coexistir inicialmente
+1. **Arquitectura limpia**: Sin campos legacy, modelo de datos normalizado
+2. **Eliminación de dead code**: API de lean-canvas no está en uso
+3. **Aprovechamiento del momento**: Sin producción, podemos limpiar completamente
+4. **Base sólida**: Modelo limpio para implementar APIs (Ticket KPI-007)
+5. **Mantenibilidad**: Código más simple y fácil de entender
 
 ## Notas de Implementación
 
 - **Arquitectura de validaciones**:
   - `/shared/` contiene esquemas base compartidos frontend/backend ✅ CONSERVAR
   - `/nivel superior` contiene extensiones para APIs backend ⚠️ LIMPIAR tras eliminar lean-canvas API
-- **Transacción atómica**: Lean Canvas + Financial Inputs + Results en una sola operación
-- **Device ID**: Seguir patrón existente para identificación de usuario
-- **JSON handling**: Serialización correcta de recommendations y health indicators
+- **Migración de datos legacy**: Recalcular resultados con `kpi-calculator.ts` para consistencia
+- **Modelo Simulation limpio**: Solo contendrá `id`, `name`, `description`, `userId`, `deviceId`, `leanCanvasId`, timestamps
+- **Preparación para APIs**: Modelo limpio facilitará implementación de endpoints (Ticket KPI-007)
