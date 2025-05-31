@@ -218,7 +218,9 @@ describe("KPI Calculator", () => {
 
       const viabilityRec = recommendations.find((r) => r.type === "viability");
       expect(viabilityRec?.status).toBe("warning");
-      expect(viabilityRec?.message).toContain("margen unitario positivo pero pérdidas mensuales");
+      expect(viabilityRec?.message).toContain(
+        "margen unitario positivo pero <strong>pérdidas mensuales</strong>"
+      );
     });
 
     it("should generate negative recommendations for bad health", () => {

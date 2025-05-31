@@ -37,7 +37,7 @@ async function main() {
 
   console.log("Lean Canvas de ejemplo creado:", leanCanvas);
 
-  // Crear simulación de ejemplo
+  // Crear simulación de ejemplo con el nuevo modelo
   const simulation = await prisma.simulation.upsert({
     where: { id: "demo-simulation" },
     update: {},
@@ -45,22 +45,45 @@ async function main() {
       id: "demo-simulation",
       name: "Primera Simulación",
       description: "Simulación de prueba para el proyecto de ejemplo",
-      initialInvestment: 10000,
-      monthlyExpenses: 2000,
-      avgRevenue: 3000,
-      growthRate: 0.1,
-      timeframeMonths: 12,
-      otherParams: {
-        customerAcquisitionCost: 100,
-        averageCustomerLifetime: 24,
-      },
-      results: {
-        breakEvenPoint: 6,
-        totalProfit: 5000,
-        roi: 0.5,
-      },
       userId: user.id,
       leanCanvasId: leanCanvas.id,
+      financialInputs: {
+        create: {
+          averagePrice: 100,
+          costPerUnit: 30,
+          fixedCosts: 2000,
+          customerAcquisitionCost: 50,
+          monthlyNewCustomers: 100,
+          averageCustomerLifetime: 24,
+          calculationNotes: "Datos de ejemplo para demostración",
+        },
+      },
+      results: {
+        create: {
+          unitMargin: 70,
+          monthlyRevenue: 10000,
+          monthlyProfit: 2000,
+          ltv: 1680,
+          cac: 50,
+          cacLtvRatio: 0.03,
+          breakEvenUnits: 28.57,
+          breakEvenMonths: 0.29,
+          profitabilityHealth: "good",
+          ltvCacHealth: "good",
+          overallHealth: "good",
+          recommendations: [
+            {
+              type: "viability",
+              title: "Viabilidad económica",
+              message:
+                "Tu modelo muestra un beneficio mensual positivo. Esto indica que tu negocio puede ser viable si se cumplen las previsiones de ventas e ingresos.",
+              status: "positive",
+            },
+          ],
+          insights: {},
+          calculationVersion: "1.0",
+        },
+      },
     },
   });
 

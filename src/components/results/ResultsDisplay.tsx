@@ -14,18 +14,10 @@ import {
 import InfoTooltip from "@/components/ui/info-tooltip";
 import LeanCanvasVisual from "./LeanCanvasVisual";
 import { LeanCanvasData } from "@/types/lean-canvas";
+import { CalculationResult } from "@/lib/financial/kpi-calculator";
 
 interface ResultsDisplayProps {
-  results: {
-    unitMargin: number;
-    monthlyRevenue: number;
-    monthlyProfit: number;
-    ltv: number;
-    cac: number;
-    cacLtvRatio: number;
-    breakEvenUnits: number;
-    breakEvenMonths: number;
-  };
+  calculationResult: CalculationResult;
   leanCanvasData: LeanCanvasData;
 }
 
@@ -42,7 +34,36 @@ const formatDecimal = (value: number) => {
   return value.toFixed(2);
 };
 
-const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, leanCanvasData }) => {
+// Helper function to get status color based on health classification
+const getHealthStatus = (
+  health: "good" | "medium" | "bad"
+): "positive" | "warning" | "negative" => {
+  switch (health) {
+    case "good":
+      return "positive";
+    case "medium":
+      return "warning";
+    case "bad":
+      return "negative";
+  }
+};
+
+// Helper function to get recommendation status colors and styling
+const getRecommendationStyling = (status: "positive" | "warning" | "negative" | "neutral") => {
+  switch (status) {
+    case "positive":
+      return "bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-900";
+    case "warning":
+      return "bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-900";
+    case "negative":
+      return "bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-900";
+    case "neutral":
+      return "bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-900";
+  }
+};
+
+const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ calculationResult, leanCanvasData }) => {
+  const { kpis, health, recommendations } = calculationResult;
   const {
     unitMargin,
     monthlyRevenue,
@@ -51,10 +72,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, leanCanvasData
     cacLtvRatio,
     breakEvenUnits,
     breakEvenMonths,
-  } = results;
-
-  const isProfitable = monthlyProfit > 0;
-  const isGoodCacLtvRatio = cacLtvRatio < 0.33;
+  } = kpis;
 
   // Prepare chart data
   const chartData = [
@@ -75,14 +93,14 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, leanCanvasData
       title: "Margen unitario",
       value: formatCurrency(unitMargin),
       description: "Beneficio por cada unidad vendida.",
-      status: unitMargin > 0 ? "positive" : "negative",
+      status: getHealthStatus(health.profitabilityHealth),
       tooltip: "Diferencia entre el precio de venta y el coste variable por unidad.",
     },
     {
       title: "Beneficio mensual",
       value: formatCurrency(monthlyProfit),
       description: "Ganancia total mensual.",
-      status: monthlyProfit > 0 ? "positive" : "negative",
+      status: getHealthStatus(health.profitabilityHealth),
       tooltip:
         "Ingresos totales menos costes variables, costes fijos y costes de adquisición de clientes.",
     },
@@ -90,21 +108,21 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, leanCanvasData
       title: "LTV (Valor del cliente)",
       value: formatCurrency(ltv),
       description: "Ingresos que genera un cliente durante su ciclo de vida.",
-      status: "neutral",
+      status: "neutral" as const,
       tooltip: "Margen por cliente multiplicado por su duración media (meses).",
     },
     {
       title: "Ratio LTV/CAC",
       value: formatDecimal(1 / cacLtvRatio), // Invertimos para mostrar LTV/CAC en lugar de CAC/LTV
       description: "Ratio entre valor del cliente y coste de adquisición.",
-      status: cacLtvRatio < 0.33 ? "positive" : cacLtvRatio < 1 ? "warning" : "negative",
+      status: getHealthStatus(health.ltvCacHealth),
       tooltip: "Ideal: >3 | Aceptable: >1 | Problema: <1",
     },
     {
       title: "Punto de equilibrio",
       value: `${Math.ceil(breakEvenUnits)} unidades`,
       description: `Ventas necesarias para cubrir costes (aprox. ${Math.ceil(breakEvenMonths)} meses).`,
-      status: "neutral",
+      status: "neutral" as const,
       tooltip: "Cantidad de ventas necesarias para que los ingresos igualen a los costes totales.",
     },
   ];
@@ -201,66 +219,32 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, leanCanvasData
           Basado en los resultados de tu simulación, estas son las conclusiones clave:
         </div>
 
+        {/* Dynamic Recommendations from KPI Calculator */}
         <div className="mt-4 space-y-4">
-          <div
-            className={`p-4 rounded-lg border ${isProfitable ? "bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-900" : "bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-900"}`}
-          >
-            <h4 className="font-medium mb-1 flex items-center gap-2">
-              Viabilidad económica
-              <InfoTooltip content="Analiza si el modelo de negocio genera suficientes ingresos para cubrir todos los costes." />
-            </h4>
-            {isProfitable ? (
-              <p>
-                Tu modelo muestra un <strong>beneficio mensual positivo</strong>. Esto indica que tu
-                negocio puede ser viable si se cumplen las previsiones de ventas e ingresos.
-              </p>
-            ) : (
-              <p>
-                Tu modelo muestra <strong>pérdidas mensuales</strong>. Considera revisar tus
-                precios, costes variables o estructura de costes fijos para mejorar la rentabilidad.
-              </p>
-            )}
-          </div>
-
-          <div
-            className={`p-4 rounded-lg border ${isGoodCacLtvRatio ? "bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-900" : "bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-900"}`}
-          >
-            <h4 className="font-medium mb-1 flex items-center gap-2">
-              Eficiencia de adquisición de clientes
-              <InfoTooltip content="Evalúa si el coste de conseguir un cliente nuevo se compensa con lo que generará durante su ciclo de vida." />
-            </h4>
-            {isGoodCacLtvRatio ? (
-              <p>
-                Tu ratio LTV/CAC es <strong>excelente</strong> (mayor a 3), lo que indica que tu
-                estrategia de adquisición de clientes es muy eficiente.
-              </p>
-            ) : cacLtvRatio < 1 ? (
-              <p>
-                Tu ratio LTV/CAC es <strong>aceptable</strong> pero podría mejorar. Intenta reducir
-                tus costes de adquisición o aumentar el valor del cliente (LTV).
-              </p>
-            ) : (
-              <p>
-                Tu ratio LTV/CAC es <strong>preocupante</strong> (menor que 1). Cuesta más adquirir
-                un cliente que lo que te generará en ingresos. Revisa urgentemente tu estrategia de
-                marketing y adquisición.
-              </p>
-            )}
-          </div>
-
-          <div className="p-4 rounded-lg border bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-900">
-            <h4 className="font-medium mb-1 flex items-center gap-2">
-              Próximos pasos
-              <InfoTooltip content="Recomendaciones para refinar y validar tu modelo de negocio." />
-            </h4>
-            <p>Para continuar validando tu modelo de negocio, considera:</p>
-            <ul className="list-disc list-inside mt-2">
-              <li>Validar tus estimaciones de adquisición de clientes con experimentos reales.</li>
-              <li>Confirmar tus costes variables y fijos con proveedores y expertos.</li>
-              <li>Buscar formas de aumentar el ciclo de vida del cliente para mejorar el LTV.</li>
-              <li>Explorar opciones para reducir tus costes de adquisición de clientes.</li>
-            </ul>
-          </div>
+          {recommendations.map((recommendation, index) => (
+            <div
+              key={index}
+              className={`p-4 rounded-lg border ${getRecommendationStyling(recommendation.status)}`}
+            >
+              <h4 className="font-medium mb-1 flex items-center gap-2">
+                {recommendation.title}
+                <InfoTooltip content="Análisis generado automáticamente basado en tus métricas financieras." />
+              </h4>
+              <p dangerouslySetInnerHTML={{ __html: recommendation.message }} />
+              {recommendation.type === "next_steps" && (
+                <ul className="list-disc list-inside mt-2">
+                  <li>
+                    Validar tus estimaciones de adquisición de clientes con experimentos reales.
+                  </li>
+                  <li>Confirmar tus costes variables y fijos con proveedores y expertos.</li>
+                  <li>
+                    Buscar formas de aumentar el ciclo de vida del cliente para mejorar el LTV.
+                  </li>
+                  <li>Explorar opciones para reducir tus costes de adquisición de clientes.</li>
+                </ul>
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </div>

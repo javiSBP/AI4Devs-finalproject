@@ -142,7 +142,7 @@ export function generateRecommendations(
       type: "viability",
       title: "Viabilidad económica",
       message:
-        "Tu modelo muestra un beneficio mensual positivo. Esto indica que tu negocio puede ser viable si se cumplen las previsiones de ventas e ingresos.",
+        "Tu modelo muestra un <strong>beneficio mensual positivo</strong>. Esto indica que tu negocio puede ser viable si se cumplen las previsiones de ventas e ingresos.",
       status: "positive",
     });
   } else if (health.profitabilityHealth === "medium") {
@@ -150,7 +150,7 @@ export function generateRecommendations(
       type: "viability",
       title: "Viabilidad económica",
       message:
-        "Tu modelo tiene margen unitario positivo pero pérdidas mensuales. Considera aumentar las ventas o reducir costes fijos para alcanzar la rentabilidad.",
+        "Tu modelo tiene margen unitario positivo pero <strong>pérdidas mensuales</strong>. Considera aumentar las ventas o reducir costes fijos para alcanzar la rentabilidad.",
       status: "warning",
     });
   } else {
@@ -158,7 +158,7 @@ export function generateRecommendations(
       type: "viability",
       title: "Viabilidad económica",
       message:
-        "Tu modelo muestra pérdidas mensuales. Considera revisar tus precios, costes variables o estructura de costes fijos para mejorar la rentabilidad.",
+        "Tu modelo muestra <strong>pérdidas mensuales</strong>. Considera revisar tus precios, costes variables o estructura de costes fijos para mejorar la rentabilidad.",
       status: "negative",
     });
   }
@@ -169,7 +169,7 @@ export function generateRecommendations(
       type: "acquisition",
       title: "Eficiencia de adquisición de clientes",
       message:
-        "Tu ratio LTV/CAC es excelente (mayor a 3), lo que indica que tu estrategia de adquisición de clientes es muy eficiente.",
+        "Tu ratio LTV/CAC es <strong>excelente</strong> (mayor a 3), lo que indica que tu estrategia de adquisición de clientes es muy eficiente.",
       status: "positive",
     });
   } else if (health.ltvCacHealth === "medium") {
@@ -177,7 +177,7 @@ export function generateRecommendations(
       type: "acquisition",
       title: "Eficiencia de adquisición de clientes",
       message:
-        "Tu ratio LTV/CAC es aceptable pero podría mejorar. Intenta reducir tus costes de adquisición o aumentar el valor del cliente (LTV).",
+        "Tu ratio LTV/CAC es <strong>aceptable</strong> pero podría mejorar. Intenta reducir tus costes de adquisición o aumentar el valor del cliente (LTV).",
       status: "warning",
     });
   } else {
@@ -185,7 +185,7 @@ export function generateRecommendations(
       type: "acquisition",
       title: "Eficiencia de adquisición de clientes",
       message:
-        "Tu ratio LTV/CAC es preocupante (menor que 1). Cuesta más adquirir un cliente que lo que te generará en ingresos. Revisa urgentemente tu estrategia de marketing y adquisición.",
+        "Tu ratio LTV/CAC es <strong>preocupante</strong> (menor que 1). Cuesta más adquirir un cliente que lo que te generará en ingresos. Revisa urgentemente tu estrategia de marketing y adquisición.",
       status: "negative",
     });
   }
@@ -196,14 +196,14 @@ export function generateRecommendations(
       type: "optimization",
       title: "Optimización del modelo",
       message:
-        "¡Excelente! Tu modelo financiero muestra buena salud. Para seguir mejorando, considera optimizar procesos, reducir costes operativos o explorar nuevas oportunidades de crecimiento.",
+        "¡Excelente! Tu modelo financiero muestra <strong>buena salud</strong>. Para seguir mejorando, considera optimizar procesos, reducir costes operativos o explorar nuevas oportunidades de crecimiento.",
       status: "positive",
     });
   } else if (Number.isFinite(kpis.breakEvenMonths) && kpis.breakEvenMonths > 24) {
     recommendations.push({
       type: "optimization",
       title: "Punto de equilibrio",
-      message: `Tu punto de equilibrio está muy lejos (${Math.ceil(kpis.breakEvenMonths)} meses). Considera estrategias para acelerar las ventas o reducir la estructura de costes.`,
+      message: `Tu punto de equilibrio está <strong>muy lejos</strong> (${Math.ceil(kpis.breakEvenMonths)} meses). Considera estrategias para acelerar las ventas o reducir la estructura de costes.`,
       status: "warning",
     });
   }
@@ -213,7 +213,7 @@ export function generateRecommendations(
     type: "next_steps",
     title: "Próximos pasos",
     message:
-      "Para continuar validando tu modelo de negocio, considera: validar tus estimaciones con experimentos reales, confirmar costes con proveedores, buscar formas de aumentar el ciclo de vida del cliente, y explorar opciones para reducir costes de adquisición.",
+      "Para continuar validando tu modelo de negocio, considera: <strong>validar tus estimaciones</strong> con experimentos reales, <strong>confirmar costes</strong> con proveedores, buscar formas de <strong>aumentar el ciclo de vida del cliente</strong>, y explorar opciones para <strong>reducir costes de adquisición</strong>.",
     status: "neutral",
   });
 

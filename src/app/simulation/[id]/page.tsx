@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronLeft } from "lucide-react";
 import ResultsDisplay from "@/components/results/ResultsDisplay";
 import InfoTooltip from "@/components/ui/info-tooltip";
+import { calculateFinancialMetrics, FinancialInputs } from "@/lib/financial/kpi-calculator";
 
 interface LeanCanvasData {
   problem: string;
@@ -65,54 +66,18 @@ export default function SimulationDetailPage() {
     router.push("/historial");
   };
 
-  // Calculate results for displaying
+  // Calculate results using KPI calculator
   const calculateResults = (financial: FinancialData) => {
-    const {
-      averagePrice,
-      costPerUnit,
-      fixedCosts,
-      customerAcquisitionCost,
-      monthlyNewCustomers,
-      averageCustomerLifetime,
-    } = financial;
-
-    // Monthly gross profit per customer
-    const unitMargin = averagePrice - costPerUnit;
-
-    // Monthly revenue
-    const monthlyRevenue = averagePrice * monthlyNewCustomers;
-
-    // Monthly variable costs
-    const monthlyVariableCosts = costPerUnit * monthlyNewCustomers;
-
-    // Monthly customer acquisition costs
-    const monthlyCACCosts = customerAcquisitionCost * monthlyNewCustomers;
-
-    // Monthly profit
-    const monthlyProfit = monthlyRevenue - monthlyVariableCosts - fixedCosts - monthlyCACCosts;
-
-    // LTV (Lifetime Value)
-    const ltv = unitMargin * averageCustomerLifetime;
-
-    // CAC/LTV ratio
-    const cacLtvRatio = customerAcquisitionCost / ltv;
-
-    // Break-even point (units)
-    const breakEvenUnits = fixedCosts / unitMargin;
-
-    // Break-even point (months) considering new customers per month
-    const breakEvenMonths = breakEvenUnits / monthlyNewCustomers;
-
-    return {
-      unitMargin,
-      monthlyRevenue,
-      monthlyProfit,
-      ltv,
-      cac: customerAcquisitionCost,
-      cacLtvRatio,
-      breakEvenUnits,
-      breakEvenMonths,
+    const financialInputs: FinancialInputs = {
+      averagePrice: financial.averagePrice,
+      costPerUnit: financial.costPerUnit,
+      fixedCosts: financial.fixedCosts,
+      customerAcquisitionCost: financial.customerAcquisitionCost,
+      monthlyNewCustomers: financial.monthlyNewCustomers,
+      averageCustomerLifetime: financial.averageCustomerLifetime,
     };
+
+    return calculateFinancialMetrics(financialInputs);
   };
 
   if (loading) {
@@ -135,7 +100,7 @@ export default function SimulationDetailPage() {
     );
   }
 
-  const results = calculateResults(simulation.financial);
+  const calculationResult = calculateResults(simulation.financial);
 
   return (
     <MainLayout>
@@ -246,7 +211,10 @@ export default function SimulationDetailPage() {
           {/* Results Section */}
           <div>
             <h2 className="text-2xl font-semibold mb-6">Resultados</h2>
-            <ResultsDisplay results={results} leanCanvasData={simulation.leanCanvas} />
+            <ResultsDisplay
+              calculationResult={calculationResult}
+              leanCanvasData={simulation.leanCanvas}
+            />
           </div>
         </div>
       </div>

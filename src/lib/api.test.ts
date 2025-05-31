@@ -105,7 +105,8 @@ describe("API Integration Tests", () => {
       expect(data).toHaveProperty("revenue");
       expect(data).toHaveProperty("costs");
       expect(data).toHaveProperty("profit");
-      expect(data).toHaveProperty("breakEvenPoint");
+      expect(data).toHaveProperty("breakEvenUnits");
+      expect(data).toHaveProperty("breakEvenMonths");
     });
   });
 

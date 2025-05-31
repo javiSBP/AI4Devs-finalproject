@@ -6,6 +6,7 @@ import LeanCanvasForm from "@/components/forms/LeanCanvasForm";
 import FinancialInputsForm from "@/components/forms/FinancialInputsForm";
 import ResultsDisplay from "@/components/results/ResultsDisplay";
 import { LeanCanvasData } from "@/types/lean-canvas";
+import { calculateFinancialMetrics, FinancialInputs } from "@/lib/financial/kpi-calculator";
 
 export interface FinancialData {
   averagePrice: number;
@@ -36,38 +37,19 @@ export default function SimulationPage() {
   });
 
   const calculateResults = () => {
-    const {
-      averagePrice,
-      costPerUnit,
-      fixedCosts,
-      customerAcquisitionCost,
-      monthlyNewCustomers,
-      averageCustomerLifetime,
-    } = financialData;
-
-    const unitMargin = averagePrice - costPerUnit;
-    const monthlyRevenue = averagePrice * monthlyNewCustomers;
-    const monthlyVariableCosts = costPerUnit * monthlyNewCustomers;
-    const monthlyCACCosts = customerAcquisitionCost * monthlyNewCustomers;
-    const monthlyProfit = monthlyRevenue - monthlyVariableCosts - fixedCosts - monthlyCACCosts;
-    const ltv = unitMargin * averageCustomerLifetime;
-    const cacLtvRatio = customerAcquisitionCost / ltv;
-    const breakEvenUnits = fixedCosts / unitMargin;
-    const breakEvenMonths = breakEvenUnits / monthlyNewCustomers;
-
-    return {
-      unitMargin,
-      monthlyRevenue,
-      monthlyProfit,
-      ltv,
-      cac: customerAcquisitionCost,
-      cacLtvRatio,
-      breakEvenUnits,
-      breakEvenMonths,
+    const financialInputs: FinancialInputs = {
+      averagePrice: financialData.averagePrice,
+      costPerUnit: financialData.costPerUnit,
+      fixedCosts: financialData.fixedCosts,
+      customerAcquisitionCost: financialData.customerAcquisitionCost,
+      monthlyNewCustomers: financialData.monthlyNewCustomers,
+      averageCustomerLifetime: financialData.averageCustomerLifetime,
     };
+
+    return calculateFinancialMetrics(financialInputs);
   };
 
-  const results = calculateResults();
+  const calculationResult = calculateResults();
 
   const wizardSteps = [
     {
@@ -99,7 +81,7 @@ export default function SimulationPage() {
       component: (
         <div className="space-y-4">
           <p className="text-muted-foreground">Analiza los resultados de tu simulación</p>
-          <ResultsDisplay results={results} leanCanvasData={leanCanvasData} />
+          <ResultsDisplay calculationResult={calculationResult} leanCanvasData={leanCanvasData} />
         </div>
       ),
     },

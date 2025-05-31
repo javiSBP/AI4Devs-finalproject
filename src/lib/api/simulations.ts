@@ -206,7 +206,7 @@ export async function duplicateSimulation(id: string, deviceId: string) {
         growthRate: existingSimulation.growthRate,
         timeframeMonths: existingSimulation.timeframeMonths,
         otherParams: existingSimulation.otherParams || Prisma.JsonNull,
-        results: existingSimulation.results || Prisma.JsonNull,
+        results_legacy: existingSimulation.results_legacy || Prisma.JsonNull,
       },
       include: {
         leanCanvas: true,

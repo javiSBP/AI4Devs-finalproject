@@ -244,7 +244,8 @@ export const handlers = [
       revenue: 10000,
       costs: 5000,
       profit: 5000,
-      breakEvenPoint: 6,
+      breakEvenUnits: 28.57,
+      breakEvenMonths: 0.29,
       ...(body as object),
     });
   }),
