@@ -1,10 +1,10 @@
 import { NextRequest } from "next/server";
 import { ZodError } from "zod";
 import {
-  CreateSimulationSchema,
+  CreateCompleteSimulationSchema,
   ListSimulationsQuerySchema,
-} from "@/lib/validation/financial-inputs";
-import { createSimulation, getSimulations } from "@/lib/api/simulations";
+} from "@/lib/validation/simulation";
+import { createCompleteSimulation, getCompleteSimulations } from "@/lib/api/simulations-complete";
 import {
   successResponse,
   errorResponse,
@@ -15,7 +15,7 @@ import { applyMiddleware, getSecurityHeaders } from "@/lib/api/middleware";
 
 /**
  * POST /api/v1/simulations
- * Create a new simulation
+ * Create a new complete simulation with Lean Canvas + Financial Inputs + calculated Results
  */
 export async function POST(request: NextRequest) {
   try {
@@ -28,11 +28,11 @@ export async function POST(request: NextRequest) {
     const deviceId = middlewareResult.deviceId!;
     const body = await request.json();
 
-    // Validate request body
-    const validatedData = CreateSimulationSchema.parse(body);
+    // Validate request body using new complete simulation schema
+    const validatedData = CreateCompleteSimulationSchema.parse(body);
 
-    // Create simulation
-    const result = await createSimulation(validatedData, deviceId);
+    // Create complete simulation with atomic transaction
+    const result = await createCompleteSimulation(validatedData, deviceId);
 
     if (!result.success) {
       return errorResponse("CREATE_FAILED", result.error || "Failed to create simulation", 500);
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
 
 /**
  * GET /api/v1/simulations
- * Get simulations for the current device
+ * Get complete simulations for the current device with pagination (for historial)
  */
 export async function GET(request: NextRequest) {
   try {
@@ -83,8 +83,8 @@ export async function GET(request: NextRequest) {
     // Validate query parameters
     const validatedQuery = ListSimulationsQuerySchema.parse(queryParams);
 
-    // Get simulations
-    const result = await getSimulations(validatedQuery, deviceId);
+    // Get complete simulations with all relations
+    const result = await getCompleteSimulations(validatedQuery, deviceId);
 
     if (!result.success) {
       return errorResponse("FETCH_FAILED", result.error || "Failed to fetch simulations", 500);

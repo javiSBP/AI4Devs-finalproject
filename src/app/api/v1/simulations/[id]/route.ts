@@ -1,16 +1,12 @@
 import { NextRequest } from "next/server";
 import { ZodError } from "zod";
+import { UpdateCompleteSimulationSchema } from "@/lib/validation/simulation";
 import {
-  UpdateSimulationSchema,
-  FinancialInputsUpdateSchema,
-} from "@/lib/validation/financial-inputs";
-import {
-  getSimulation,
-  updateSimulation,
-  updateSimulationFinancials,
-  deleteSimulation,
-  duplicateSimulation,
-} from "@/lib/api/simulations";
+  getCompleteSimulation,
+  updateCompleteSimulation,
+  deleteCompleteSimulation,
+} from "@/lib/api/simulations-complete";
+import { duplicateSimulation } from "@/lib/api/simulations";
 import {
   successResponse,
   errorResponse,
@@ -27,7 +23,7 @@ interface RouteParams {
 
 /**
  * GET /api/v1/simulations/[id]
- * Get a specific simulation
+ * Get a specific complete simulation with all relations
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
@@ -40,8 +36,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const deviceId = middlewareResult.deviceId!;
     const { id } = await params; // Await params in Next.js 15
 
-    // Get simulation
-    const result = await getSimulation(id, deviceId);
+    // Get complete simulation with all relations
+    const result = await getCompleteSimulation(id, deviceId);
 
     if (!result.success) {
       if (result.error === "Simulation not found") {
@@ -67,7 +63,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
 /**
  * PUT /api/v1/simulations/[id]
- * Update a simulation completely
+ * Update a complete simulation and recalculate results if financial inputs changed
  */
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
@@ -81,11 +77,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const { id } = await params; // Await params in Next.js 15
     const body = await request.json();
 
-    // Validate request body
-    const validatedData = UpdateSimulationSchema.parse(body);
+    // Validate request body using complete simulation update schema
+    const validatedData = UpdateCompleteSimulationSchema.parse(body);
 
-    // Update simulation
-    const result = await updateSimulation(id, validatedData, deviceId);
+    // Update complete simulation with automatic recalculation if needed
+    const result = await updateCompleteSimulation(id, validatedData, deviceId);
 
     if (!result.success) {
       if (result.error === "Simulation not found") {
@@ -114,56 +110,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 }
 
 /**
- * PATCH /api/v1/simulations/[id]
- * Update simulation financial inputs partially
- */
-export async function PATCH(request: NextRequest, { params }: RouteParams) {
-  try {
-    // Apply middleware (rate limiting, device ID validation)
-    const middlewareResult = applyMiddleware(request);
-    if (middlewareResult.error) {
-      return middlewareResult.error;
-    }
-
-    const deviceId = middlewareResult.deviceId!;
-    const { id } = await params; // Await params in Next.js 15
-    const body = await request.json();
-
-    // Validate request body for partial financial inputs
-    const validatedData = FinancialInputsUpdateSchema.parse(body);
-
-    // Update simulation financials
-    const result = await updateSimulationFinancials(id, validatedData, deviceId);
-
-    if (!result.success) {
-      if (result.error === "Simulation not found") {
-        return CommonErrors.NOT_FOUND();
-      }
-      return errorResponse("UPDATE_FAILED", result.error || "Failed to update simulation", 500);
-    }
-
-    const response = successResponse(result.data);
-
-    // Add security headers
-    const headers = getSecurityHeaders();
-    Object.entries(headers).forEach(([key, value]) => {
-      response.headers.set(key, value);
-    });
-
-    return response;
-  } catch (error) {
-    if (error instanceof ZodError) {
-      return validationErrorResponse(error);
-    }
-
-    console.error("Error in PATCH /api/v1/simulations/[id]:", error);
-    return CommonErrors.INTERNAL_ERROR();
-  }
-}
-
-/**
  * DELETE /api/v1/simulations/[id]
- * Delete a simulation
+ * Delete a complete simulation (cascading deletes handled by Prisma)
  */
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
@@ -176,8 +124,8 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     const deviceId = middlewareResult.deviceId!;
     const { id } = await params; // Await params in Next.js 15
 
-    // Delete simulation
-    const result = await deleteSimulation(id, deviceId);
+    // Delete complete simulation
+    const result = await deleteCompleteSimulation(id, deviceId);
 
     if (!result.success) {
       if (result.error === "Simulation not found") {
@@ -203,7 +151,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
 /**
  * POST /api/v1/simulations/[id]
- * Duplicate a simulation
+ * Duplicate an existing simulation
  */
 export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
@@ -216,7 +164,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const deviceId = middlewareResult.deviceId!;
     const { id } = await params; // Await params in Next.js 15
 
-    // Duplicate simulation
+    // Duplicate simulation using existing function
     const result = await duplicateSimulation(id, deviceId);
 
     if (!result.success) {

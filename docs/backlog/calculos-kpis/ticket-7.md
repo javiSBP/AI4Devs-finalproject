@@ -14,19 +14,111 @@ Desarrollar los endpoints API centralizados para persistir y recuperar simulacio
 
 ### Endpoints API Centralizados
 
-- [ ] **POST /api/v1/simulations**: Crear simulación completa con:
+- [x] **POST /api/v1/simulations**: Crear simulación completa con:
   - Datos del Lean Canvas (`LeanCanvasForm.tsx`)
   - Inputs financieros (`FinancialInputsForm.tsx`)
   - Resultados calculados (`ResultsDisplay.tsx` + `kpi-calculator.ts`)
-- [ ] **GET /api/v1/simulations/[id]**: Recuperar simulación completa
-- [ ] **PUT /api/v1/simulations/[id]**: Actualizar simulación completa
-- [ ] **GET /api/v1/simulations**: Listar simulaciones con paginación (para historial)
+- [x] **GET /api/v1/simulations/[id]**: Recuperar simulación completa
+- [x] **PUT /api/v1/simulations/[id]**: Actualizar simulación completa
+- [x] **GET /api/v1/simulations**: Listar simulaciones con paginación (para historial)
+- [x] **DELETE /api/v1/simulations/[id]**: Eliminar simulación completa
 
 ### Integración con Frontend
 
-- [ ] **Actualizar `src/app/simulation/page.tsx`**: Reemplazar localStorage con llamadas API
-- [ ] **Migrar de cálculo inline**: Usar `kpi-calculator.ts` en lugar del cálculo directo en el componente
-- [ ] **Mantener cálculo en tiempo real**: Los KPIs se calculan en frontend, persistencia es opcional
+- [x] **Actualizar `src/app/simulation/page.tsx`**: Reemplazar localStorage con llamadas API
+- [x] **Migrar de cálculo inline**: Usar `kpi-calculator.ts` en lugar del cálculo directo en el componente
+- [x] **Mantener cálculo en tiempo real**: Los KPIs se calculan en frontend, persistencia es opcional
+- [x] **Manejo de errores**: Usar componentes UI (Alert) en lugar de alert()
+- [x] **Estados de loading/error**: Implementado con mensajes informativos
+
+### Validaciones y Testing
+
+- [x] **Esquemas Zod**: Implementados en `src/lib/validation/simulation.ts`
+- [x] **Transacciones atómicas**: Lean Canvas + Financial Inputs + Results en una operación
+- [x] **Tests unitarios**: Validaciones y normalización de datos
+- [x] **Tests integración**: Endpoints API con mocking
+- [x] **Corrección tipos**: Normalización string → number para datos financieros
+
+## ✅ ESTADO: COMPLETADO
+
+Todos los criterios de aceptación han sido implementados exitosamente.
+
+## 🔧 Correcciones Post-Implementación
+
+### Error de Validación: "Expected number, received string"
+
+**Problema Detectado**: Los formularios HTML devuelven strings por defecto, pero el API espera números para los datos financieros.
+
+**Solución Implementada**:
+
+1. **Función `normalizeFinancialInputs`** en `useSimulations.ts`:
+
+   - Convierte todos los campos financieros de string a number antes de enviar al API
+   - Maneja casos edge como valores undefined o null
+   - Se aplica tanto en `createSimulation` como en `updateSimulation`
+
+2. **Validación mejorada** en `FinancialInputsForm.tsx`:
+
+   - Uso de `FormFinancialInputsSchema.parse(data)` antes de llamar `onSubmit`
+   - Garantiza que los datos pasen por `z.coerce.number()` correctamente
+
+3. **Helper `updateFinancialData`** en `simulation/page.tsx`:
+   - Conversión adicional con `Number()` y fallback a 0
+   - Garantiza que el estado local mantenga siempre números
+
+### Error de Manejo de Estados
+
+**Problema Detectado**: El `try/catch` mostraba éxito incluso cuando la API devolvía error 400.
+
+**Solución Implementada**:
+
+1. **Estados de mensaje**: `saveMessage` para mostrar éxito/error específicos
+2. **Componente Alert**: Reemplazado `alert()` con `<Alert>` de UI
+3. **Manejo correcto**: Solo mostrar éxito si `savedSimulation` existe
+4. **Limpieza de estados**: Limpiar mensajes anteriores antes de nueva operación
+
+## 📁 Archivos Implementados/Modificados
+
+### Nuevos Archivos
+
+- `src/lib/validation/simulation.ts` - Esquemas Zod para simulaciones completas
+- `src/lib/api/simulations-complete.ts` - Lógica de negocio para operaciones completas
+- `src/hooks/useSimulations.ts` - Hook para API calls con fallback + normalización
+- `src/lib/validation/simulation.test.ts` - Tests unitarios validaciones
+- `src/app/api/v1/simulations/route.test.ts` - Tests integración endpoints
+- `src/hooks/useSimulations.test.ts` - Tests normalización de datos
+
+### Archivos Modificados
+
+- `src/app/api/v1/simulations/route.ts` - Endpoint principal actualizado
+- `src/app/api/v1/simulations/[id]/route.ts` - Endpoint individual actualizado
+- `src/app/simulation/page.tsx` - Frontend migrado a API calls + UI components
+- `src/components/forms/FinancialInputsForm.tsx` - Validación mejorada pre-submit
+
+## 🧪 Verificación
+
+### Tests Ejecutados
+
+```bash
+npm test -- src/lib/validation/simulation.test.ts
+✅ 9 tests passed - Validaciones Zod funcionando
+
+npm test -- src/hooks/useSimulations.test.ts
+✅ 2 tests passed - Normalización de datos funcionando
+
+npm test -- src/app/api/v1/simulations/route.test.ts
+✅ Tests de integración API funcionando
+```
+
+### Funcionalidad Verificada
+
+- ✅ Creación de simulaciones completas
+- ✅ Cálculo automático de KPIs
+- ✅ Validaciones de entrada con conversión de tipos
+- ✅ Transacciones atómicas
+- ✅ Fallback a localStorage
+- ✅ Estados de loading/error con UI apropiada
+- ✅ Manejo correcto de errores API
 
 ## Criterios de Aceptación Técnicos
 

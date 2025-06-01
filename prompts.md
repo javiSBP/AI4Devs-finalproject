@@ -362,6 +362,35 @@ Recuerda incluir:
 - Todo lo que consideres para que sea lo mas detallada posible
 
 **Prompt 2:**
+Implementa el @ticket-7.md: API endpoints centralizados y migración frontend de localStorage a persistencia DB. Tareas completas:
+
+1. **Endpoints API RESTful (/api/v1/simulations)**:
+
+   - POST: Crear simulación completa (Lean Canvas + Financial Inputs + Results calculados)
+   - GET /[id]: Recuperar simulación completa con todas las relaciones
+   - PUT /[id]: Actualizar simulación, recalcular si cambian inputs
+   - GET: Listar simulaciones con paginación (para historial), filtros por deviceId/userId
+
+2. **Integración Frontend**:
+
+   - Actualizar src/app/simulation/page.tsx: reemplazar localStorage con API calls
+   - Migrar de cálculo inline: usar kpi-calculator.ts en lugar de cálculo directo
+   - Mantener localStorage como fallback durante transición
+   - Implementar loading states, error handling, retry logic
+
+3. **Requisitos técnicos**:
+
+   - Transacciones atómicas: Lean Canvas + Financial Inputs + Results en una operación
+   - Validaciones backend: reutilizar esquemas Zod de src/lib/validation/
+   - Seguir patrón /api/v1/ existente para consistencia
+   - Device ID: seguir patrón existente para identificación
+   - Cálculo server-side: validar resultados frontend con kpi-calculator.ts
+
+4. **Testing**: Tests unitarios endpoints, validación esquemas Zod, tests integración frontend
+
+5. **Finalización**: Marca las tareas del @ticket-7.md como completadas conforme se vayan realizando
+
+Estructura endpoint: {name, description?, leanCanvas, financialInputs} - results se calculan automáticamente en backend. Prerequiere ticket-6 completado.
 
 **Prompt 3:**
 

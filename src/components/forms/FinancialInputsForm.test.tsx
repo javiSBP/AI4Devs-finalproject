@@ -61,12 +61,25 @@ describe("FinancialInputsForm", () => {
 
   it("calls onSubmit when values change", async () => {
     const user = userEvent.setup();
-    render(<FinancialInputsForm initialData={defaultData} onSubmit={mockOnSubmit} />);
+
+    // Start with valid initial data so validation can pass
+    const validInitialData: FinancialData = {
+      averagePrice: 10,
+      costPerUnit: 5,
+      fixedCosts: 1000,
+      customerAcquisitionCost: 15,
+      monthlyNewCustomers: 5,
+      averageCustomerLifetime: 12, // Valid value (>= 0.1)
+    };
+
+    render(<FinancialInputsForm initialData={validInitialData} onSubmit={mockOnSubmit} />);
 
     const priceInput = screen.getByRole("spinbutton", {
       name: /precio medio por unidad\/servicio/i,
     });
 
+    // Clear the field and type a new valid value
+    await user.clear(priceInput);
     await user.type(priceInput, "50");
 
     await waitFor(() => {

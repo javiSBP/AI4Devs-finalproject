@@ -2,9 +2,9 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { POST, GET } from "./route";
 
-// Mock dependencies
-vi.mock("@/lib/validation/financial-inputs", () => ({
-  CreateSimulationSchema: {
+// Mock dependencies - Updated to match actual route imports
+vi.mock("@/lib/validation/simulation", () => ({
+  CreateCompleteSimulationSchema: {
     parse: vi.fn(),
   },
   ListSimulationsQuerySchema: {
@@ -12,9 +12,9 @@ vi.mock("@/lib/validation/financial-inputs", () => ({
   },
 }));
 
-vi.mock("@/lib/api/simulations", () => ({
-  createSimulation: vi.fn(),
-  getSimulations: vi.fn(),
+vi.mock("@/lib/api/simulations-complete", () => ({
+  createCompleteSimulation: vi.fn(),
+  getCompleteSimulations: vi.fn(),
 }));
 
 vi.mock("@/lib/api/middleware", () => ({
@@ -35,10 +35,10 @@ vi.mock("@/lib/api/response", () => ({
 }));
 
 import {
-  CreateSimulationSchema,
+  CreateCompleteSimulationSchema,
   ListSimulationsQuerySchema,
-} from "@/lib/validation/financial-inputs";
-import { createSimulation, getSimulations } from "@/lib/api/simulations";
+} from "@/lib/validation/simulation";
+import { createCompleteSimulation, getCompleteSimulations } from "@/lib/api/simulations-complete";
 import { applyMiddleware, getSecurityHeaders } from "@/lib/api/middleware";
 import {
   successResponse,
@@ -48,14 +48,14 @@ import {
 } from "@/lib/api/response";
 import { ZodError } from "zod";
 
-const mockCreateSimulationSchema = CreateSimulationSchema as unknown as {
+const mockCreateCompleteSimulationSchema = CreateCompleteSimulationSchema as unknown as {
   parse: ReturnType<typeof vi.fn>;
 };
 const mockListSimulationsQuerySchema = ListSimulationsQuerySchema as unknown as {
   parse: ReturnType<typeof vi.fn>;
 };
-const mockCreateSimulation = createSimulation as ReturnType<typeof vi.fn>;
-const mockGetSimulations = getSimulations as ReturnType<typeof vi.fn>;
+const mockCreateCompleteSimulation = createCompleteSimulation as ReturnType<typeof vi.fn>;
+const mockGetCompleteSimulations = getCompleteSimulations as ReturnType<typeof vi.fn>;
 const mockApplyMiddleware = applyMiddleware as ReturnType<typeof vi.fn>;
 const mockGetSecurityHeaders = getSecurityHeaders as ReturnType<typeof vi.fn>;
 const mockSuccessResponse = successResponse as ReturnType<typeof vi.fn>;
@@ -79,8 +79,23 @@ describe("/api/v1/simulations", () => {
     const validData = {
       name: "Test Simulation",
       description: "A test simulation",
-      averagePrice: 100,
-      costPerUnit: 50,
+      leanCanvas: {
+        name: "Test Canvas",
+        problem: "Test problem",
+        solution: "Test solution",
+        uniqueValueProposition: "Test UVP",
+        customerSegments: "Test segments",
+        channels: "Test channels",
+        revenueStreams: "Test revenue",
+      },
+      financialInputs: {
+        averagePrice: 100,
+        costPerUnit: 50,
+        fixedCosts: 1000,
+        customerAcquisitionCost: 25,
+        monthlyNewCustomers: 10,
+        averageCustomerLifetime: 12,
+      },
     };
 
     const mockSimulation = {
@@ -102,15 +117,15 @@ describe("/api/v1/simulations", () => {
       });
 
       mockApplyMiddleware.mockReturnValue({ error: null, deviceId });
-      mockCreateSimulationSchema.parse.mockReturnValue(validData);
-      mockCreateSimulation.mockResolvedValue({ success: true, data: mockSimulation });
+      mockCreateCompleteSimulationSchema.parse.mockReturnValue(validData);
+      mockCreateCompleteSimulation.mockResolvedValue({ success: true, data: mockSimulation });
       mockSuccessResponse.mockReturnValue(mockResponse);
 
       const response = await POST(request);
 
       expect(mockApplyMiddleware).toHaveBeenCalledWith(request);
-      expect(mockCreateSimulationSchema.parse).toHaveBeenCalledWith(validData);
-      expect(mockCreateSimulation).toHaveBeenCalledWith(validData, deviceId);
+      expect(mockCreateCompleteSimulationSchema.parse).toHaveBeenCalledWith(validData);
+      expect(mockCreateCompleteSimulation).toHaveBeenCalledWith(validData, deviceId);
       expect(mockSuccessResponse).toHaveBeenCalledWith(mockSimulation, 201);
       expect(response).toBe(mockResponse);
     });
@@ -127,13 +142,13 @@ describe("/api/v1/simulations", () => {
       const response = await POST(request);
 
       expect(response).toBe(middlewareError);
-      expect(mockCreateSimulationSchema.parse).not.toHaveBeenCalled();
+      expect(mockCreateCompleteSimulationSchema.parse).not.toHaveBeenCalled();
     });
 
     it("should handle validation errors", async () => {
       const request = new NextRequest("http://localhost/api/v1/simulations", {
         method: "POST",
-        body: JSON.stringify({ name: "ab" }), // Invalid data
+        body: JSON.stringify({ name: "ab" }), // Invalid data - missing required fields
         headers: {
           "Content-Type": "application/json",
           "X-Device-ID": deviceId,
@@ -150,10 +165,24 @@ describe("/api/v1/simulations", () => {
           message: "El nombre debe tener al menos 3 caracteres",
           path: ["name"],
         },
+        {
+          code: "invalid_type",
+          expected: "object",
+          received: "undefined",
+          path: ["leanCanvas"],
+          message: "Required",
+        },
+        {
+          code: "invalid_type",
+          expected: "object",
+          received: "undefined",
+          path: ["financialInputs"],
+          message: "Required",
+        },
       ]);
 
       mockApplyMiddleware.mockReturnValue({ error: null, deviceId });
-      mockCreateSimulationSchema.parse.mockImplementation(() => {
+      mockCreateCompleteSimulationSchema.parse.mockImplementation(() => {
         throw validationError;
       });
       mockValidationErrorResponse.mockReturnValue(mockResponse);
@@ -175,8 +204,8 @@ describe("/api/v1/simulations", () => {
       });
 
       mockApplyMiddleware.mockReturnValue({ error: null, deviceId });
-      mockCreateSimulationSchema.parse.mockReturnValue(validData);
-      mockCreateSimulation.mockResolvedValue({ success: false, error: "Database error" });
+      mockCreateCompleteSimulationSchema.parse.mockReturnValue(validData);
+      mockCreateCompleteSimulation.mockResolvedValue({ success: false, error: "Database error" });
       mockErrorResponse.mockReturnValue(mockResponse);
 
       const response = await POST(request);
@@ -196,7 +225,7 @@ describe("/api/v1/simulations", () => {
       });
 
       mockApplyMiddleware.mockReturnValue({ error: null, deviceId });
-      mockCreateSimulationSchema.parse.mockImplementation(() => {
+      mockCreateCompleteSimulationSchema.parse.mockImplementation(() => {
         throw new Error("Unexpected error");
       });
       mockCommonErrors.INTERNAL_ERROR.mockReturnValue(mockResponse);
@@ -252,7 +281,7 @@ describe("/api/v1/simulations", () => {
 
       mockApplyMiddleware.mockReturnValue({ error: null, deviceId });
       mockListSimulationsQuerySchema.parse.mockReturnValue(validatedQuery);
-      mockGetSimulations.mockResolvedValue({
+      mockGetCompleteSimulations.mockResolvedValue({
         success: true,
         data: { simulations: mockSimulations, pagination: mockPagination },
       });
@@ -262,7 +291,7 @@ describe("/api/v1/simulations", () => {
 
       expect(mockApplyMiddleware).toHaveBeenCalledWith(request);
       expect(mockListSimulationsQuerySchema.parse).toHaveBeenCalledWith(queryParams);
-      expect(mockGetSimulations).toHaveBeenCalledWith(validatedQuery, deviceId);
+      expect(mockGetCompleteSimulations).toHaveBeenCalledWith(validatedQuery, deviceId);
       expect(mockSuccessResponse).toHaveBeenCalledWith({
         simulations: mockSimulations,
         pagination: mockPagination,
@@ -294,11 +323,7 @@ describe("/api/v1/simulations", () => {
 
       const validationError = new ZodError([
         {
-          code: "too_small",
-          minimum: 1,
-          type: "number",
-          inclusive: true,
-          exact: false,
+          code: "custom",
           message: "La página debe ser mayor a 0",
           path: ["page"],
         },
@@ -331,7 +356,7 @@ describe("/api/v1/simulations", () => {
         sort: "updatedAt",
         order: "desc",
       });
-      mockGetSimulations.mockResolvedValue({ success: false, error: "Database error" });
+      mockGetCompleteSimulations.mockResolvedValue({ success: false, error: "Database error" });
       mockErrorResponse.mockReturnValue(mockResponse);
 
       const response = await GET(request);

@@ -93,12 +93,19 @@ const FinancialInputsForm: React.FC<FinancialInputsFormProps> = ({ initialData, 
     reValidateMode: "onChange",
   });
 
-  // Watch for changes and update parent component without triggering validation
+  // Watch for changes and update parent component with validated data
   React.useEffect(() => {
     const subscription = form.watch((data) => {
-      // Only call onSubmit with valid data, without triggering form validation
+      // Only call onSubmit with valid, parsed data
       if (data) {
-        onSubmit(data as FinancialData);
+        try {
+          // Parse and validate the data through the schema to ensure proper type conversion
+          const validatedData = FormFinancialInputsSchema.parse(data);
+          onSubmit(validatedData as FinancialData);
+        } catch (error) {
+          // If validation fails, don't call onSubmit - let the form show the errors
+          console.debug("Form data validation failed:", error);
+        }
       }
     });
     return () => subscription.unsubscribe();
