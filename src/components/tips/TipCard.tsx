@@ -119,6 +119,7 @@ const TipCard: React.FC<TipCardProps> = ({ stepIndex }) => {
               size="sm"
               onClick={goToPrevious}
               className={`h-6 w-6 p-0 ${cardColors.icon} hover:bg-current/10`}
+              tabIndex={-1}
             >
               <ChevronLeft className="h-3 w-3" />
             </Button>
@@ -127,6 +128,7 @@ const TipCard: React.FC<TipCardProps> = ({ stepIndex }) => {
               size="sm"
               onClick={goToNext}
               className={`h-6 w-6 p-0 ${cardColors.icon} hover:bg-current/10`}
+              tabIndex={-1}
             >
               <ChevronRight className="h-3 w-3" />
             </Button>
@@ -157,6 +159,7 @@ const TipCard: React.FC<TipCardProps> = ({ stepIndex }) => {
               }`}
               style={{ color: cardColors.accent }}
               aria-label={`Ir al consejo ${index + 1}`}
+              tabIndex={-1}
             />
           ))}
         </div>

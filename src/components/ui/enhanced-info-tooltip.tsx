@@ -39,7 +39,7 @@ const EnhancedInfoTooltip: React.FC<EnhancedInfoTooltipProps> = ({
     return (
       <TooltipProvider>
         <Tooltip>
-          <TooltipTrigger className="tooltip-trigger" asChild>
+          <TooltipTrigger className="tooltip-trigger" asChild tabIndex={-1}>
             {children || (
               <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
             )}
@@ -56,7 +56,7 @@ const EnhancedInfoTooltip: React.FC<EnhancedInfoTooltipProps> = ({
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger className="tooltip-trigger" asChild>
+        <TooltipTrigger className="tooltip-trigger" asChild tabIndex={-1}>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               {children || (
@@ -64,6 +64,7 @@ const EnhancedInfoTooltip: React.FC<EnhancedInfoTooltipProps> = ({
                   variant="ghost"
                   size="sm"
                   className="h-auto p-1 text-muted-foreground hover:text-foreground"
+                  tabIndex={-1}
                 >
                   <HelpCircle className="h-4 w-4" />
                 </Button>

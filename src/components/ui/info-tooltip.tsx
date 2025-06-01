@@ -13,7 +13,7 @@ const InfoTooltip: React.FC<InfoTooltipProps> = ({ content, children }) => {
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger className="tooltip-trigger" asChild>
+        <TooltipTrigger className="tooltip-trigger" asChild tabIndex={-1}>
           {children || <HelpCircle className="h-4 w-4" />}
         </TooltipTrigger>
         <TooltipContent className="max-w-xs">
