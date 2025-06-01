@@ -19,6 +19,7 @@ export interface FinancialData {
 
 export default function SimulationPage() {
   const [leanCanvasData, setLeanCanvasData] = useState<LeanCanvasData>({
+    name: "",
     problem: "",
     solution: "",
     uniqueValueProposition: "",

@@ -11,6 +11,8 @@ import InfoTooltip from "@/components/ui/info-tooltip";
 import { calculateFinancialMetrics, FinancialInputs } from "@/lib/financial/kpi-calculator";
 
 interface LeanCanvasData {
+  name: string;
+  description?: string;
   problem: string;
   solution: string;
   uniqueValueProposition: string;
@@ -111,7 +113,9 @@ export default function SimulationDetailPage() {
         </Button>
 
         <h1 className="text-3xl font-bold mb-8">
-          Simulación del {new Date(simulation.date).toLocaleDateString()}
+          {simulation.leanCanvas.name
+            ? `${simulation.leanCanvas.name} - ${new Date(simulation.date).toLocaleDateString()}`
+            : `Simulación del ${new Date(simulation.date).toLocaleDateString()}`}
         </h1>
 
         <div className="space-y-8">
@@ -129,6 +133,16 @@ export default function SimulationDetailPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground">Nombre</h3>
+                    <p>{simulation.leanCanvas.name}</p>
+                  </div>
+                  {simulation.leanCanvas.description && (
+                    <div>
+                      <h3 className="text-sm font-medium text-muted-foreground">Descripción</h3>
+                      <p>{simulation.leanCanvas.description}</p>
+                    </div>
+                  )}
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground">Problema</h3>
                     <p>{simulation.leanCanvas.problem}</p>

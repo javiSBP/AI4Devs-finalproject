@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import EnhancedInfoTooltip from "@/components/ui/enhanced-info-tooltip";
 import { SharedLeanCanvasSchema, LEAN_CANVAS_LIMITS } from "@/lib/validation/shared/lean-canvas";
 import { LEAN_CANVAS_HELP } from "@/lib/content/lean-canvas-help";
+import { Input } from "@/components/ui/input";
 
 interface LeanCanvasFormProps {
   initialData: LeanCanvasData;
@@ -58,6 +59,49 @@ const LeanCanvasForm: React.FC<LeanCanvasFormProps> = ({ initialData, onSubmit }
   return (
     <Form {...form}>
       <form className="space-y-8">
+        <div className="grid gap-6 md:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-2">Nombre del Canvas</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ej: Mi startup tech" {...field} maxLength={100} />
+                </FormControl>
+                <div className="flex justify-between items-center">
+                  <FormMessage />
+                  <span className="text-xs text-muted-foreground">
+                    {field.value?.length || 0}/100 caracteres
+                  </span>
+                </div>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-2">Descripción</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Breve descripción de tu proyecto..."
+                    {...field}
+                    maxLength={200}
+                  />
+                </FormControl>
+                <div className="flex justify-between items-center">
+                  <FormMessage />
+                  <span className="text-xs text-muted-foreground">
+                    {field.value?.length || 0}/200 caracteres
+                  </span>
+                </div>
+              </FormItem>
+            )}
+          />
+        </div>
+
         <div className="grid gap-6 md:grid-cols-2">
           <FormField
             control={form.control}

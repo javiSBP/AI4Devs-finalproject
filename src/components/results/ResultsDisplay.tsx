@@ -100,6 +100,11 @@ const getDynamicInterpretation = (
 ): string => {
   switch (metricKey) {
     case "unitMargin":
+      // Validar que averagePrice sea válido para evitar NaN
+      if (!financialInputs.averagePrice || financialInputs.averagePrice <= 0) {
+        return "Introduce un precio medio válido para calcular el margen unitario";
+      }
+
       const marginPercentage = ((value / financialInputs.averagePrice) * 100).toFixed(1);
       if (status === "positive") {
         return `Margen excelente (${marginPercentage}% del precio de ${formatCurrency(financialInputs.averagePrice)}). Tienes buena capacidad para reinvertir en crecimiento`;
@@ -112,10 +117,16 @@ const getDynamicInterpretation = (
       }
 
     case "monthlyProfit":
-      const profitVsFixed =
-        financialInputs.fixedCosts > 0
-          ? ((value / financialInputs.fixedCosts) * 100).toFixed(1)
-          : "0";
+      // Validar que fixedCosts sea válido
+      if (!financialInputs.fixedCosts || financialInputs.fixedCosts <= 0) {
+        if (status === "positive") {
+          return `Beneficio positivo de ${formatCurrency(value)}. Sin costes fijos definidos, este sería tu beneficio neto`;
+        } else {
+          return `Introduce costes fijos válidos para una evaluación más precisa del beneficio`;
+        }
+      }
+
+      const profitVsFixed = ((value / financialInputs.fixedCosts) * 100).toFixed(1);
       if (status === "positive") {
         return `Beneficio positivo equivale al ${profitVsFixed}% de tus costes fijos. Negocio rentable y sostenible`;
       } else if (status === "warning") {
@@ -130,6 +141,15 @@ const getDynamicInterpretation = (
       }
 
     case "ltv":
+      // Validar que los valores necesarios estén disponibles
+      if (
+        !financialInputs.customerAcquisitionCost ||
+        !kpis.unitMargin ||
+        !financialInputs.averageCustomerLifetime
+      ) {
+        return "Introduce datos de CAC, margen unitario y duración del cliente para evaluar el LTV";
+      }
+
       const monthsToRecover =
         kpis.unitMargin > 0
           ? (financialInputs.customerAcquisitionCost / kpis.unitMargin).toFixed(1)
@@ -143,6 +163,11 @@ const getDynamicInterpretation = (
       }
 
     case "ltvCacRatio":
+      // Validar que CAC y LTV sean válidos
+      if (!kpis.cac || !kpis.ltv || kpis.cacLtvRatio <= 0) {
+        return "Introduce datos válidos de CAC y LTV para evaluar este ratio";
+      }
+
       const actualRatio = kpis.cacLtvRatio > 0 ? (1 / kpis.cacLtvRatio).toFixed(2) : "0";
       if (status === "positive") {
         return `Ratio excelente (${actualRatio}:1). Cada euro invertido en adquisición genera ${actualRatio} euros de valor`;
@@ -155,6 +180,11 @@ const getDynamicInterpretation = (
       }
 
     case "breakEven":
+      // Validar que los datos necesarios estén disponibles
+      if (!financialInputs.monthlyNewCustomers || !kpis.breakEvenUnits) {
+        return "Introduce ventas mensuales válidas para calcular el punto de equilibrio";
+      }
+
       const currentMonthlyUnits = financialInputs.monthlyNewCustomers;
       const monthsToBreakEven =
         currentMonthlyUnits > 0 ? (kpis.breakEvenUnits / currentMonthlyUnits).toFixed(1) : "∞";
@@ -260,8 +290,19 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     },
   ];
 
-  // Calcular el revenue break-even correctamente
-  const breakEvenRevenue = breakEvenUnits * financialInputs.averagePrice;
+  // Calcular el revenue break-even correctamente - validar para evitar NaN
+  const calculateBreakEvenRevenue = () => {
+    if (
+      !Number.isFinite(breakEvenUnits) ||
+      !financialInputs.averagePrice ||
+      financialInputs.averagePrice <= 0
+    ) {
+      return 0; // Valor seguro para evitar NaN
+    }
+    return breakEvenUnits * financialInputs.averagePrice;
+  };
+
+  const breakEvenRevenue = calculateBreakEvenRevenue();
 
   const metricCards = [
     {
@@ -343,6 +384,18 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
 
   return (
     <div className="space-y-8">
+      {/* Lean Canvas Visual - ahora aparece primero */}
+      <div>
+        <div className="flex items-center gap-3 mb-4">
+          <h3 className="font-semibold text-lg">{leanCanvasData.name}</h3>
+        </div>
+        {leanCanvasData.description && (
+          <div className="text-muted-foreground mb-6">{leanCanvasData.description}</div>
+        )}
+        <LeanCanvasVisual data={leanCanvasData} />
+      </div>
+
+      {/* Resumen del modelo financiero - ahora aparece segundo */}
       <div>
         <h3 className="font-semibold text-lg mb-2">Resumen del modelo financiero</h3>
         <div className="text-muted-foreground mb-6">
@@ -482,9 +535,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
         </div>
       </div>
 
-      {/* Lean Canvas Visual */}
-      <LeanCanvasVisual data={leanCanvasData} />
-
+      {/* Análisis y recomendaciones - ahora aparece al final */}
       <div>
         <h3 className="font-semibold text-lg mb-2">Análisis y recomendaciones</h3>
         <div className="text-muted-foreground">

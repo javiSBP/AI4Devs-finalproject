@@ -66,21 +66,6 @@ model Simulation {
   financialInputs FinancialInputs?
   results         SimulationResults?
 
-  // Legacy fields for backward compatibility - will be deprecated
-  averagePrice            Float?
-  costPerUnit             Float?
-  fixedCosts              Float?
-  customerAcquisitionCost Float?
-  monthlyNewCustomers     Float?
-  averageCustomerLifetime Float?
-  initialInvestment       Float?
-  monthlyExpenses         Float?
-  avgRevenue              Float?
-  growthRate              Float?
-  timeframeMonths         Int?
-  otherParams             Json?
-  results_legacy          Json?  @map("results")
-
   @@index([deviceId])
   @@index([userId])
   @@index([createdAt])

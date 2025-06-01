@@ -2,9 +2,11 @@ import { z } from "zod";
 
 // Límites de caracteres optimizados para cada campo del Lean Canvas
 export const LEAN_CANVAS_LIMITS = {
+  name: 100,
+  description: 200,
   problem: 200,
   solution: 250,
-  uniqueValueProposition: 150,
+  uniqueValueProposition: 250,
   customerSegments: 200,
   channels: 180,
   revenueStreams: 250,
@@ -12,6 +14,22 @@ export const LEAN_CANVAS_LIMITS = {
 
 // Schema base compartido entre frontend y backend
 export const SharedLeanCanvasSchema = z.object({
+  name: z
+    .string()
+    .min(1, "El nombre es requerido")
+    .max(
+      LEAN_CANVAS_LIMITS.name,
+      `El nombre no puede exceder ${LEAN_CANVAS_LIMITS.name} caracteres`
+    )
+    .trim(),
+  description: z
+    .string()
+    .max(
+      LEAN_CANVAS_LIMITS.description,
+      `La descripción no puede exceder ${LEAN_CANVAS_LIMITS.description} caracteres`
+    )
+    .trim()
+    .optional(),
   problem: z
     .string()
     .min(1, "El problema es requerido")

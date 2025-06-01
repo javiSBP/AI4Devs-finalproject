@@ -74,15 +74,25 @@ export const BreakEvenProgress: React.FC<BreakEvenProgressProps> = ({
   currentRevenue,
   breakEvenRevenue,
 }) => {
-  const progress = Math.min((currentRevenue / breakEvenRevenue) * 100, 100);
-  const isBreakEven = currentRevenue >= breakEvenRevenue;
+  // Validar inputs para evitar NaN
+  const validCurrentRevenue = Number.isFinite(currentRevenue) ? currentRevenue : 0;
+  const validBreakEvenRevenue =
+    Number.isFinite(breakEvenRevenue) && breakEvenRevenue > 0 ? breakEvenRevenue : 0;
+
+  let progress = 0;
+  let isBreakEven = false;
+
+  if (validBreakEvenRevenue > 0) {
+    progress = Math.min((validCurrentRevenue / validBreakEvenRevenue) * 100, 100);
+    isBreakEven = validCurrentRevenue >= validBreakEvenRevenue;
+  }
 
   return (
     <div className="space-y-2">
       <div className="flex justify-between text-sm">
         <span>Progreso hacia equilibrio</span>
         <span className={isBreakEven ? "text-green-600 font-medium" : "text-gray-600"}>
-          {progress.toFixed(1)}%
+          {validBreakEvenRevenue > 0 ? `${progress.toFixed(1)}%` : "N/A"}
         </span>
       </div>
       <Progress
@@ -90,8 +100,12 @@ export const BreakEvenProgress: React.FC<BreakEvenProgressProps> = ({
         className={`h-2 ${isBreakEven ? "[&>div]:bg-green-500" : "[&>div]:bg-blue-500"}`}
       />
       <div className="flex justify-between text-xs text-muted-foreground">
-        <span>€{currentRevenue.toLocaleString()}</span>
-        <span>€{breakEvenRevenue.toLocaleString()}</span>
+        <span>€{validCurrentRevenue.toLocaleString()}</span>
+        <span>
+          {validBreakEvenRevenue > 0
+            ? `€${validBreakEvenRevenue.toLocaleString()}`
+            : "No calculable"}
+        </span>
       </div>
     </div>
   );

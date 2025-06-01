@@ -322,6 +322,25 @@ Incluye los siguientes elementos en la descripción de entidades principales del
 - restricciones (unique, not null…).
 
 **Prompt 3:**
+Implementa el @ticket-6.md: limpieza completa del modelo de datos y eliminación de campos legacy. Tareas clave:
+
+1. **Depreciación campos legacy**: Elimina COMPLETAMENTE de modelo Simulation todos los campos legacy (averagePrice, costPerUnit, fixedCosts, customerAcquisitionCost, monthlyNewCustomers, averageCustomerLifetime, initialInvestment, monthlyExpenses, avgRevenue, growthRate, timeframeMonths, otherParams, results_legacy)
+
+2. **Migración de datos**: Crea script para migrar datos legacy existentes a tablas FinancialInputs y SimulationResults, recalculando resultados con kpi-calculator.ts
+
+3. **Eliminación de APIs no usadas**: Elimina completamente src/lib/api/lean-canvas.ts, lean-canvas.test.ts y endpoints /api/v1/lean-canvas/\*
+
+4. **Limpieza código**: Actualiza src/lib/api/simulations.ts eliminando referencias legacy, simplifica validaciones nivel superior manteniendo /shared/ intacto
+
+5. **Migración Prisma**: Crea nueva migración para DROP de columnas legacy tras migrar datos
+
+6. **Limpieza script**: Elimina el script de migración una vez se haya completado correctamente
+
+7. **Documentación** Actualiza el modelos de datos @Data-Model.md para que refleje el modelo de datos actual tras la realización de los cambios
+
+8. **Finalización**: Marca las tareas del @ticket-6.md como completadas conforme se vayan realizando
+
+Objetivo: modelo Simulation limpio (solo metadatos y relaciones), arquitectura normalizada usando exclusivamente FinancialInputs y SimulationResults. APROVECHA que no estamos en producción para deprecar completamente todo legacy.
 
 ---
 

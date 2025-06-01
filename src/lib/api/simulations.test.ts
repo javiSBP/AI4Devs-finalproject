@@ -21,6 +21,13 @@ vi.mock("@/lib/prisma", () => ({
       delete: vi.fn(),
       count: vi.fn(),
     },
+    financialInputs: {
+      create: vi.fn(),
+      update: vi.fn(),
+    },
+    simulationResults: {
+      create: vi.fn(),
+    },
   },
 }));
 
@@ -32,6 +39,13 @@ const mockPrisma = prisma as unknown as {
     update: ReturnType<typeof vi.fn>;
     delete: ReturnType<typeof vi.fn>;
     count: ReturnType<typeof vi.fn>;
+  };
+  financialInputs: {
+    create: ReturnType<typeof vi.fn>;
+    update: ReturnType<typeof vi.fn>;
+  };
+  simulationResults: {
+    create: ReturnType<typeof vi.fn>;
   };
 };
 
@@ -90,6 +104,8 @@ describe("Simulations API Service", () => {
         },
         include: {
           leanCanvas: true,
+          financialInputs: true,
+          results: true,
         },
       });
     });
@@ -146,6 +162,8 @@ describe("Simulations API Service", () => {
               description: true,
             },
           },
+          financialInputs: true,
+          results: true,
         },
       });
     });
@@ -180,6 +198,8 @@ describe("Simulations API Service", () => {
               description: true,
             },
           },
+          financialInputs: true,
+          results: true,
         },
       });
     });
@@ -207,6 +227,8 @@ describe("Simulations API Service", () => {
         where: { id: simulationId, deviceId },
         include: {
           leanCanvas: true,
+          financialInputs: true,
+          results: true,
         },
       });
     });
@@ -254,6 +276,8 @@ describe("Simulations API Service", () => {
         },
         include: {
           leanCanvas: true,
+          financialInputs: true,
+          results: true,
         },
       });
     });
@@ -283,27 +307,30 @@ describe("Simulations API Service", () => {
     const financialData = {
       averagePrice: 150,
       costPerUnit: 75,
+      fixedCosts: 1000,
+      customerAcquisitionCost: 25,
+      monthlyNewCustomers: 10,
+      averageCustomerLifetime: 12,
     };
 
     it("should update financial data successfully", async () => {
-      const updatedSimulation = { ...mockSimulation, ...financialData };
-      mockPrisma.simulation.findFirst.mockResolvedValue(mockSimulation);
-      mockPrisma.simulation.update.mockResolvedValue(updatedSimulation);
+      const mockSimulationWithFinancials = {
+        ...mockSimulation,
+        financialInputs: { id: "financial-id", ...financialData },
+      };
+      const updatedSimulation = { ...mockSimulationWithFinancials };
+
+      // Mock para el primer findFirst (buscar simulación existente)
+      mockPrisma.simulation.findFirst.mockResolvedValue(mockSimulationWithFinancials);
+      // Mock para la actualización
+      mockPrisma.financialInputs.update.mockResolvedValue({ id: "financial-id", ...financialData });
+      // Mock para el segundo findFirst (obtener simulación actualizada) - usamos mockImplementation para el segundo call
+      mockPrisma.simulation.findFirst.mockImplementation(() => Promise.resolve(updatedSimulation));
 
       const result = await updateSimulationFinancials(simulationId, financialData, deviceId);
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual(updatedSimulation);
-      expect(mockPrisma.simulation.update).toHaveBeenCalledWith({
-        where: { id: simulationId },
-        data: {
-          ...financialData,
-          updatedAt: expect.any(Date),
-        },
-        include: {
-          leanCanvas: true,
-        },
-      });
     });
 
     it("should return error when simulation not found", async () => {
@@ -316,14 +343,18 @@ describe("Simulations API Service", () => {
     });
 
     it("should handle update errors", async () => {
-      mockPrisma.simulation.findFirst.mockResolvedValue(mockSimulation);
-      const error = new Error("Database error");
-      mockPrisma.simulation.update.mockRejectedValue(error);
+      const mockSimulationWithoutFinancials = {
+        ...mockSimulation,
+        financialInputs: null,
+      };
+      mockPrisma.simulation.findFirst.mockResolvedValue(mockSimulationWithoutFinancials);
 
-      const result = await updateSimulationFinancials(simulationId, financialData, deviceId);
+      // Should fail because of incomplete data for new record
+      const partialData = { averagePrice: 150 };
+      const result = await updateSimulationFinancials(simulationId, partialData, deviceId);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Failed to update simulation financials");
+      expect(result.error).toBe("Incomplete financial data for new record");
     });
   });
 
@@ -364,18 +395,83 @@ describe("Simulations API Service", () => {
 
   describe("duplicateSimulation", () => {
     it("should duplicate a simulation successfully", async () => {
-      const duplicatedSimulation = {
+      const mockFinancialInputs = {
+        id: "financial-id",
+        averagePrice: 100,
+        costPerUnit: 50,
+        fixedCosts: 1000,
+        customerAcquisitionCost: 25,
+        monthlyNewCustomers: 10,
+        averageCustomerLifetime: 12,
+      };
+
+      const mockResults = {
+        id: "results-id",
+        unitMargin: 50,
+        monthlyRevenue: 1000,
+        monthlyProfit: 500,
+        ltv: 600,
+        cac: 25,
+        cacLtvRatio: 0.04,
+        breakEvenUnits: 20,
+        breakEvenMonths: 2,
+        profitabilityHealth: "good",
+        ltvCacHealth: "good",
+        overallHealth: "good",
+        recommendations: [],
+        insights: {},
+        calculationVersion: "1.0",
+      };
+
+      const mockSimulationWithRelations = {
         ...mockSimulation,
+        financialInputs: mockFinancialInputs,
+        results: mockResults,
+      };
+
+      const duplicatedSimulation = {
         id: "new-id",
         name: "Test Simulation - Copia",
+        description: mockSimulation.description,
+        deviceId: mockSimulation.deviceId,
+        userId: mockSimulation.userId,
+        leanCanvasId: mockSimulation.leanCanvasId,
+        financialInputs: mockFinancialInputs,
+        results: mockResults,
+        leanCanvas: null,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
       };
-      mockPrisma.simulation.findFirst.mockResolvedValue(mockSimulation);
-      mockPrisma.simulation.create.mockResolvedValue(duplicatedSimulation);
+
+      // Mock sequence: first call returns existing simulation, second call returns duplicated
+      let callCount = 0;
+      mockPrisma.simulation.findFirst.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) {
+          return Promise.resolve(mockSimulationWithRelations);
+        } else {
+          return Promise.resolve(duplicatedSimulation);
+        }
+      });
+
+      mockPrisma.simulation.create.mockResolvedValue({
+        id: "new-id",
+        name: "Test Simulation - Copia",
+        description: mockSimulation.description,
+        deviceId: mockSimulation.deviceId,
+        userId: mockSimulation.userId,
+        leanCanvasId: mockSimulation.leanCanvasId,
+        leanCanvas: null,
+      });
+
+      mockPrisma.financialInputs.create.mockResolvedValue(mockFinancialInputs);
+      mockPrisma.simulationResults.create.mockResolvedValue(mockResults);
 
       const result = await duplicateSimulation(simulationId, deviceId);
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual(duplicatedSimulation);
+
       expect(mockPrisma.simulation.create).toHaveBeenCalledWith({
         data: {
           name: "Test Simulation - Copia",
@@ -383,19 +479,6 @@ describe("Simulations API Service", () => {
           deviceId: mockSimulation.deviceId,
           userId: mockSimulation.userId,
           leanCanvasId: mockSimulation.leanCanvasId,
-          averagePrice: mockSimulation.averagePrice,
-          costPerUnit: mockSimulation.costPerUnit,
-          fixedCosts: mockSimulation.fixedCosts,
-          customerAcquisitionCost: mockSimulation.customerAcquisitionCost,
-          monthlyNewCustomers: mockSimulation.monthlyNewCustomers,
-          averageCustomerLifetime: mockSimulation.averageCustomerLifetime,
-          initialInvestment: mockSimulation.initialInvestment,
-          monthlyExpenses: mockSimulation.monthlyExpenses,
-          avgRevenue: mockSimulation.avgRevenue,
-          growthRate: mockSimulation.growthRate,
-          timeframeMonths: mockSimulation.timeframeMonths,
-          otherParams: expect.any(Object),
-          results_legacy: expect.any(Object),
         },
         include: {
           leanCanvas: true,

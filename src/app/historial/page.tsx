@@ -13,12 +13,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Link from "next/link";
-import { ChartBar, FileText } from "lucide-react";
+import { ChartBar, FileText, CheckCircle, AlertCircle, XCircle } from "lucide-react";
 
 interface Simulation {
   id: number;
   date: string;
   leanCanvas: {
+    name: string;
+    description?: string;
     problem: string;
     solution: string;
     uniqueValueProposition: string;
@@ -102,29 +104,86 @@ export default function HistorialPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>Nombre</TableHead>
                     <TableHead>Fecha</TableHead>
-                    <TableHead>Propuesta de valor</TableHead>
-                    <TableHead>Precio medio</TableHead>
-                    <TableHead>Clientes/mes</TableHead>
+                    <TableHead>Ingresos/mes</TableHead>
+                    <TableHead>Viabilidad</TableHead>
                     <TableHead></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {simulations.map((simulation) => (
-                    <TableRow key={simulation.id}>
-                      <TableCell>{new Date(simulation.date).toLocaleDateString()}</TableCell>
-                      <TableCell>
-                        {simulation.leanCanvas.uniqueValueProposition || "Sin definir"}
-                      </TableCell>
-                      <TableCell>{simulation.financial.averagePrice}€</TableCell>
-                      <TableCell>{simulation.financial.monthlyNewCustomers}</TableCell>
-                      <TableCell>
-                        <Button variant="ghost" size="sm" asChild>
-                          <Link href={`/simulation/${simulation.id}`}>Ver detalles</Link>
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {simulations.map((simulation) => {
+                    // Calcular ingresos mensuales estimados
+                    const monthlyRevenue =
+                      simulation.financial.averagePrice * simulation.financial.monthlyNewCustomers;
+
+                    // Calcular margen unitario para determinar viabilidad
+                    const unitMargin =
+                      simulation.financial.averagePrice - simulation.financial.costPerUnit;
+                    const monthlyProfit =
+                      monthlyRevenue -
+                      simulation.financial.fixedCosts -
+                      simulation.financial.customerAcquisitionCost *
+                        simulation.financial.monthlyNewCustomers;
+
+                    // Determinar estado de viabilidad
+                    let viabilityStatus = {
+                      icon: XCircle,
+                      text: "Baja",
+                      className: "text-red-600 dark:text-red-400",
+                    };
+                    if (unitMargin > 0 && monthlyProfit > 0) {
+                      viabilityStatus = {
+                        icon: CheckCircle,
+                        text: "Buena",
+                        className: "text-green-600 dark:text-green-400",
+                      };
+                    } else if (unitMargin > 0) {
+                      viabilityStatus = {
+                        icon: AlertCircle,
+                        text: "Media",
+                        className: "text-yellow-600 dark:text-yellow-400",
+                      };
+                    }
+
+                    const IconComponent = viabilityStatus.icon;
+
+                    return (
+                      <TableRow key={simulation.id}>
+                        <TableCell className="font-medium">
+                          <div>
+                            <div>{simulation.leanCanvas.name || "Sin nombre"}</div>
+                            {simulation.leanCanvas.description && (
+                              <div className="text-sm text-muted-foreground truncate max-w-[200px]">
+                                {simulation.leanCanvas.description}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>{new Date(simulation.date).toLocaleDateString()}</TableCell>
+                        <TableCell className="font-mono">
+                          {new Intl.NumberFormat("es-ES", {
+                            style: "currency",
+                            currency: "EUR",
+                            minimumFractionDigits: 0,
+                          }).format(monthlyRevenue)}
+                        </TableCell>
+                        <TableCell>
+                          <span className="flex items-center gap-2">
+                            <IconComponent className={`h-4 w-4 ${viabilityStatus.className}`} />
+                            <span className={viabilityStatus.className}>
+                              {viabilityStatus.text}
+                            </span>
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Button variant="ghost" size="sm" asChild>
+                            <Link href={`/simulation/${simulation.id}`}>Ver detalles</Link>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </CardContent>

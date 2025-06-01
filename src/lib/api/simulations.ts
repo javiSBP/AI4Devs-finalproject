@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
 import type {
   CreateSimulationInput,
   UpdateSimulationInput,
@@ -17,6 +16,8 @@ export async function createSimulation(data: CreateSimulationInput, deviceId: st
       },
       include: {
         leanCanvas: true,
+        financialInputs: true,
+        results: true,
       },
     });
 
@@ -47,6 +48,8 @@ export async function getSimulations(query: ListSimulationsQueryInput, deviceId:
               description: true,
             },
           },
+          financialInputs: true,
+          results: true,
         },
       }),
       prisma.simulation.count({
@@ -77,6 +80,8 @@ export async function getSimulation(id: string, deviceId: string) {
       where: { id, deviceId },
       include: {
         leanCanvas: true,
+        financialInputs: true,
+        results: true,
       },
     });
 
@@ -110,6 +115,8 @@ export async function updateSimulation(id: string, data: UpdateSimulationInput, 
       },
       include: {
         leanCanvas: true,
+        financialInputs: true,
+        results: true,
       },
     });
 
@@ -129,20 +136,42 @@ export async function updateSimulationFinancials(
   try {
     const existingSimulation = await prisma.simulation.findFirst({
       where: { id, deviceId },
+      include: { financialInputs: true },
     });
 
     if (!existingSimulation) {
       return { success: false, error: "Simulation not found" };
     }
 
-    const updatedSimulation = await prisma.simulation.update({
-      where: { id },
-      data: {
-        ...data,
-        updatedAt: new Date(),
-      },
+    // Update or create financial inputs
+    if (existingSimulation.financialInputs) {
+      await prisma.financialInputs.update({
+        where: { simulationId: id },
+        data: {
+          ...data,
+          updatedAt: new Date(),
+        },
+      });
+    } else {
+      // For creation, we need complete data, not partial
+      if (!isCompleteFinancialData(data)) {
+        return { success: false, error: "Incomplete financial data for new record" };
+      }
+      await prisma.financialInputs.create({
+        data: {
+          simulationId: id,
+          ...data,
+        },
+      });
+    }
+
+    // Fetch updated simulation
+    const updatedSimulation = await prisma.simulation.findFirst({
+      where: { id, deviceId },
       include: {
         leanCanvas: true,
+        financialInputs: true,
+        results: true,
       },
     });
 
@@ -151,6 +180,20 @@ export async function updateSimulationFinancials(
     console.error("Error updating simulation financials:", error);
     return { success: false, error: "Failed to update simulation financials" };
   }
+}
+
+// Helper function to check if financial data is complete
+function isCompleteFinancialData(
+  data: Partial<FinancialInputsInput>
+): data is FinancialInputsInput {
+  return !!(
+    data.averagePrice !== undefined &&
+    data.costPerUnit !== undefined &&
+    data.fixedCosts !== undefined &&
+    data.customerAcquisitionCost !== undefined &&
+    data.monthlyNewCustomers !== undefined &&
+    data.averageCustomerLifetime !== undefined
+  );
 }
 
 // Delete a simulation
@@ -180,12 +223,17 @@ export async function duplicateSimulation(id: string, deviceId: string) {
   try {
     const existingSimulation = await prisma.simulation.findFirst({
       where: { id, deviceId },
+      include: {
+        financialInputs: true,
+        results: true,
+      },
     });
 
     if (!existingSimulation) {
       return { success: false, error: "Simulation not found" };
     }
 
+    // Create new simulation (only core metadata, no legacy fields)
     const duplicatedSimulation = await prisma.simulation.create({
       data: {
         name: `${existingSimulation.name} - Copia`,
@@ -193,27 +241,75 @@ export async function duplicateSimulation(id: string, deviceId: string) {
         deviceId: existingSimulation.deviceId,
         userId: existingSimulation.userId,
         leanCanvasId: existingSimulation.leanCanvasId,
-        averagePrice: existingSimulation.averagePrice,
-        costPerUnit: existingSimulation.costPerUnit,
-        fixedCosts: existingSimulation.fixedCosts,
-        customerAcquisitionCost: existingSimulation.customerAcquisitionCost,
-        monthlyNewCustomers: existingSimulation.monthlyNewCustomers,
-        averageCustomerLifetime: existingSimulation.averageCustomerLifetime,
-        // Legacy fields
-        initialInvestment: existingSimulation.initialInvestment,
-        monthlyExpenses: existingSimulation.monthlyExpenses,
-        avgRevenue: existingSimulation.avgRevenue,
-        growthRate: existingSimulation.growthRate,
-        timeframeMonths: existingSimulation.timeframeMonths,
-        otherParams: existingSimulation.otherParams || Prisma.JsonNull,
-        results_legacy: existingSimulation.results_legacy || Prisma.JsonNull,
       },
       include: {
         leanCanvas: true,
       },
     });
 
-    return { success: true, data: duplicatedSimulation };
+    // Duplicate financial inputs if they exist
+    if (existingSimulation.financialInputs) {
+      await prisma.financialInputs.create({
+        data: {
+          simulationId: duplicatedSimulation.id,
+          averagePrice: existingSimulation.financialInputs.averagePrice,
+          costPerUnit: existingSimulation.financialInputs.costPerUnit,
+          fixedCosts: existingSimulation.financialInputs.fixedCosts,
+          customerAcquisitionCost: existingSimulation.financialInputs.customerAcquisitionCost,
+          monthlyNewCustomers: existingSimulation.financialInputs.monthlyNewCustomers,
+          averageCustomerLifetime: existingSimulation.financialInputs.averageCustomerLifetime,
+          validationWarnings:
+            existingSimulation.financialInputs.validationWarnings === null
+              ? undefined
+              : existingSimulation.financialInputs.validationWarnings,
+          calculationNotes: "Duplicado de simulación existente",
+        },
+      });
+    }
+
+    // Duplicate results if they exist
+    if (existingSimulation.results) {
+      const originalInsights =
+        (existingSimulation.results.insights as Record<string, unknown>) || {};
+      await prisma.simulationResults.create({
+        data: {
+          simulationId: duplicatedSimulation.id,
+          unitMargin: existingSimulation.results.unitMargin,
+          monthlyRevenue: existingSimulation.results.monthlyRevenue,
+          monthlyProfit: existingSimulation.results.monthlyProfit,
+          ltv: existingSimulation.results.ltv,
+          cac: existingSimulation.results.cac,
+          cacLtvRatio: existingSimulation.results.cacLtvRatio,
+          breakEvenUnits: existingSimulation.results.breakEvenUnits,
+          breakEvenMonths: existingSimulation.results.breakEvenMonths,
+          profitabilityHealth: existingSimulation.results.profitabilityHealth,
+          ltvCacHealth: existingSimulation.results.ltvCacHealth,
+          overallHealth: existingSimulation.results.overallHealth,
+          recommendations:
+            existingSimulation.results.recommendations === null
+              ? []
+              : existingSimulation.results.recommendations,
+          insights: {
+            ...originalInsights,
+            duplicatedFrom: existingSimulation.id,
+            duplicatedAt: new Date().toISOString(),
+          },
+          calculationVersion: existingSimulation.results.calculationVersion,
+        },
+      });
+    }
+
+    // Fetch complete duplicated simulation
+    const completeSimulation = await prisma.simulation.findFirst({
+      where: { id: duplicatedSimulation.id },
+      include: {
+        leanCanvas: true,
+        financialInputs: true,
+        results: true,
+      },
+    });
+
+    return { success: true, data: completeSimulation };
   } catch (error) {
     console.error("Error duplicating simulation:", error);
     return { success: false, error: "Failed to duplicate simulation" };

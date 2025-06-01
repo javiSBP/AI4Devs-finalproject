@@ -6,42 +6,9 @@ import {
   type SharedLeanCanvasUpdateInput,
 } from "./shared/lean-canvas";
 
-// Re-export shared schemas for backward compatibility
+// Re-export shared schemas for use in frontend forms
 export const LeanCanvasSchema = SharedLeanCanvasSchema;
 export const LeanCanvasUpdateSchema = SharedLeanCanvasUpdateSchema;
-
-// Schema for creating a new Lean Canvas with name
-export const CreateLeanCanvasSchema = z
-  .object({
-    name: z
-      .string()
-      .min(3, "El nombre debe tener al menos 3 caracteres")
-      .max(100, "El nombre no puede exceder 100 caracteres")
-      .trim(),
-    description: z
-      .string()
-      .max(500, "La descripción no puede exceder 500 caracteres")
-      .trim()
-      .optional(),
-  })
-  .merge(LeanCanvasSchema.partial());
-
-// Schema for updating an existing Lean Canvas
-export const UpdateLeanCanvasSchema = z
-  .object({
-    name: z
-      .string()
-      .min(3, "El nombre debe tener al menos 3 caracteres")
-      .max(100, "El nombre no puede exceder 100 caracteres")
-      .trim()
-      .optional(),
-    description: z
-      .string()
-      .max(500, "La descripción no puede exceder 500 caracteres")
-      .trim()
-      .optional(),
-  })
-  .merge(LeanCanvasUpdateSchema);
 
 // Device ID validation - More permissive for browser-generated IDs
 export const DeviceIdSchema = z
@@ -84,6 +51,4 @@ export const ListQuerySchema = z.object({
 // Type exports (using shared types)
 export type LeanCanvasInput = SharedLeanCanvasInput;
 export type LeanCanvasUpdateInput = SharedLeanCanvasUpdateInput;
-export type CreateLeanCanvasInput = z.infer<typeof CreateLeanCanvasSchema>;
-export type UpdateLeanCanvasInput = z.infer<typeof UpdateLeanCanvasSchema>;
 export type ListQueryInput = z.infer<typeof ListQuerySchema>;

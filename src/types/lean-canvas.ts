@@ -3,13 +3,13 @@ import {
   SharedLeanCanvasSchema,
   SharedLeanCanvasUpdateSchema,
 } from "@/lib/validation/shared/lean-canvas";
-import { CreateLeanCanvasSchema, UpdateLeanCanvasSchema } from "@/lib/validation/lean-canvas";
+import { LeanCanvasSchema, LeanCanvasUpdateSchema } from "@/lib/validation/lean-canvas";
 
 // Core Lean Canvas types
 export type LeanCanvasData = z.infer<typeof SharedLeanCanvasSchema>;
 export type LeanCanvasUpdateData = z.infer<typeof SharedLeanCanvasUpdateSchema>;
-export type CreateLeanCanvasData = z.infer<typeof CreateLeanCanvasSchema>;
-export type UpdateLeanCanvasData = z.infer<typeof UpdateLeanCanvasSchema>;
+export type CreateLeanCanvasData = z.infer<typeof LeanCanvasSchema>;
+export type UpdateLeanCanvasData = z.infer<typeof LeanCanvasUpdateSchema>;
 
 // API Response types
 export interface LeanCanvasResponse {
