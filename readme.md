@@ -1011,7 +1011,7 @@ Esta PR implementa una API REST completa y robusta con excelente cobertura de te
 
 **Pull Request 3: feat: Implementación completa de API centralizada para simulaciones completas con migración frontend a persistencia en base de datos**
 
-**Commit:** [Pending]
+**Commit:** [Merged]
 
 **Descripción:**
 Implementación completa del ticket-7 para centralización de endpoints API y migración del frontend desde localStorage a persistencia en base de datos. Esta PR incluye la implementación de endpoints RESTful para simulaciones completas (/api/v1/simulations), transacciones atómicas, validación con Zod, sistema de Device ID, validación server-side usando kpi-calculator.ts, y suite completa de testing con manejo robusto de errores.
