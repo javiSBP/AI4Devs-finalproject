@@ -24,111 +24,64 @@ interface FinancialInputsFormProps {
 }
 
 // Form-specific schema with coercion for string inputs from HTML forms
-const FormFinancialInputsSchema = z
-  .object({
-    averagePrice: z.coerce
-      .number()
-      .min(0, "El precio medio debe ser mayor o igual a 0")
-      .max(
-        FINANCIAL_LIMITS.maxPrice,
-        `El precio medio no puede exceder ${FINANCIAL_LIMITS.maxPrice} euros`
-      )
-      .refine((val) => Number.isFinite(val), "El precio medio debe ser un número válido"),
+const FormFinancialInputsSchema = z.object({
+  averagePrice: z.coerce
+    .number()
+    .min(0, "El precio medio debe ser mayor o igual a 0")
+    .max(
+      FINANCIAL_LIMITS.maxPrice,
+      `El precio medio no puede exceder ${FINANCIAL_LIMITS.maxPrice} euros`
+    )
+    .refine((val) => Number.isFinite(val), "El precio medio debe ser un número válido"),
 
-    costPerUnit: z.coerce
-      .number()
-      .min(0, "El coste por unidad debe ser mayor o igual a 0")
-      .max(
-        FINANCIAL_LIMITS.maxPrice,
-        `El coste por unidad no puede exceder ${FINANCIAL_LIMITS.maxPrice} euros`
-      )
-      .refine((val) => Number.isFinite(val), "El coste por unidad debe ser un número válido"),
+  costPerUnit: z.coerce
+    .number()
+    .min(0, "El coste por unidad debe ser mayor o igual a 0")
+    .max(
+      FINANCIAL_LIMITS.maxPrice,
+      `El coste por unidad no puede exceder ${FINANCIAL_LIMITS.maxPrice} euros`
+    )
+    .refine((val) => Number.isFinite(val), "El coste por unidad debe ser un número válido"),
 
-    fixedCosts: z.coerce
-      .number()
-      .min(0, "Los costes fijos deben ser mayor o igual a 0")
-      .max(
-        FINANCIAL_LIMITS.maxFixedCosts,
-        `Los costes fijos no pueden exceder ${FINANCIAL_LIMITS.maxFixedCosts} euros`
-      )
-      .refine((val) => Number.isFinite(val), "Los costes fijos deben ser un número válido"),
+  fixedCosts: z.coerce
+    .number()
+    .min(0, "Los costes fijos deben ser mayor o igual a 0")
+    .max(
+      FINANCIAL_LIMITS.maxFixedCosts,
+      `Los costes fijos no pueden exceder ${FINANCIAL_LIMITS.maxFixedCosts} euros`
+    )
+    .refine((val) => Number.isFinite(val), "Los costes fijos deben ser un número válido"),
 
-    customerAcquisitionCost: z.coerce
-      .number()
-      .min(0, "El CAC debe ser mayor o igual a 0")
-      .max(FINANCIAL_LIMITS.maxCAC, `El CAC no puede exceder ${FINANCIAL_LIMITS.maxCAC} euros`)
-      .refine((val) => Number.isFinite(val), "El CAC debe ser un número válido"),
+  customerAcquisitionCost: z.coerce
+    .number()
+    .min(0, "El CAC debe ser mayor o igual a 0")
+    .max(FINANCIAL_LIMITS.maxCAC, `El CAC no puede exceder ${FINANCIAL_LIMITS.maxCAC} euros`)
+    .refine((val) => Number.isFinite(val), "El CAC debe ser un número válido"),
 
-    monthlyNewCustomers: z.coerce
-      .number()
-      .min(0, "Los nuevos clientes mensuales deben ser mayor o igual a 0")
-      .max(
-        FINANCIAL_LIMITS.maxCustomers,
-        `Los nuevos clientes mensuales no pueden exceder ${FINANCIAL_LIMITS.maxCustomers}`
-      )
-      .refine(
-        (val) => Number.isFinite(val),
-        "Los nuevos clientes mensuales deben ser un número válido"
-      ),
+  monthlyNewCustomers: z.coerce
+    .number()
+    .min(0, "Los nuevos clientes mensuales deben ser mayor o igual a 0")
+    .max(
+      FINANCIAL_LIMITS.maxCustomers,
+      `Los nuevos clientes mensuales no pueden exceder ${FINANCIAL_LIMITS.maxCustomers}`
+    )
+    .refine(
+      (val) => Number.isFinite(val),
+      "Los nuevos clientes mensuales deben ser un número válido"
+    ),
 
-    averageCustomerLifetime: z.coerce
-      .number()
-      .min(0.1, "La duración media del cliente debe ser mayor a 0")
-      .max(
-        FINANCIAL_LIMITS.maxLifetime,
-        `La duración media del cliente no puede exceder ${FINANCIAL_LIMITS.maxLifetime} meses`
-      )
-      .refine(
-        (val) => Number.isFinite(val),
-        "La duración media del cliente debe ser un número válido"
-      ),
-  })
-  .superRefine((data, ctx) => {
-    // Apply the same business rules as the shared schema
-    // El coste por unidad no puede ser mayor que el precio medio
-    if (data.costPerUnit >= data.averagePrice && data.averagePrice > 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "El coste por unidad no puede ser mayor o igual al precio medio",
-        path: ["costPerUnit"],
-      });
-    }
-
-    // Validar que el margen unitario sea razonable (al menos 5% del precio)
-    if (data.averagePrice > 0 && data.costPerUnit > 0) {
-      const margin = data.averagePrice - data.costPerUnit;
-      const marginPercentage = (margin / data.averagePrice) * 100;
-
-      if (marginPercentage < 5) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message:
-            "El margen unitario parece muy bajo (menos del 5%). Revisa tus precios y costes.",
-          path: ["costPerUnit"],
-        });
-      }
-    }
-
-    // Validar ratio CAC/LTV básico
-    if (
-      data.averagePrice > 0 &&
-      data.costPerUnit > 0 &&
-      data.customerAcquisitionCost > 0 &&
-      data.averageCustomerLifetime > 0
-    ) {
-      const ltv = (data.averagePrice - data.costPerUnit) * data.averageCustomerLifetime;
-      const cacLtvRatio = data.customerAcquisitionCost / ltv;
-
-      if (cacLtvRatio > 0.5) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message:
-            "El CAC parece muy alto comparado con el LTV. Considera reducir costes de adquisición o aumentar el valor del cliente.",
-          path: ["customerAcquisitionCost"],
-        });
-      }
-    }
-  });
+  averageCustomerLifetime: z.coerce
+    .number()
+    .min(0.1, "La duración media del cliente debe ser mayor a 0")
+    .max(
+      FINANCIAL_LIMITS.maxLifetime,
+      `La duración media del cliente no puede exceder ${FINANCIAL_LIMITS.maxLifetime} meses`
+    )
+    .refine(
+      (val) => Number.isFinite(val),
+      "La duración media del cliente debe ser un número válido"
+    ),
+});
 
 const formSchema = FormFinancialInputsSchema;
 

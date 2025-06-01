@@ -486,18 +486,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
       <LeanCanvasVisual data={leanCanvasData} />
 
       <div>
-        <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
-          Análisis y recomendaciones
-          <EnhancedInfoTooltip
-            content="Basados en tus datos financieros y tu Lean Canvas, estas son nuestras recomendaciones."
-            example="Si tu ratio LTV/CAC es bajo, te recomendaremos estrategias para reducir el coste de adquisición o aumentar el valor del cliente."
-            tips={[
-              "Las recomendaciones se generan automáticamente según tus métricas",
-              "Prioriza las recomendaciones marcadas como urgentes",
-              "Implementa los cambios gradualmente y mide los resultados",
-            ]}
-          />
-        </h3>
+        <h3 className="font-semibold text-lg mb-2">Análisis y recomendaciones</h3>
         <div className="text-muted-foreground">
           Basado en los resultados de tu simulación, estas son las conclusiones clave:
         </div>
@@ -509,13 +498,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
               key={index}
               className={`p-4 rounded-lg border ${getRecommendationStyling(recommendation.status)}`}
             >
-              <h4 className="font-medium mb-1 flex items-center gap-2">
-                {recommendation.title}
-                <EnhancedInfoTooltip
-                  content="Análisis generado automáticamente basado en tus métricas financieras."
-                  tips={["Estos análisis se actualizan cada vez que cambies tus datos de entrada"]}
-                />
-              </h4>
+              <h4 className="font-medium mb-1">{recommendation.title}</h4>
               <p dangerouslySetInnerHTML={{ __html: recommendation.message }} />
               {recommendation.type === "next_steps" && (
                 <ul className="list-disc list-inside mt-2">

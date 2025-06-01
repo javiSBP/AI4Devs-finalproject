@@ -45,17 +45,71 @@ export interface CalculationResult {
 }
 
 /**
+ * Formats recovery time in a user-friendly way
+ */
+function formatRecoveryTime(months: number): string {
+  if (months === Infinity || months <= 0) {
+    return "∞";
+  }
+
+  // If exactly 1 month, don't show decimal
+  if (months === 1) {
+    return "1 mes";
+  }
+
+  // If it's a whole number of months, don't show decimals
+  if (Math.abs(months - Math.round(months)) < 0.01) {
+    return `${Math.round(months)} meses`;
+  }
+
+  // If less than 1 month, convert to days for better UX
+  if (months < 1) {
+    const days = Math.round(months * 30); // Approximate days per month
+
+    if (days <= 7) {
+      return days === 1 ? "1 día" : `${days} días`;
+    } else if (days <= 14) {
+      const weeks = Math.round(days / 7);
+      return weeks === 1 ? "1 semana" : `${weeks} semanas`;
+    } else {
+      // For 15-29 days, show in weeks rounded
+      const weeks = Math.round(days / 7);
+      return weeks === 1 ? "1 semana" : `${weeks} semanas`;
+    }
+  }
+
+  // For other cases (> 1 month), show one decimal place only if needed
+  if (Math.abs(months - Math.round(months)) < 0.1) {
+    return `${Math.round(months)} meses`;
+  }
+  return `${months.toFixed(1)} meses`;
+}
+
+/**
  * Calculates financial KPIs based on inputs
  */
 export function calculateKPIs(inputs: FinancialInputs): KPIResults {
+  // Validate and ensure all inputs are numbers
+  const safeNumber = (value: number): number => {
+    const num = Number(value);
+    return Number.isFinite(num) && num >= 0 ? num : 0;
+  };
+
   const {
-    averagePrice,
-    costPerUnit,
-    fixedCosts,
-    customerAcquisitionCost,
-    monthlyNewCustomers,
-    averageCustomerLifetime,
-  } = inputs;
+    averagePrice = 0,
+    costPerUnit = 0,
+    fixedCosts = 0,
+    customerAcquisitionCost = 0,
+    monthlyNewCustomers = 0,
+    averageCustomerLifetime = 0,
+  } = {
+    averagePrice: safeNumber(inputs.averagePrice),
+    costPerUnit: safeNumber(inputs.costPerUnit),
+    fixedCosts: safeNumber(inputs.fixedCosts),
+    customerAcquisitionCost: safeNumber(inputs.customerAcquisitionCost),
+    monthlyNewCustomers: safeNumber(inputs.monthlyNewCustomers),
+    averageCustomerLifetime: safeNumber(inputs.averageCustomerLifetime),
+  };
 
   // Core calculations
   const unitMargin = averagePrice - costPerUnit;
@@ -113,10 +167,10 @@ export function classifyHealth(kpis: KPIResults): HealthClassification {
 
   if (ltvCacRatio >= 3) {
     ltvCacHealth = "good"; // LTV/CAC >= 3 es excelente
-  } else if (ltvCacRatio >= 1) {
-    ltvCacHealth = "medium"; // LTV/CAC >= 1 es aceptable
+  } else if (ltvCacRatio >= 2) {
+    ltvCacHealth = "medium"; // LTV/CAC >= 2 es aceptable
   } else {
-    ltvCacHealth = "bad"; // LTV/CAC < 1 es malo
+    ltvCacHealth = "bad"; // LTV/CAC < 2 es malo
   }
 
   // Overall health (most restrictive)
@@ -150,100 +204,264 @@ export function generateRecommendations(
 ): Recommendation[] {
   const recommendations: Recommendation[] = [];
 
-  // Alerta crítica: CAC mayor que LTV
-  if (kpis.cac > kpis.ltv && kpis.ltv > 0) {
-    recommendations.push({
-      type: "viability",
-      title: "⚠️ ALERTA CRÍTICA: Modelo inviable",
-      message: `Tu coste de adquisición (€${kpis.cac}) es <strong>mayor que el valor del cliente (€${kpis.ltv})</strong>. Esto significa que <strong>pierdes dinero con cada cliente nuevo</strong>. Debes reducir urgentemente el CAC o aumentar el LTV antes de seguir invirtiendo en marketing.`,
-      status: "negative",
-    });
-  }
+  // Validate and ensure all inputs are numbers
+  const safeInputs = {
+    averagePrice: Number(inputs.averagePrice) || 0,
+    costPerUnit: Number(inputs.costPerUnit) || 0,
+    fixedCosts: Number(inputs.fixedCosts) || 0,
+    customerAcquisitionCost: Number(inputs.customerAcquisitionCost) || 0,
+    monthlyNewCustomers: Number(inputs.monthlyNewCustomers) || 0,
+    averageCustomerLifetime: Number(inputs.averageCustomerLifetime) || 0,
+  };
 
-  // Viabilidad económica
+  // Validate and ensure all KPIs are numbers
+  const safeKpis = {
+    unitMargin: Number(kpis.unitMargin) || 0,
+    monthlyRevenue: Number(kpis.monthlyRevenue) || 0,
+    monthlyProfit: Number(kpis.monthlyProfit) || 0,
+    ltv: Number(kpis.ltv) || 0,
+    cac: Number(kpis.cac) || 0,
+    cacLtvRatio: Number(kpis.cacLtvRatio) || 0,
+    breakEvenUnits: Number(kpis.breakEvenUnits) || 0,
+    breakEvenMonths: Number(kpis.breakEvenMonths) || 0,
+  };
+
+  // Viabilidad económica - con datos específicos
   if (health.profitabilityHealth === "good") {
+    const profitMargin = ((safeKpis.monthlyProfit / safeKpis.monthlyRevenue) * 100).toFixed(1);
     recommendations.push({
       type: "viability",
       title: "Viabilidad económica",
-      message:
-        "Tu modelo muestra un <strong>beneficio mensual positivo</strong>. Esto indica que tu negocio puede ser viable si se cumplen las previsiones de ventas e ingresos.",
+      message: `Tu modelo genera un <strong>beneficio del ${profitMargin}%</strong> sobre ventas (€${safeKpis.monthlyProfit.toFixed(0)} de €${safeKpis.monthlyRevenue.toFixed(0)} mensuales). Esto indica viabilidad si mantienes las previsiones de ventas.`,
       status: "positive",
     });
   } else if (health.profitabilityHealth === "medium") {
-    recommendations.push({
-      type: "viability",
-      title: "Viabilidad económica",
-      message:
-        "Tu modelo tiene margen unitario positivo pero <strong>pérdidas mensuales</strong>. Considera aumentar las ventas o reducir costes fijos para alcanzar la rentabilidad.",
-      status: "warning",
-    });
+    const lossAmount = Math.abs(safeKpis.monthlyProfit);
+    // CORRECCIÓN: Cada cliente nuevo aporta (margen unitario - CAC) al resultado neto
+    const netContributionPerCustomer = safeKpis.unitMargin - safeKpis.cac;
+
+    // VALIDACIÓN: Solo calcular si la contribución neta es positiva
+    if (netContributionPerCustomer > 0) {
+      const additionalSalesNeeded = Math.ceil(lossAmount / netContributionPerCustomer);
+      recommendations.push({
+        type: "viability",
+        title: "Viabilidad económica",
+        message: `Tienes margen unitario positivo (€${safeKpis.unitMargin.toFixed(0)}) pero <strong>pérdidas de €${lossAmount.toFixed(0)}/mes</strong>. Necesitas <strong>${additionalSalesNeeded} ventas más al mes</strong> para ser rentable.`,
+        status: "warning",
+      });
+    } else {
+      // Caso especial: CAC >= margen unitario en categoría "medium"
+      const maxViableCAC = Math.floor(safeKpis.unitMargin * 0.9);
+      recommendations.push({
+        type: "viability",
+        title: "Viabilidad económica",
+        message: `Tienes margen unitario positivo (€${safeKpis.unitMargin.toFixed(0)}) pero <strong>CAC demasiado alto (€${safeKpis.cac})</strong>. Cada cliente nuevo genera pérdidas. Reduce el CAC por debajo de €${maxViableCAC} antes de aumentar ventas.`,
+        status: "warning",
+      });
+    }
   } else {
-    recommendations.push({
-      type: "viability",
-      title: "Viabilidad económica",
-      message:
-        "Tu modelo muestra <strong>pérdidas mensuales</strong>. Considera revisar tus precios, costes variables o estructura de costes fijos para mejorar la rentabilidad.",
-      status: "negative",
-    });
+    const lossAmount = Math.abs(safeKpis.monthlyProfit);
+
+    // CASO ESPECIAL: Si CAC > margen unitario, aumentar ventas empeora las pérdidas
+    if (safeKpis.cac > safeKpis.unitMargin) {
+      const lossPerCustomer = safeKpis.cac - safeKpis.unitMargin;
+      const maxViableCAC = Math.floor(safeKpis.unitMargin * 0.8);
+
+      recommendations.push({
+        type: "viability",
+        title: "Viabilidad económica",
+        message: `<strong>Modelo inviable:</strong> cada cliente genera €${lossPerCustomer.toFixed(0)} de pérdida neta (CAC €${safeKpis.cac} > margen €${safeKpis.unitMargin}). <strong>AUMENTAR VENTAS EMPEORA LAS PÉRDIDAS</strong>. Urgente: reduce el CAC por debajo de €${maxViableCAC} antes de adquirir más clientes.`,
+        status: "negative",
+      });
+    } else {
+      // Caso normal: margen positivo pero pérdidas por costes fijos o volumen insuficiente
+      // CORRECCIÓN: Cada cliente nuevo aporta (margen unitario - CAC) al resultado neto
+      const netContributionPerCustomer = safeKpis.unitMargin - safeKpis.cac;
+
+      // VALIDACIÓN: Solo calcular si la contribución neta es positiva
+      if (netContributionPerCustomer > 0) {
+        const additionalSalesNeeded = Math.ceil(lossAmount / netContributionPerCustomer);
+        const currentSalesGrowth =
+          safeInputs.monthlyNewCustomers > 0
+            ? ((additionalSalesNeeded / safeInputs.monthlyNewCustomers) * 100).toFixed(0)
+            : "∞";
+
+        if (safeInputs.fixedCosts > 0) {
+          if (lossAmount <= safeInputs.fixedCosts) {
+            // Reducción posible de costes fijos
+            const costReductionPercentage = ((lossAmount / safeInputs.fixedCosts) * 100).toFixed(0);
+            const newFixedCosts = safeInputs.fixedCosts - lossAmount;
+            recommendations.push({
+              type: "viability",
+              title: "Viabilidad económica",
+              message: `Pérdidas importantes de <strong>€${lossAmount.toFixed(0)}/mes</strong>. Para ser viable necesitas: <strong>reducir costes fijos un ${costReductionPercentage}%</strong> (de €${safeInputs.fixedCosts} a €${newFixedCosts.toFixed(0)}) o <strong>aumentar ventas un ${currentSalesGrowth}%</strong> (${additionalSalesNeeded} unidades más/mes).`,
+              status: "negative",
+            });
+          } else {
+            // Reducción imposible - necesitas eliminar TODOS los costes fijos y aún más
+            const remainingLoss = lossAmount - safeInputs.fixedCosts;
+            recommendations.push({
+              type: "viability",
+              title: "Viabilidad económica",
+              message: `Pérdidas críticas de <strong>€${lossAmount.toFixed(0)}/mes</strong>. Incluso <strong>eliminando TODOS los costes fijos</strong> (€${safeInputs.fixedCosts}) aún tendrías €${remainingLoss.toFixed(0)}/mes de pérdidas. Necesitas <strong>aumentar ventas ${additionalSalesNeeded} unidades más/mes</strong> (${currentSalesGrowth}% de crecimiento).`,
+              status: "negative",
+            });
+          }
+        } else {
+          recommendations.push({
+            type: "viability",
+            title: "Viabilidad económica",
+            message: `Pérdidas de <strong>€${lossAmount.toFixed(0)}/mes</strong> sin costes fijos. El problema está en los costes variables o CAC. Necesitas <strong>${additionalSalesNeeded} ventas más/mes</strong> (crecimiento del ${currentSalesGrowth}%) para compensar con mayor volumen.`,
+            status: "negative",
+          });
+        }
+      } else {
+        // Caso especial: CAC >= margen unitario, pero no debe llegar aquí debido a la validación anterior
+        // Pero por si acaso, manejo este edge case
+        const maxViableCAC = Math.floor(safeKpis.unitMargin * 0.9);
+        recommendations.push({
+          type: "viability",
+          title: "Viabilidad económica",
+          message: `<strong>Error en clasificación:</strong> CAC (€${safeKpis.cac}) ≥ margen unitario (€${safeKpis.unitMargin}). Cada cliente genera pérdidas. Reduce el CAC por debajo de €${maxViableCAC}.`,
+          status: "negative",
+        });
+      }
+    }
   }
 
-  // Eficiencia de adquisición de clientes
+  // Eficiencia de adquisición de clientes - con datos específicos
+  const actualLtvCacRatio = safeKpis.ltv > 0 ? (safeKpis.ltv / safeKpis.cac).toFixed(1) : "0";
+
   if (health.ltvCacHealth === "good") {
+    const monthsToRecoverRaw =
+      safeKpis.unitMargin > 0 ? safeKpis.cac / safeKpis.unitMargin : Infinity;
+    const monthsToRecover = formatRecoveryTime(monthsToRecoverRaw);
     recommendations.push({
       type: "acquisition",
       title: "Eficiencia de adquisición de clientes",
-      message:
-        "Tu ratio LTV/CAC es <strong>excelente</strong> (mayor a 3), lo que indica que tu estrategia de adquisición de clientes es muy eficiente.",
+      message: `Ratio excelente de <strong>${actualLtvCacRatio}:1</strong>. Recuperas los €${safeKpis.cac} de CAC en solo ${monthsToRecover}. Puedes invertir más en marketing para acelerar el crecimiento.`,
       status: "positive",
     });
   } else if (health.ltvCacHealth === "medium") {
+    const improvementNeeded = Math.ceil(safeKpis.cac * 3 - safeKpis.ltv);
     recommendations.push({
       type: "acquisition",
       title: "Eficiencia de adquisición de clientes",
-      message:
-        "Tu ratio LTV/CAC es <strong>aceptable</strong> pero podría mejorar. Intenta reducir tus costes de adquisición o aumentar el valor del cliente (LTV).",
+      message: `Ratio de <strong>${actualLtvCacRatio}:1</strong> es aceptable pero mejorable. Para llegar al ideal (3:1) necesitas aumentar el LTV en €${improvementNeeded} o reducir el CAC a €${Math.ceil(safeKpis.ltv / 3)}.`,
       status: "warning",
     });
   } else {
-    recommendations.push({
-      type: "acquisition",
-      title: "Eficiencia de adquisición de clientes",
-      message:
-        "Tu ratio LTV/CAC es <strong>preocupante</strong> (menor que 1). Cuesta más adquirir un cliente que lo que te generará en ingresos. Revisa urgentemente tu estrategia de marketing y adquisición.",
-      status: "negative",
-    });
+    if (safeKpis.cac > safeKpis.ltv) {
+      const lossPerCustomer = safeKpis.cac - safeKpis.ltv;
+      const maxViableCAC = Math.floor(safeKpis.ltv * 0.8);
+      recommendations.push({
+        type: "acquisition",
+        title: "Eficiencia de adquisición de clientes",
+        message: `<strong>Ratio crítico (${actualLtvCacRatio}:1)</strong>. Pierdes €${lossPerCustomer.toFixed(0)} por cliente adquirido. URGENTE: reduce el CAC a máximo €${maxViableCAC} o para temporalmente la adquisición hasta optimizar el modelo.`,
+        status: "negative",
+      });
+    } else {
+      recommendations.push({
+        type: "acquisition",
+        title: "Eficiencia de adquisición de clientes",
+        message: `Ratio insuficiente (${actualLtvCacRatio}:1). La adquisición apenas es rentable. Reduce el CAC por debajo de €${Math.ceil(safeKpis.ltv / 2)} o aumenta el LTV mejorando retención.`,
+        status: "negative",
+      });
+    }
   }
 
-  // Optimización adicional
+  // Optimización específica del modelo
   if (health.overallHealth === "good") {
+    const reinvestmentCapacity = safeKpis.monthlyProfit * 0.7; // 70% del beneficio
+    const potentialNewCustomers = Math.floor(reinvestmentCapacity / safeKpis.cac);
     recommendations.push({
       type: "optimization",
       title: "Optimización del modelo",
-      message:
-        "¡Excelente! Tu modelo financiero muestra <strong>buena salud</strong>. Para seguir mejorando, considera optimizar procesos, reducir costes operativos o explorar nuevas oportunidades de crecimiento.",
+      message: `Negocio saludable. Puedes reinvertir €${reinvestmentCapacity.toFixed(0)}/mes (70% del beneficio) para adquirir ${potentialNewCustomers} clientes adicionales mensuales y acelerar el crecimiento.`,
       status: "positive",
     });
-  } else if (Number.isFinite(kpis.breakEvenMonths) && kpis.breakEvenMonths > 0) {
+  } else if (Number.isFinite(safeKpis.breakEvenMonths) && safeKpis.breakEvenMonths > 0) {
     // Umbral dinámico: si tardas más de 2 años O más del doble de tu ciclo de vida de cliente
-    const dynamicThreshold = Math.max(24, inputs.averageCustomerLifetime * 2);
-    if (kpis.breakEvenMonths > dynamicThreshold) {
+    const dynamicThreshold = Math.max(24, safeInputs.averageCustomerLifetime * 2);
+    if (safeKpis.breakEvenMonths > dynamicThreshold) {
+      const monthlyGap = safeKpis.breakEvenUnits - safeInputs.monthlyNewCustomers;
+      const requiredGrowth = ((monthlyGap / safeInputs.monthlyNewCustomers) * 100).toFixed(0);
       recommendations.push({
         type: "optimization",
-        title: "Punto de equilibrio",
-        message: `Tu punto de equilibrio está <strong>muy lejos</strong> (${Math.ceil(kpis.breakEvenMonths)} meses). Considera estrategias para acelerar las ventas o reducir la estructura de costes.`,
+        title: "Aceleración del punto de equilibrio",
+        message: `Break-even en ${Math.ceil(safeKpis.breakEvenMonths)} meses es demasiado lejano. Necesitas aumentar ventas en ${requiredGrowth}% (${Math.ceil(monthlyGap)} unidades más/mes) o reducir costes fijos en €${Math.ceil(safeInputs.fixedCosts * 0.3)}.`,
         status: "warning",
       });
     }
   }
 
-  // Próximos pasos
-  recommendations.push({
-    type: "next_steps",
-    title: "Próximos pasos",
-    message:
-      "Para continuar validando tu modelo de negocio, considera: <strong>validar tus estimaciones</strong> con experimentos reales, <strong>confirmar costes</strong> con proveedores, buscar formas de <strong>aumentar el ciclo de vida del cliente</strong>, y explorar opciones para <strong>reducir costes de adquisición</strong>.",
-    status: "neutral",
-  });
+  // Próximos pasos específicos basados en el estado actual
+  const nextStepsMessage = [];
+
+  if (health.ltvCacHealth === "bad") {
+    if (safeKpis.cac > safeKpis.ltv) {
+      nextStepsMessage.push(
+        `<strong>Prioridad 1:</strong> Reduce CAC de €${safeKpis.cac} a máximo €${Math.floor(safeKpis.ltv * 0.8)} mediante marketing orgánico o mejores conversiones`
+      );
+    } else if (safeKpis.cac > safeKpis.unitMargin) {
+      // CASO ESPECIAL: CAC > margen unitario - cada cliente genera pérdidas netas
+      const maxViableCAC = Math.floor(safeKpis.unitMargin * 0.9);
+      nextStepsMessage.push(
+        `<strong>Prioridad 1:</strong> Reduce CAC de €${safeKpis.cac} a máximo €${maxViableCAC} para que cada cliente sea rentable (CAC debe ser < margen €${safeKpis.unitMargin})`
+      );
+    } else {
+      const targetCAC = Math.floor(safeKpis.ltv / 3); // Para ratio 3:1
+      nextStepsMessage.push(
+        `<strong>Prioridad 1:</strong> Reduce CAC de €${safeKpis.cac} a máximo €${targetCAC} para lograr ratio LTV/CAC saludable (3:1)`
+      );
+    }
+  }
+
+  if (safeKpis.monthlyProfit < 0) {
+    // IMPORTANTE: Solo sugerir aumentar ventas si CAC <= margen unitario
+    // Si CAC > margen, cada venta adicional empeora las pérdidas
+    if (safeKpis.cac <= safeKpis.unitMargin) {
+      // CORRECCIÓN: Cada cliente nuevo aporta (margen unitario - CAC) al resultado neto
+      const netContributionPerCustomer = safeKpis.unitMargin - safeKpis.cac;
+
+      // VALIDACIÓN: Solo calcular si la contribución neta es positiva
+      if (netContributionPerCustomer > 0) {
+        const breakEvenSales = Math.ceil(
+          Math.abs(safeKpis.monthlyProfit) / netContributionPerCustomer
+        );
+        nextStepsMessage.push(
+          `<strong>Prioridad 2:</strong> Alcanza ${breakEvenSales} ventas adicionales/mes para ser rentable`
+        );
+      } else {
+        // Caso especial: CAC = margen unitario (contribución neta = 0)
+        nextStepsMessage.push(
+          `<strong>Prioridad 2:</strong> CAC igual al margen unitario. Reduce el CAC por debajo de €${Math.floor(safeKpis.unitMargin * 0.9)} para que las ventas sean rentables`
+        );
+      }
+    } else {
+      // Caso especial: CAC > margen unitario - NO sugerir más ventas
+      nextStepsMessage.push(
+        `<strong>Prioridad 2:</strong> Para la adquisición de clientes hasta reducir el CAC. Cada cliente nuevo aumenta las pérdidas en €${(safeKpis.cac - safeKpis.unitMargin).toFixed(0)}/mes`
+      );
+    }
+  }
+
+  if (safeInputs.averageCustomerLifetime < 12) {
+    const targetLifetime = Math.ceil(safeInputs.averageCustomerLifetime * 1.5);
+    const ltvIncrease = safeKpis.unitMargin * (targetLifetime - safeInputs.averageCustomerLifetime);
+    nextStepsMessage.push(
+      `<strong>Mejora retención:</strong> Aumentar duración del cliente de ${safeInputs.averageCustomerLifetime} a ${targetLifetime} meses sumaría €${ltvIncrease.toFixed(0)} al LTV`
+    );
+  }
+
+  if (nextStepsMessage.length > 0) {
+    recommendations.push({
+      type: "next_steps",
+      title: "Próximos pasos prioritarios",
+      message: nextStepsMessage.join("<br><br>"),
+      status: "neutral",
+    });
+  }
 
   return recommendations;
 }

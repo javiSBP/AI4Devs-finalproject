@@ -187,23 +187,22 @@ describe("KPI Calculator", () => {
     it("should generate positive recommendations for good health", () => {
       const recommendations = generateRecommendations(goodKpis, goodHealth, validInputs);
 
-      expect(recommendations).toHaveLength(4); // viability, acquisition, optimization, next_steps
+      expect(recommendations).toHaveLength(3); // viability, acquisition, optimization (next_steps es condicional)
 
       const viabilityRec = recommendations.find((r) => r.type === "viability");
       expect(viabilityRec?.status).toBe("positive");
       expect(viabilityRec?.title).toBe("Viabilidad económica");
+      expect(viabilityRec?.message).toContain("beneficio del");
 
       const acquisitionRec = recommendations.find((r) => r.type === "acquisition");
       expect(acquisitionRec?.status).toBe("positive");
       expect(acquisitionRec?.title).toBe("Eficiencia de adquisición de clientes");
+      expect(acquisitionRec?.message).toContain("Ratio excelente");
 
       const optimizationRec = recommendations.find((r) => r.type === "optimization");
       expect(optimizationRec?.status).toBe("positive");
       expect(optimizationRec?.title).toBe("Optimización del modelo");
-
-      const nextStepsRec = recommendations.find((r) => r.type === "next_steps");
-      expect(nextStepsRec?.status).toBe("neutral");
-      expect(nextStepsRec?.title).toBe("Próximos pasos");
+      expect(optimizationRec?.message).toContain("Negocio saludable");
     });
 
     it("should generate warning for medium profitability", () => {
@@ -218,9 +217,8 @@ describe("KPI Calculator", () => {
 
       const viabilityRec = recommendations.find((r) => r.type === "viability");
       expect(viabilityRec?.status).toBe("warning");
-      expect(viabilityRec?.message).toContain(
-        "margen unitario positivo pero <strong>pérdidas mensuales</strong>"
-      );
+      expect(viabilityRec?.message).toContain("margen unitario positivo");
+      expect(viabilityRec?.message).toContain("pérdidas de €500/mes");
     });
 
     it("should generate negative recommendations for bad health", () => {
@@ -235,11 +233,12 @@ describe("KPI Calculator", () => {
 
       const viabilityRec = recommendations.find((r) => r.type === "viability");
       expect(viabilityRec?.status).toBe("negative");
-      expect(viabilityRec?.message).toContain("pérdidas mensuales");
+      expect(viabilityRec?.message).toContain("Modelo inviable");
+      expect(viabilityRec?.message).toContain("cada cliente genera €35 de pérdida neta");
 
       const acquisitionRec = recommendations.find((r) => r.type === "acquisition");
       expect(acquisitionRec?.status).toBe("negative");
-      expect(acquisitionRec?.message).toContain("preocupante");
+      expect(acquisitionRec?.message).toContain("Ratio insuficiente");
     });
 
     it("should generate warning for long break-even period", () => {
@@ -252,7 +251,7 @@ describe("KPI Calculator", () => {
       const recommendations = generateRecommendations(longBreakEvenKpis, mediumHealth, validInputs);
 
       const optimizationRec = recommendations.find((r) => r.type === "optimization");
-      expect(optimizationRec?.title).toBe("Punto de equilibrio");
+      expect(optimizationRec?.title).toBe("Aceleración del punto de equilibrio");
       expect(optimizationRec?.status).toBe("warning");
       expect(optimizationRec?.message).toContain("30 meses");
     });
@@ -269,7 +268,7 @@ describe("KPI Calculator", () => {
       // Should not generate break-even warning for Infinity
       const optimizationRec = recommendations.find((r) => r.type === "optimization");
       expect(optimizationRec?.title).toBe("Optimización del modelo");
-      expect(optimizationRec?.message).toContain("¡Excelente!");
+      expect(optimizationRec?.message).toContain("Negocio saludable");
     });
   });
 
@@ -280,7 +279,7 @@ describe("KPI Calculator", () => {
       expect(result.kpis.unitMargin).toBe(50);
       expect(result.health.overallHealth).toBe("good");
       expect(result.recommendations).toBeDefined();
-      expect(result.recommendations).toHaveLength(4);
+      expect(result.recommendations).toHaveLength(3); // viability, acquisition, optimization
       expect(result.calculatedAt).toBeInstanceOf(Date);
       expect(result.calculationVersion).toBe("1.0");
     });
@@ -325,6 +324,165 @@ describe("KPI Calculator", () => {
       expect(result.calculatedAt).toBeInstanceOf(Date);
       expect(result.calculationVersion).toBe("1.0");
       expect(Math.abs(result.calculatedAt.getTime() - Date.now())).toBeLessThan(1000); // Within 1 second
+    });
+
+    it("should handle edge cases and invalid numbers", () => {
+      const result = calculateFinancialMetrics({
+        averagePrice: NaN,
+        costPerUnit: Infinity,
+        fixedCosts: -Infinity,
+        customerAcquisitionCost: 0,
+        monthlyNewCustomers: 0,
+        averageCustomerLifetime: 0,
+      });
+
+      // Invalid inputs should be converted to 0, making calculations finite
+      expect(result.kpis.unitMargin).toBe(0); // 0 - 0 = 0
+      expect(result.kpis.monthlyRevenue).toBe(0); // 0 * 0 = 0
+      expect(result.recommendations).toBeDefined();
+      expect(result.recommendations.length).toBeGreaterThan(0);
+    });
+
+    it("should generate more useful viability messages with specific percentages and actions", () => {
+      // Caso 1: Pérdidas manejables (menores que costes fijos)
+      const manageableLossCase = calculateFinancialMetrics({
+        averagePrice: 50,
+        costPerUnit: 40,
+        fixedCosts: 1000,
+        customerAcquisitionCost: 5,
+        monthlyNewCustomers: 50,
+        averageCustomerLifetime: 12,
+      });
+
+      const manageableViabilityRec = manageableLossCase.recommendations.find(
+        (r) => r.type === "viability"
+      );
+      expect(manageableViabilityRec).toBeDefined();
+      expect(manageableViabilityRec?.status).toBe("negative");
+
+      // Verificar que incluye porcentajes específicos para reducción factible
+      expect(manageableViabilityRec?.message).toContain("reducir costes fijos un");
+      expect(manageableViabilityRec?.message).toContain("%");
+      expect(manageableViabilityRec?.message).toContain("de €1000 a €");
+      expect(manageableViabilityRec?.message).toContain("aumentar ventas un");
+
+      // Caso 2: Pérdidas críticas (mayores que costes fijos)
+      const criticalLossCase = calculateFinancialMetrics({
+        averagePrice: 10,
+        costPerUnit: 8,
+        fixedCosts: 1000,
+        customerAcquisitionCost: 5,
+        monthlyNewCustomers: 50,
+        averageCustomerLifetime: 12,
+      });
+
+      const criticalViabilityRec = criticalLossCase.recommendations.find(
+        (r) => r.type === "viability"
+      );
+      expect(criticalViabilityRec).toBeDefined();
+      expect(criticalViabilityRec?.status).toBe("negative");
+
+      // Verificar que muestra el caso crítico correctamente
+      expect(criticalViabilityRec?.message).toContain("Modelo inviable");
+      expect(criticalViabilityRec?.message).toContain("cada cliente genera €3 de pérdida neta");
+      expect(criticalViabilityRec?.message).toContain("AUMENTAR VENTAS EMPEORA LAS PÉRDIDAS");
+
+      // Caso sin costes fijos (edge case)
+      const noCostsCase = calculateFinancialMetrics({
+        averagePrice: 10,
+        costPerUnit: 8,
+        fixedCosts: 0,
+        customerAcquisitionCost: 15, // CAC alto para generar pérdidas
+        monthlyNewCustomers: 50,
+        averageCustomerLifetime: 12,
+      });
+
+      const noCostsViabilityRec = noCostsCase.recommendations.find((r) => r.type === "viability");
+      expect(noCostsViabilityRec?.message).toContain("Modelo inviable");
+      expect(noCostsViabilityRec?.message).toContain("cada cliente genera €13 de pérdida neta");
+    });
+
+    it("should have consistent numbers across all recommendation sections", () => {
+      // Caso específico del usuario: pérdidas de €640/mes
+      const result = calculateFinancialMetrics({
+        averagePrice: 7,
+        costPerUnit: 5,
+        fixedCosts: 500,
+        customerAcquisitionCost: 9,
+        monthlyNewCustomers: 20,
+        averageCustomerLifetime: 6,
+      });
+
+      // Verificar cálculos base
+      expect(result.kpis.monthlyProfit).toBe(-640); // -640€ pérdidas
+      expect(result.kpis.breakEvenUnits).toBe(250); // 500€ fijos ÷ 2€ margen
+      expect(result.kpis.ltv).toBe(12); // 2€ × 6 meses
+      expect(result.kpis.cac).toBe(9);
+
+      // Verificar clasificación de salud
+      // LTV/CAC = 12/9 = 1.33, que ahora debería ser "bad" (< 2)
+      expect(result.health.ltvCacHealth).toBe("bad");
+
+      const viabilityRec = result.recommendations.find((r) => r.type === "viability");
+      const nextStepsRec = result.recommendations.find((r) => r.type === "next_steps");
+
+      // Viabilidad debe explicar que aumentar ventas empeora las pérdidas (CAC > margen)
+      expect(viabilityRec?.message).toContain("Modelo inviable");
+      expect(viabilityRec?.message).toContain("cada cliente genera €7 de pérdida neta");
+      expect(viabilityRec?.message).toContain("AUMENTAR VENTAS EMPEORA LAS PÉRDIDAS");
+
+      // Próximos pasos: ahora SÍ debe tener Prioridad 1 porque LTV/CAC es "bad"
+      expect(nextStepsRec?.message).toContain("Prioridad 1:");
+      expect(nextStepsRec?.message).toContain("Prioridad 2:");
+      // Prioridad 2 ya NO debe sugerir aumentar ventas (porque CAC > margen)
+      expect(nextStepsRec?.message).toContain("Para la adquisición de clientes");
+      expect(nextStepsRec?.message).toContain("Cada cliente nuevo aumenta las pérdidas en €7/mes");
+    });
+
+    it("should use correct singular/plural forms for time units", () => {
+      // Test 1 día (singular)
+      const oneDayCase = calculateFinancialMetrics({
+        averagePrice: 100,
+        costPerUnit: 50,
+        fixedCosts: 1000,
+        customerAcquisitionCost: 1.67, // Aproximadamente 1 día de recovery
+        monthlyNewCustomers: 50,
+        averageCustomerLifetime: 12,
+      });
+
+      const oneDayRec = oneDayCase.recommendations.find((r) => r.type === "acquisition");
+      expect(oneDayRec?.message).toMatch(/\b1 día\b/); // 1 día (singular)
+      expect(oneDayRec?.message).not.toContain("1 días"); // No debe ser plural
+
+      // Test 1 semana (singular) - aprox 8-10 días
+      const oneWeekCase = calculateFinancialMetrics({
+        averagePrice: 100,
+        costPerUnit: 50,
+        fixedCosts: 1000,
+        customerAcquisitionCost: 15, // 15/50 = 0.3 meses = ~9 días, que se redondeará a 1 semana
+        monthlyNewCustomers: 50,
+        averageCustomerLifetime: 12,
+      });
+
+      const oneWeekRec = oneWeekCase.recommendations.find((r) => r.type === "acquisition");
+      expect(oneWeekRec?.message).toMatch(/\b1 semana\b/); // 1 semana (singular)
+      expect(oneWeekRec?.message).not.toContain("1 semanas"); // No debe ser plural
+
+      // Test múltiples días (plural)
+      const multipleDaysCase = calculateFinancialMetrics({
+        averagePrice: 100,
+        costPerUnit: 50,
+        fixedCosts: 1000,
+        customerAcquisitionCost: 5, // Aproximadamente 3 días
+        monthlyNewCustomers: 50,
+        averageCustomerLifetime: 12,
+      });
+
+      const multipleDaysRec = multipleDaysCase.recommendations.find(
+        (r) => r.type === "acquisition"
+      );
+      expect(multipleDaysRec?.message).toMatch(/\b\d+ días\b/); // X días (plural)
+      expect(multipleDaysRec?.message).not.toMatch(/\b1 días\b/); // No debe ser "1 días"
     });
   });
 
@@ -449,11 +607,157 @@ describe("KPI Calculator", () => {
       expect(criticalCase.cac).toBeGreaterThan(criticalCase.ltv); // 50 > 12
       expect(criticalHealth.overallHealth).toBe("bad"); // Debe ser bad por CAC > LTV
 
-      // Verificar que hay alerta crítica
-      const criticalAlert = criticalRecommendations.find((r) => r.title.includes("ALERTA CRÍTICA"));
-      expect(criticalAlert).toBeDefined();
-      expect(criticalAlert?.status).toBe("negative");
-      expect(criticalAlert?.message).toContain("pierdes dinero con cada cliente nuevo");
+      // Verificar que las recomendaciones reflejan la criticidad del caso
+      const acquisitionRec = criticalRecommendations.find((r) => r.type === "acquisition");
+      expect(acquisitionRec).toBeDefined();
+      expect(acquisitionRec?.status).toBe("negative");
+      expect(acquisitionRec?.message).toContain("Ratio crítico");
+      expect(acquisitionRec?.message).toContain("Pierdes €38");
+
+      // Verificar que hay próximos pasos específicos para este caso crítico
+      const nextStepsRec = criticalRecommendations.find((r) => r.type === "next_steps");
+      expect(nextStepsRec).toBeDefined();
+      expect(nextStepsRec?.message).toContain("Prioridad 1");
     });
+  });
+});
+
+describe("Type Safety and Validation", () => {
+  it("should handle string inputs gracefully by converting them to numbers", () => {
+    // Test with form-like data that comes as strings
+    const result = calculateFinancialMetrics({
+      averagePrice: Number("7"),
+      costPerUnit: Number("5"),
+      fixedCosts: Number("500"),
+      customerAcquisitionCost: Number("9"),
+      monthlyNewCustomers: Number("20"),
+      averageCustomerLifetime: Number("6"),
+    });
+
+    // Should calculate correctly after conversion
+    expect(result.kpis.unitMargin).toBe(2);
+    expect(result.kpis.monthlyRevenue).toBe(140);
+    expect(result.kpis.ltv).toBe(12);
+    expect(result.recommendations.length).toBeGreaterThan(0);
+  });
+
+  it("should have consistent numbers across all recommendation sections", () => {
+    // Caso específico del usuario: pérdidas de €640/mes
+    const result = calculateFinancialMetrics({
+      averagePrice: 7,
+      costPerUnit: 5,
+      fixedCosts: 500,
+      customerAcquisitionCost: 9,
+      monthlyNewCustomers: 20,
+      averageCustomerLifetime: 6,
+    });
+
+    // Verificar cálculos base
+    expect(result.kpis.monthlyProfit).toBe(-640); // -640€ pérdidas
+    expect(result.kpis.breakEvenUnits).toBe(250); // 500€ fijos ÷ 2€ margen
+    expect(result.kpis.ltv).toBe(12); // 2€ × 6 meses
+    expect(result.kpis.cac).toBe(9);
+
+    // Verificar clasificación de salud
+    // LTV/CAC = 12/9 = 1.33, que ahora debería ser "bad" (< 2)
+    expect(result.health.ltvCacHealth).toBe("bad");
+
+    const viabilityRec = result.recommendations.find((r) => r.type === "viability");
+    const nextStepsRec = result.recommendations.find((r) => r.type === "next_steps");
+
+    // Viabilidad debe explicar que aumentar ventas empeora las pérdidas (CAC > margen)
+    expect(viabilityRec?.message).toContain("Modelo inviable");
+    expect(viabilityRec?.message).toContain("cada cliente genera €7 de pérdida neta");
+    expect(viabilityRec?.message).toContain("AUMENTAR VENTAS EMPEORA LAS PÉRDIDAS");
+
+    // Próximos pasos: ahora SÍ debe tener Prioridad 1 porque LTV/CAC es "bad"
+    expect(nextStepsRec?.message).toContain("Prioridad 1:");
+    expect(nextStepsRec?.message).toContain("Prioridad 2:");
+    // Prioridad 2 ya NO debe sugerir aumentar ventas (porque CAC > margen)
+    expect(nextStepsRec?.message).toContain("Para la adquisición de clientes");
+    expect(nextStepsRec?.message).toContain("Cada cliente nuevo aumenta las pérdidas en €7/mes");
+
+    // Los números deben ser consistentes
+    // Break-even (250) < Pérdidas totales (320) ✓ Lógico
+    // Punto de equilibrio solo cuenta costes fijos
+    // Viabilidad cuenta costes fijos + CAC
+  });
+});
+
+describe("Recovery Time Formatting", () => {
+  it("should format recovery times naturally without unnecessary decimals", () => {
+    // Test exactamente 1 mes (no decimales)
+    const oneMonthCase = calculateFinancialMetrics({
+      averagePrice: 100,
+      costPerUnit: 50,
+      fixedCosts: 1000,
+      customerAcquisitionCost: 50, // CAC = 50, margin = 50, recovery = 1 mes exacto
+      monthlyNewCustomers: 50,
+      averageCustomerLifetime: 12,
+    });
+
+    const oneMonthRec = oneMonthCase.recommendations.find((r) => r.type === "acquisition");
+    expect(oneMonthRec?.message).toContain("1 mes"); // No "1.0 meses"
+    expect(oneMonthRec?.message).not.toContain("1.0");
+
+    // Test número entero de meses
+    const twoMonthCase = calculateFinancialMetrics({
+      averagePrice: 100,
+      costPerUnit: 50,
+      fixedCosts: 1000,
+      customerAcquisitionCost: 100, // CAC = 100, margin = 50, recovery = 2 meses exactos
+      monthlyNewCustomers: 50,
+      averageCustomerLifetime: 12,
+    });
+
+    const twoMonthRec = twoMonthCase.recommendations.find((r) => r.type === "acquisition");
+    expect(twoMonthRec?.message).toContain("2 meses"); // No "2.0 meses"
+    expect(twoMonthRec?.message).not.toContain("2.0");
+
+    // Test tiempo menor a 1 mes (debería mostrar en semanas/días)
+    const shortTimeCase = calculateFinancialMetrics({
+      averagePrice: 100,
+      costPerUnit: 50,
+      fixedCosts: 1000,
+      customerAcquisitionCost: 15, // CAC = 15, margin = 50, recovery = 0.3 meses
+      monthlyNewCustomers: 50,
+      averageCustomerLifetime: 12,
+    });
+
+    const shortTimeRec = shortTimeCase.recommendations.find((r) => r.type === "acquisition");
+    // Debería mostrar en días o semanas, no en "0.3 meses"
+    expect(shortTimeRec?.message).toMatch(/(días?|semanas?)/);
+    expect(shortTimeRec?.message).not.toContain("0.3 meses");
+  });
+});
+
+describe("CAC > unit margin detection", () => {
+  it("should detect and warn when CAC > unit margin makes sales counterproductive", () => {
+    // Caso del usuario: CAC (9€) > margen unitario (2€)
+    const result = calculateFinancialMetrics({
+      averagePrice: 7,
+      costPerUnit: 5,
+      fixedCosts: 500,
+      customerAcquisitionCost: 9, // CAC > margen unitario
+      monthlyNewCustomers: 20,
+      averageCustomerLifetime: 6,
+    });
+
+    const viabilityRec = result.recommendations.find((r) => r.type === "viability");
+    expect(viabilityRec).toBeDefined();
+    expect(viabilityRec?.status).toBe("negative");
+
+    // Debe explicar que cada cliente genera pérdidas netas
+    expect(viabilityRec?.message).toContain("Modelo inviable");
+    expect(viabilityRec?.message).toContain("cada cliente genera €7 de pérdida neta");
+    expect(viabilityRec?.message).toContain("CAC €9 > margen €2");
+
+    // Debe advertir explícitamente que aumentar ventas empeora las pérdidas
+    expect(viabilityRec?.message).toContain("AUMENTAR VENTAS EMPEORA LAS PÉRDIDAS");
+
+    // Debe sugerir reducir CAC, no aumentar ventas
+    expect(viabilityRec?.message).toContain("reduce el CAC por debajo de €1");
+    expect(viabilityRec?.message).not.toContain("aumentar ventas");
+    expect(viabilityRec?.message).not.toContain("unidades más/mes");
   });
 });
