@@ -1009,4 +1009,86 @@ Implementación completa del ticket LEAN-001 para desarrollar la API y backend d
 **Review notes:**
 Esta PR implementa una API REST completa y robusta con excelente cobertura de testing. El sistema de autenticación por Device ID permite el uso anónimo requerido para el MVP, con soporte mejorado para formatos reales de identificadores de navegador. La arquitectura escalable facilita la futura implementación de autenticación de usuarios, y la suite de tests garantiza la calidad y mantenibilidad del código.
 
-**Pull Request 3**
+**Pull Request 3: feat: Implementación completa de API centralizada para simulaciones completas con migración frontend a persistencia en base de datos**
+
+**Commit:** [Pending]
+
+**Descripción:**
+Implementación completa del ticket-7 para centralización de endpoints API y migración del frontend desde localStorage a persistencia en base de datos. Esta PR incluye la implementación de endpoints RESTful para simulaciones completas (/api/v1/simulations), transacciones atómicas, validación con Zod, sistema de Device ID, validación server-side usando kpi-calculator.ts, y suite completa de testing con manejo robusto de errores.
+
+**Cambios principales:**
+
+- Implementación de esquemas de validación Zod completos para simulaciones (CreateCompleteSimulationSchema, UpdateCompleteSimulationSchema, ListSimulationsQuerySchema)
+- Desarrollo de lógica de negocio con transacciones atómicas en `simulations-complete.ts` para operaciones CRUD
+- Actualización de endpoints API existentes para soportar simulaciones completas con Lean Canvas, inputs financieros y resultados
+- Migración del frontend de localStorage a llamadas API con custom hook `useSimulations.ts`
+- Sistema de Device ID siguiendo patrones existentes para identificación de usuarios anónimos
+- Validación server-side de cálculos usando `kpi-calculator.ts` existente para consistencia de datos
+- Implementación de fallback a localStorage para funcionalidad offline con gestión transparente de errores
+- Conversión automática de tipos string-to-number para formularios HTML
+- Sistema robusto de manejo de errores con componentes UI Alert para feedback visual
+
+**Endpoints implementados/actualizados:**
+
+- `POST /api/v1/simulations` - Crear simulación completa con transacciones atómicas (Simulation + LeanCanvas + FinancialInputs + Results)
+- `GET /api/v1/simulations` - Listar simulaciones con paginación y metadata completo
+- `GET /api/v1/simulations/[id]` - Obtener simulación completa con todas las relaciones
+- `PUT /api/v1/simulations/[id]` - Actualización completa con recálculo de KPIs
+- `DELETE /api/v1/simulations/[id]` - Eliminación en cascada de todos los componentes relacionados
+
+**Archivos creados/modificados:**
+
+- `src/lib/validation/simulation.ts` - Esquemas Zod completos para validación de simulaciones completas
+- `src/lib/api/simulations-complete.ts` - Lógica de negocio con transacciones atómicas para CRUD operations
+- `src/hooks/useSimulations.ts` - Custom hook con llamadas API, headers Device ID, fallback localStorage
+- `src/app/simulation/page.tsx` - Migrado de localStorage a API calls con manejo de errores mejorado
+- `src/components/forms/FinancialInputsForm.tsx` - Añadida conversión de tipos y validación mejorada
+- `src/app/api/v1/simulations/route.ts` - Endpoints principales actualizados para simulaciones completas
+- `src/app/api/v1/simulations/[id]/route.ts` - Endpoints individuales con operaciones atómicas
+- `src/lib/validation/simulation.test.ts` - Suite de tests unitarios para esquemas de validación
+- `src/app/api/v1/simulations/route.test.ts` - Tests de integración para endpoints principales
+- `src/hooks/useSimulations.test.ts` - Tests para custom hook con mocking de API y localStorage
+- `docs/backlog/calculos-kpis/ticket-7.md` - Documentación del ticket implementado
+
+**Características técnicas destacadas:**
+
+- **Transacciones atómicas**: Todas las operaciones de simulación completa se ejecutan como transacciones para garantizar consistencia de datos
+- **Validación dual**: Validación tanto en frontend como backend usando esquemas Zod compartidos
+- **Conversión de tipos automática**: Función `normalizeFinancialInputs` para convertir strings de formularios HTML a números
+- **Device ID authentication**: Sistema de identificación siguiendo patrones existentes sin autenticación de usuario
+- **Fallback robusto**: Sistema transparente de fallback a localStorage cuando la API no está disponible
+- **Cálculo server-side**: Validación de KPIs usando `kpi-calculator.ts` existente para proteger lógica de negocio
+- **UI feedback mejorado**: Componentes Alert para mostrar estados de éxito, error y advertencia
+- **Error handling granular**: Manejo específico de errores HTTP 400, 500, y problemas de conectividad
+
+**Suite de testing:**
+
+- ✅ **11 tests unitarios y de integración pasando**
+- ✅ **Cobertura completa**: Validación Zod, API endpoints, custom hooks, y lógica de negocio
+- ✅ **Tests de transacciones**: Verificación de rollback en casos de error
+- ✅ **Mocking completo**: API calls, localStorage, y componentes React para tests aislados
+- ✅ **Tests de edge cases**: Errores de red, datos inválidos, y estados de error
+- ✅ **Integration tests**: Flujo completo de creación, lectura, actualización y eliminación
+
+**Resolución de errores durante implementación:**
+
+- ✅ **Type validation**: Conversión automática de strings HTML a números para APIs
+- ✅ **False success messages**: Detección y manejo apropiado de errores API vs fallback localStorage
+- ✅ **React controlled inputs**: Inicialización correcta de todos los campos opcionales
+- ✅ **Function scope**: Definición correcta de funciones helper dentro de custom hooks
+- ✅ **Linting compliance**: Código completamente limpio sin errores ESLint o TypeScript
+
+**Criterios de aceptación cumplidos:**
+
+- ✅ RESTful API endpoints siguiendo convenciones REST estándar
+- ✅ Transacciones atómicas para operaciones de simulación completa
+- ✅ Validación Zod en cliente y servidor con esquemas compartidos
+- ✅ Device ID identification siguiendo patrones existentes del proyecto
+- ✅ Validación server-side usando kpi-calculator.ts para proteger lógica de negocio
+- ✅ Testing comprehensivo con 11/11 tests pasando
+- ✅ Frontend migrado completamente de localStorage a API calls
+- ✅ Manejo robusto de errores con UI feedback apropiado
+- ✅ Funcionalidad offline preservada mediante fallback transparente
+
+**Review notes:**
+Esta PR completa la migración de la aplicación hacia una arquitectura API-first manteniendo la experiencia de usuario existente. La implementación de transacciones atómicas garantiza la integridad de los datos, mientras que el sistema de fallback a localStorage preserva la funcionalidad offline. La suite de testing completa asegura la calidad y mantenibilidad del código, y el sistema de manejo de errores proporciona feedback claro al usuario en todos los escenarios.
