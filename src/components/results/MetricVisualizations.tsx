@@ -18,7 +18,76 @@ interface LTVCACDonutProps {
 }
 
 export const LTVCACDonut: React.FC<LTVCACDonutProps> = ({ ltvCacRatio }) => {
-  // Convertir ratio a valores para el gráfico
+  // Manejar casos especiales
+  if (ltvCacRatio === 0) {
+    // CAC gratuito - solo mostrar LTV
+    return (
+      <div className="flex items-center gap-4">
+        <div className="w-16 h-16">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={[{ name: "LTV", value: 1, fill: "#10b981" }]}
+                cx="50%"
+                cy="50%"
+                innerRadius={20}
+                outerRadius={30}
+                dataKey="value"
+              >
+                <Cell fill="#10b981" />
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="text-sm">
+          <div className="flex items-center gap-1">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span>LTV 100%</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+            <span>CAC 0%</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (ltvCacRatio === Infinity || !Number.isFinite(ltvCacRatio)) {
+    // LTV inviable - solo mostrar CAC
+    return (
+      <div className="flex items-center gap-4">
+        <div className="w-16 h-16">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={[{ name: "CAC", value: 1, fill: "#ef4444" }]}
+                cx="50%"
+                cy="50%"
+                innerRadius={20}
+                outerRadius={30}
+                dataKey="value"
+              >
+                <Cell fill="#ef4444" />
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="text-sm">
+          <div className="flex items-center gap-1">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span>LTV 0%</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+            <span>CAC 100%</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Caso normal: convertir ratio a valores para el gráfico
   const ltv = 1 / ltvCacRatio; // LTV normalizado
   const cac = 1; // CAC normalizado a 1
 
@@ -76,15 +145,21 @@ export const BreakEvenProgress: React.FC<BreakEvenProgressProps> = ({
 }) => {
   // Validar inputs para evitar NaN
   const validCurrentRevenue = Number.isFinite(currentRevenue) ? currentRevenue : 0;
-  const validBreakEvenRevenue =
-    Number.isFinite(breakEvenRevenue) && breakEvenRevenue > 0 ? breakEvenRevenue : 0;
+  const validBreakEvenRevenue = Number.isFinite(breakEvenRevenue) ? breakEvenRevenue : 0;
 
   let progress = 0;
   let isBreakEven = false;
+  let progressText = "N/A";
 
-  if (validBreakEvenRevenue > 0) {
+  if (validBreakEvenRevenue === 0) {
+    // Caso especial: breakEvenRevenue = 0 significa que ya estás en equilibrio
+    progress = 100;
+    isBreakEven = true;
+    progressText = "100.0%";
+  } else if (validBreakEvenRevenue > 0) {
     progress = Math.min((validCurrentRevenue / validBreakEvenRevenue) * 100, 100);
     isBreakEven = validCurrentRevenue >= validBreakEvenRevenue;
+    progressText = `${progress.toFixed(1)}%`;
   }
 
   return (
@@ -92,7 +167,7 @@ export const BreakEvenProgress: React.FC<BreakEvenProgressProps> = ({
       <div className="flex justify-between text-sm">
         <span>Progreso hacia equilibrio</span>
         <span className={isBreakEven ? "text-green-600 font-medium" : "text-gray-600"}>
-          {validBreakEvenRevenue > 0 ? `${progress.toFixed(1)}%` : "N/A"}
+          {progressText}
         </span>
       </div>
       <Progress
@@ -102,9 +177,11 @@ export const BreakEvenProgress: React.FC<BreakEvenProgressProps> = ({
       <div className="flex justify-between text-xs text-muted-foreground">
         <span>€{validCurrentRevenue.toLocaleString()}</span>
         <span>
-          {validBreakEvenRevenue > 0
-            ? `€${validBreakEvenRevenue.toLocaleString()}`
-            : "No calculable"}
+          {validBreakEvenRevenue === 0
+            ? "Ya en equilibrio"
+            : validBreakEvenRevenue > 0
+              ? `€${validBreakEvenRevenue.toLocaleString()}`
+              : "No calculable"}
         </span>
       </div>
     </div>

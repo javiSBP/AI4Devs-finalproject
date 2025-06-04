@@ -163,39 +163,39 @@ const getDynamicInterpretation = (
       }
 
     case "ltvCacRatio":
-      // Validar que CAC y LTV sean válidos
-      if (!kpis.cac || !kpis.ltv || kpis.cacLtvRatio <= 0) {
-        return "Introduce datos válidos de CAC y LTV para evaluar este ratio";
-      }
-
-      const actualRatio = kpis.cacLtvRatio > 0 ? (1 / kpis.cacLtvRatio).toFixed(2) : "0";
-      if (status === "positive") {
-        return `Ratio excelente (${actualRatio}:1). Cada euro invertido en adquisición genera ${actualRatio} euros de valor`;
-      } else if (status === "warning") {
-        return `Ratio aceptable (${actualRatio}:1) pero mejorable. Idealmente debería ser 3:1 o superior`;
+      if (kpis.cac === 0) {
+        return "Excelente: adquisición de clientes totalmente gratuita (marketing orgánico, referencias, etc.). No hay coste de adquisición.";
+      } else if (kpis.cacLtvRatio === Infinity || kpis.ltv <= 0) {
+        return "LTV insuficiente o negativo. Con este valor del cliente es imposible ser rentable independientemente del CAC.";
       } else {
-        return kpis.cac > kpis.ltv
-          ? `Ratio crítico (${actualRatio}:1). Pierdes ${formatCurrency(kpis.cac - kpis.ltv)} por cada cliente adquirido`
-          : `Ratio insuficiente (${actualRatio}:1). La adquisición de clientes no es rentable`;
+        const actualRatio = (1 / kpis.cacLtvRatio).toFixed(2);
+        if (status === "positive") {
+          return `Ratio excelente (${actualRatio}:1). Cada euro invertido en adquisición genera ${actualRatio} euros de valor`;
+        } else if (status === "warning") {
+          return `Ratio aceptable (${actualRatio}:1) pero mejorable. Idealmente debería ser 3:1 o superior`;
+        } else {
+          return kpis.cac > kpis.ltv
+            ? `Ratio crítico (${actualRatio}:1). Pierdes ${formatCurrency(kpis.cac - kpis.ltv)} por cada cliente adquirido`
+            : `Ratio insuficiente (${actualRatio}:1). La adquisición de clientes no es rentable`;
+        }
       }
 
     case "breakEven":
-      // Validar que los datos necesarios estén disponibles
-      if (!financialInputs.monthlyNewCustomers || !kpis.breakEvenUnits) {
-        return "Introduce ventas mensuales válidas para calcular el punto de equilibrio";
-      }
-
-      const currentMonthlyUnits = financialInputs.monthlyNewCustomers;
-      const monthsToBreakEven =
-        currentMonthlyUnits > 0 ? (kpis.breakEvenUnits / currentMonthlyUnits).toFixed(1) : "∞";
-      if (status === "positive") {
-        return `Punto alcanzable. Con ${currentMonthlyUnits} ventas/mes actuales, lo logras en ${monthsToBreakEven} meses`;
-      } else if (status === "warning") {
-        return `Punto de equilibrio alto. Necesitas ${Math.ceil(kpis.breakEvenUnits - currentMonthlyUnits)} ventas más por mes`;
+      if (financialInputs.fixedCosts === 0) {
+        return "Excelente: sin costes fijos, ya estás en punto de equilibrio. Cada venta genera beneficio neto directo.";
+      } else if (kpis.breakEvenUnits === Infinity || kpis.unitMargin <= 0) {
+        return "Imposible alcanzar equilibrio con margen unitario negativo o cero. Cada venta aumenta las pérdidas.";
       } else {
-        return kpis.unitMargin <= 0
-          ? `Imposible con margen negativo. Cada venta aumenta las pérdidas`
-          : `Muy difícil de alcanzar. Necesitas ${monthsToBreakEven} meses con las ventas actuales`;
+        const currentMonthlyUnits = financialInputs.monthlyNewCustomers;
+        const monthsToBreakEven =
+          currentMonthlyUnits > 0 ? (kpis.breakEvenUnits / currentMonthlyUnits).toFixed(1) : "∞";
+        if (status === "positive") {
+          return `Punto alcanzable. Con ${currentMonthlyUnits} ventas/mes actuales, lo logras en ${monthsToBreakEven} meses`;
+        } else if (status === "warning") {
+          return `Punto de equilibrio alto. Necesitas ${Math.ceil(kpis.breakEvenUnits - currentMonthlyUnits)} ventas más por mes`;
+        } else {
+          return `Muy difícil de alcanzar. Necesitas ${monthsToBreakEven} meses con las ventas actuales`;
+        }
       }
 
     default:
@@ -356,8 +356,16 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     {
       key: "ltvCacRatio",
       title: "Ratio LTV/CAC",
-      value: formatDecimal(1 / cacLtvRatio), // Invertimos para mostrar LTV/CAC en lugar de CAC/LTV
-      numericValue: 1 / cacLtvRatio,
+      value: (() => {
+        if (kpis.cac === 0) {
+          return "Perfecto (CAC gratuito)";
+        } else if (cacLtvRatio === Infinity || ltv <= 0) {
+          return "No viable";
+        } else {
+          return formatDecimal(1 / cacLtvRatio); // LTV/CAC normal
+        }
+      })(),
+      numericValue: kpis.cac === 0 ? Infinity : cacLtvRatio === Infinity ? 0 : 1 / cacLtvRatio,
       description: "Ratio entre valor del cliente y coste de adquisición.",
       status: getHealthStatus(health.ltvCacHealth),
       icon: MetricIcons.cac,
@@ -366,9 +374,25 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     {
       key: "breakEven",
       title: "Punto de equilibrio",
-      value: `${Math.ceil(breakEvenUnits)} unidades`,
+      value: (() => {
+        if (financialInputs.fixedCosts === 0) {
+          return "0 unidades (ya en equilibrio)";
+        } else if (breakEvenUnits === Infinity || unitMargin <= 0) {
+          return "Imposible";
+        } else {
+          return `${Math.ceil(breakEvenUnits)} unidades`;
+        }
+      })(),
       numericValue: breakEvenUnits,
-      description: `Ventas necesarias para cubrir costes (aprox. ${Math.ceil(breakEvenMonths)} meses).`,
+      description: (() => {
+        if (financialInputs.fixedCosts === 0) {
+          return "Sin costes fijos, ya estás en equilibrio.";
+        } else if (breakEvenUnits === Infinity) {
+          return "Imposible alcanzar equilibrio con margen negativo.";
+        } else {
+          return `Ventas necesarias para cubrir costes (aprox. ${Math.ceil(breakEvenMonths)} meses).`;
+        }
+      })(),
       status: getBreakEvenStatus(
         breakEvenUnits,
         breakEvenMonths,

@@ -10,7 +10,7 @@ export const FINANCIAL_INPUTS_HELP: Record<string, FinancialFieldHelp> = {
   averagePrice: {
     label: "Precio medio por unidad/servicio (€)",
     description:
-      "El precio promedio que cobras por cada producto o servicio vendido, sin incluir IVA. Este valor es fundamental para calcular tus márgenes y rentabilidad.",
+      "El precio promedio que cobras por cada producto o servicio vendido, sin incluir IVA. Este valor debe ser mayor que 0 y es fundamental para calcular tus márgenes y rentabilidad.",
     placeholder: "ej: 29.99",
     example:
       "Si vendes un curso online a €49, una consultoría a €150/hora y un producto físico a €25, y vendes cantidades similares de cada uno, tu precio medio sería aproximadamente €75.",
@@ -66,7 +66,7 @@ export const FINANCIAL_INPUTS_HELP: Record<string, FinancialFieldHelp> = {
   monthlyNewCustomers: {
     label: "Nuevos clientes por mes",
     description:
-      "Número estimado de nuevos clientes que esperas conseguir cada mes con tu estrategia actual de marketing y ventas.",
+      "Número estimado de nuevos clientes que esperas conseguir cada mes con tu estrategia actual de marketing y ventas. Debe ser al menos 1 para poder simular un negocio.",
     placeholder: "ej: 50",
     example:
       "Actualmente consigues 30 clientes/mes. Con mejoras en tu web y más presencia en redes sociales, estimas que podrías llegar a 50 clientes/mes.",

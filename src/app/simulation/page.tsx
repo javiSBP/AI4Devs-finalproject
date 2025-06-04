@@ -1,13 +1,15 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import WizardLayout from "@/components/wizard/WizardLayout";
-import LeanCanvasForm from "@/components/forms/LeanCanvasForm";
-import FinancialInputsForm from "@/components/forms/FinancialInputsForm";
+import LeanCanvasForm, { LeanCanvasFormRef } from "@/components/forms/LeanCanvasForm";
+import FinancialInputsForm, {
+  FinancialInputsFormRef,
+} from "@/components/forms/FinancialInputsForm";
 import ResultsDisplay from "@/components/results/ResultsDisplay";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LeanCanvasData } from "@/types/lean-canvas";
-import { FinancialInputs, calculateFinancialMetrics } from "@/lib/financial/kpi-calculator";
+import { calculateFinancialMetrics } from "@/lib/financial/kpi-calculator";
 import { useSimulations } from "@/hooks/useSimulations";
 
 export interface FinancialData {
@@ -21,6 +23,8 @@ export interface FinancialData {
 
 export default function SimulationPage() {
   const { createSimulation, error, clearError } = useSimulations();
+  const leanCanvasFormRef = useRef<LeanCanvasFormRef>(null);
+  const financialInputsFormRef = useRef<FinancialInputsFormRef>(null);
 
   // Estados para mostrar mensajes de éxito/error
   const [saveMessage, setSaveMessage] = useState<{
@@ -50,16 +54,7 @@ export default function SimulationPage() {
 
   // Calculate results in real-time using kpi-calculator (as required by ticket-7)
   const calculateResults = () => {
-    const financialInputs: FinancialInputs = {
-      averagePrice: financialData.averagePrice,
-      costPerUnit: financialData.costPerUnit,
-      fixedCosts: financialData.fixedCosts,
-      customerAcquisitionCost: financialData.customerAcquisitionCost,
-      monthlyNewCustomers: financialData.monthlyNewCustomers,
-      averageCustomerLifetime: financialData.averageCustomerLifetime,
-    };
-
-    return calculateFinancialMetrics(financialInputs);
+    return calculateFinancialMetrics(financialData);
   };
 
   const calculationResult = calculateResults();
@@ -71,11 +66,18 @@ export default function SimulationPage() {
         <div className="space-y-4">
           <p className="text-muted-foreground">Define los aspectos clave de tu modelo de negocio</p>
           <LeanCanvasForm
+            ref={leanCanvasFormRef}
             initialData={leanCanvasData}
             onSubmit={(data) => setLeanCanvasData(data)}
           />
         </div>
       ),
+      validate: async () => {
+        if (leanCanvasFormRef.current) {
+          return await leanCanvasFormRef.current.validate();
+        }
+        return false;
+      },
     },
     {
       title: "Datos Financieros",
@@ -83,11 +85,18 @@ export default function SimulationPage() {
         <div className="space-y-4">
           <p className="text-muted-foreground">Introduce los datos financieros de tu negocio</p>
           <FinancialInputsForm
+            ref={financialInputsFormRef}
             initialData={financialData}
             onSubmit={(data) => setFinancialData(data)}
           />
         </div>
       ),
+      validate: async () => {
+        if (financialInputsFormRef.current) {
+          return await financialInputsFormRef.current.validate();
+        }
+        return false;
+      },
     },
     {
       title: "Resultados",
@@ -144,14 +153,7 @@ export default function SimulationPage() {
           <ResultsDisplay
             calculationResult={calculationResult}
             leanCanvasData={leanCanvasData}
-            financialInputs={{
-              averagePrice: financialData.averagePrice,
-              costPerUnit: financialData.costPerUnit,
-              fixedCosts: financialData.fixedCosts,
-              customerAcquisitionCost: financialData.customerAcquisitionCost,
-              monthlyNewCustomers: financialData.monthlyNewCustomers,
-              averageCustomerLifetime: financialData.averageCustomerLifetime,
-            }}
+            financialInputs={financialData}
           />
         </div>
       ),
@@ -167,14 +169,7 @@ export default function SimulationPage() {
       name: leanCanvasData.name || `Simulación ${new Date().toLocaleDateString()}`,
       description: `Simulación creada el ${new Date().toLocaleDateString()}`,
       leanCanvas: leanCanvasData,
-      financialInputs: {
-        averagePrice: financialData.averagePrice,
-        costPerUnit: financialData.costPerUnit,
-        fixedCosts: financialData.fixedCosts,
-        customerAcquisitionCost: financialData.customerAcquisitionCost,
-        monthlyNewCustomers: financialData.monthlyNewCustomers,
-        averageCustomerLifetime: financialData.averageCustomerLifetime,
-      },
+      financialInputs: financialData,
     };
 
     try {

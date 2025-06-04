@@ -11,14 +11,35 @@ interface WizardLayoutProps {
   steps: {
     title: string;
     component: React.ReactNode;
+    validate?: () => Promise<boolean> | boolean;
   }[];
   onComplete?: () => void;
 }
 
 const WizardLayout: React.FC<WizardLayoutProps> = ({ steps, onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [isValidating, setIsValidating] = useState(false);
 
-  const goToNextStep = () => {
+  const goToNextStep = async () => {
+    const currentStepData = steps[currentStep];
+
+    // Si el paso actual tiene una función de validación, ejecutarla
+    if (currentStepData.validate) {
+      setIsValidating(true);
+      try {
+        const isValid = await currentStepData.validate();
+        if (!isValid) {
+          setIsValidating(false);
+          return; // No continuar si la validación falla
+        }
+      } catch (error) {
+        console.error("Error durante la validación:", error);
+        setIsValidating(false);
+        return;
+      }
+      setIsValidating(false);
+    }
+
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
       window.scrollTo(0, 0);
@@ -98,15 +119,24 @@ const WizardLayout: React.FC<WizardLayoutProps> = ({ steps, onComplete }) => {
       </div>
 
       {/* Navigation buttons */}
-      <div className="mt-8 flex justify-between">
-        <Button variant="outline" onClick={goToPreviousStep} disabled={currentStep === 0}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Anterior
-        </Button>
-        <Button onClick={goToNextStep}>
-          {isLastStep ? "Finalizar" : "Siguiente"}
-          {!isLastStep && <ArrowRight className="ml-2 h-4 w-4" />}
-        </Button>
+      <div className="mt-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="lg:col-span-3">
+            <div className={`flex ${currentStep > 0 ? "justify-between" : "justify-end"}`}>
+              {currentStep > 0 && (
+                <Button variant="outline" onClick={goToPreviousStep}>
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Anterior
+                </Button>
+              )}
+              <Button onClick={goToNextStep} disabled={isValidating}>
+                {isValidating ? "Validando..." : isLastStep ? "Guardar Simulación" : "Siguiente"}
+                {!isLastStep && !isValidating && <ArrowRight className="ml-2 h-4 w-4" />}
+              </Button>
+            </div>
+          </div>
+          <div className="lg:col-span-1">{/* Espacio para alineación con sidebar */}</div>
+        </div>
       </div>
     </div>
   );

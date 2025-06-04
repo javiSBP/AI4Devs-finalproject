@@ -121,12 +121,30 @@ export function calculateKPIs(inputs: FinancialInputs): KPIResults {
   // LTV calculation
   const ltv = unitMargin * averageCustomerLifetime;
 
-  // CAC/LTV ratio
-  const cacLtvRatio = ltv > 0 ? customerAcquisitionCost / ltv : Infinity;
+  // CAC/LTV ratio - Manejo especial de casos edge
+  let cacLtvRatio: number;
+  if (customerAcquisitionCost === 0) {
+    cacLtvRatio = 0; // CAC gratuito = ratio perfecto
+  } else if (ltv <= 0) {
+    cacLtvRatio = Infinity; // LTV negativo/cero = insostenible
+  } else {
+    cacLtvRatio = customerAcquisitionCost / ltv;
+  }
 
-  // Break-even calculations
-  const breakEvenUnits = unitMargin > 0 ? fixedCosts / unitMargin : Infinity;
-  const breakEvenMonths = monthlyNewCustomers > 0 ? breakEvenUnits / monthlyNewCustomers : Infinity;
+  // Break-even calculations - Manejo especial de casos edge
+  let breakEvenUnits: number;
+  let breakEvenMonths: number;
+
+  if (fixedCosts === 0) {
+    breakEvenUnits = 0; // Sin costes fijos = ya en equilibrio
+    breakEvenMonths = 0;
+  } else if (unitMargin <= 0) {
+    breakEvenUnits = Infinity; // Margen negativo = imposible equilibrio
+    breakEvenMonths = Infinity;
+  } else {
+    breakEvenUnits = fixedCosts / unitMargin;
+    breakEvenMonths = monthlyNewCustomers > 0 ? breakEvenUnits / monthlyNewCustomers : Infinity;
+  }
 
   return {
     unitMargin,
@@ -135,8 +153,8 @@ export function calculateKPIs(inputs: FinancialInputs): KPIResults {
     ltv,
     cac: customerAcquisitionCost,
     cacLtvRatio,
-    breakEvenUnits: Number.isFinite(breakEvenUnits) ? breakEvenUnits : 0,
-    breakEvenMonths: Number.isFinite(breakEvenMonths) ? breakEvenMonths : 0,
+    breakEvenUnits: Number.isFinite(breakEvenUnits) ? breakEvenUnits : Infinity,
+    breakEvenMonths: Number.isFinite(breakEvenMonths) ? breakEvenMonths : Infinity,
   };
 }
 
@@ -161,16 +179,26 @@ export function classifyHealth(kpis: KPIResults): HealthClassification {
     profitabilityHealth = "bad";
   }
 
-  // LTV/CAC health - Corregir lógica invertida
+  // LTV/CAC health - Manejar casos especiales
   let ltvCacHealth: "good" | "medium" | "bad";
-  const ltvCacRatio = kpis.cacLtvRatio > 0 ? 1 / kpis.cacLtvRatio : 0; // Convertir a LTV/CAC real
 
-  if (ltvCacRatio >= 3) {
-    ltvCacHealth = "good"; // LTV/CAC >= 3 es excelente
-  } else if (ltvCacRatio >= 2) {
-    ltvCacHealth = "medium"; // LTV/CAC >= 2 es aceptable
+  if (kpis.cac === 0) {
+    // CAC gratuito es siempre excelente (adquisición orgánica)
+    ltvCacHealth = "good";
+  } else if (kpis.cacLtvRatio === Infinity || kpis.ltv <= 0) {
+    // LTV negativo o cero = insostenible
+    ltvCacHealth = "bad";
   } else {
-    ltvCacHealth = "bad"; // LTV/CAC < 2 es malo
+    // Convertir CAC/LTV a LTV/CAC para evaluación normal
+    const ltvCacRatio = 1 / kpis.cacLtvRatio;
+
+    if (ltvCacRatio >= 3) {
+      ltvCacHealth = "good"; // LTV/CAC >= 3 es excelente
+    } else if (ltvCacRatio >= 2) {
+      ltvCacHealth = "medium"; // LTV/CAC >= 2 es aceptable
+    } else {
+      ltvCacHealth = "bad"; // LTV/CAC < 2 es malo
+    }
   }
 
   // Overall health (most restrictive)
@@ -330,18 +358,28 @@ export function generateRecommendations(
   }
 
   // Eficiencia de adquisición de clientes - con datos específicos
-  const actualLtvCacRatio = safeKpis.ltv > 0 ? (safeKpis.ltv / safeKpis.cac).toFixed(1) : "0";
+  const actualLtvCacRatio =
+    safeKpis.cac === 0 ? "∞" : safeKpis.ltv > 0 ? (safeKpis.ltv / safeKpis.cac).toFixed(1) : "0";
 
   if (health.ltvCacHealth === "good") {
-    const monthsToRecoverRaw =
-      safeKpis.unitMargin > 0 ? safeKpis.cac / safeKpis.unitMargin : Infinity;
-    const monthsToRecover = formatRecoveryTime(monthsToRecoverRaw);
-    recommendations.push({
-      type: "acquisition",
-      title: "Eficiencia de adquisición de clientes",
-      message: `Ratio excelente de <strong>${actualLtvCacRatio}:1</strong>. Recuperas los €${safeKpis.cac} de CAC en solo ${monthsToRecover}. Puedes invertir más en marketing para acelerar el crecimiento.`,
-      status: "positive",
-    });
+    if (safeKpis.cac === 0) {
+      recommendations.push({
+        type: "acquisition",
+        title: "Eficiencia de adquisición de clientes",
+        message: `<strong>Ratio perfecto (CAC gratuito)</strong>. Adquisición de clientes totalmente gratuita (marketing orgánico, referencias, etc.). No hay coste de adquisición. Puedes acelerar el crecimiento maximizando estos canales.`,
+        status: "positive",
+      });
+    } else {
+      const monthsToRecoverRaw =
+        safeKpis.unitMargin > 0 ? safeKpis.cac / safeKpis.unitMargin : Infinity;
+      const monthsToRecover = formatRecoveryTime(monthsToRecoverRaw);
+      recommendations.push({
+        type: "acquisition",
+        title: "Eficiencia de adquisición de clientes",
+        message: `Ratio excelente de <strong>${actualLtvCacRatio}:1</strong>. Recuperas los €${safeKpis.cac} de CAC en solo ${monthsToRecover}. Puedes invertir más en marketing para acelerar el crecimiento.`,
+        status: "positive",
+      });
+    }
   } else if (health.ltvCacHealth === "medium") {
     const improvementNeeded = Math.ceil(safeKpis.cac * 3 - safeKpis.ltv);
     recommendations.push({
