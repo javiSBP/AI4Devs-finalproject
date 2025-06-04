@@ -138,7 +138,11 @@ export function calculateKPIs(inputs: FinancialInputs): KPIResults {
   if (fixedCosts === 0) {
     breakEvenUnits = 0; // Sin costes fijos = ya en equilibrio
     breakEvenMonths = 0;
-  } else if (unitMargin <= 0) {
+  } else if (unitMargin === 0) {
+    // Margen exactamente 0 = equilibrio por unidad, no cubres costes fijos pero tampoco pierdes por venta
+    breakEvenUnits = 0;
+    breakEvenMonths = 0;
+  } else if (unitMargin < 0) {
     breakEvenUnits = Infinity; // Margen negativo = imposible equilibrio
     breakEvenMonths = Infinity;
   } else {
