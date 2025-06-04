@@ -22,17 +22,43 @@ describe("SharedFinancialInputsSchema", () => {
       expect(result.success).toBe(true);
     });
 
-    it("should accept zero values for most fields", () => {
+    it("should accept zero values for allowed fields only", () => {
       const zeroData = {
-        averagePrice: 0,
-        costPerUnit: 0,
-        fixedCosts: 0,
-        customerAcquisitionCost: 0,
-        monthlyNewCustomers: 0,
+        averagePrice: 0.01, // Minimum allowed
+        costPerUnit: 0, // Allowed
+        fixedCosts: 0, // Allowed
+        customerAcquisitionCost: 0, // Allowed
+        monthlyNewCustomers: 1, // Minimum allowed
         averageCustomerLifetime: 0.1, // Minimum allowed
       };
       const result = SharedFinancialInputsSchema.safeParse(zeroData);
       expect(result.success).toBe(true);
+    });
+
+    it("should reject zero values for restricted fields", () => {
+      const zeroPrice = {
+        averagePrice: 0, // Not allowed
+        costPerUnit: 0,
+        fixedCosts: 0,
+        customerAcquisitionCost: 0,
+        monthlyNewCustomers: 1,
+        averageCustomerLifetime: 0.1,
+      };
+      const result1 = SharedFinancialInputsSchema.safeParse(zeroPrice);
+      expect(result1.success).toBe(false);
+      expect(result1.error?.errors[0].message).toContain("mayor que 0");
+
+      const zeroCustomers = {
+        averagePrice: 0.01,
+        costPerUnit: 0,
+        fixedCosts: 0,
+        customerAcquisitionCost: 0,
+        monthlyNewCustomers: 0, // Not allowed
+        averageCustomerLifetime: 0.1,
+      };
+      const result2 = SharedFinancialInputsSchema.safeParse(zeroCustomers);
+      expect(result2.success).toBe(false);
+      expect(result2.error?.errors[0].message).toContain("al menos 1 cliente");
     });
 
     it("should accept maximum allowed values", () => {
@@ -54,7 +80,7 @@ describe("SharedFinancialInputsSchema", () => {
       const negativeData = { ...validData, averagePrice: -1 };
       const result = SharedFinancialInputsSchema.safeParse(negativeData);
       expect(result.success).toBe(false);
-      expect(result.error?.errors[0].message).toContain("mayor o igual a 0");
+      expect(result.error?.errors[0].message).toContain("mayor que 0");
     });
 
     it("should reject values exceeding maximum limits", () => {
@@ -202,9 +228,9 @@ describe("FinancialInputsBusinessRulesSchema", () => {
       expect(result.error?.errors[0].message).toContain("no puede ser mayor o igual");
     });
 
-    it("should pass when price is zero (skip validation)", () => {
-      const zeroPrice = { ...validData, averagePrice: 0, costPerUnit: 50 };
-      const result = FinancialInputsBusinessRulesSchema.safeParse(zeroPrice);
+    it("should skip cost vs price validation when cost is zero", () => {
+      const zeroCost = { ...validData, costPerUnit: 0 };
+      const result = FinancialInputsBusinessRulesSchema.safeParse(zeroCost);
       expect(result.success).toBe(true);
     });
   });
@@ -224,14 +250,10 @@ describe("FinancialInputsBusinessRulesSchema", () => {
       expect(result.success).toBe(true);
     });
 
-    it("should skip margin validation when price or cost is zero", () => {
-      const zeroPrice = { ...validData, averagePrice: 0, costPerUnit: 50 };
-      const result = FinancialInputsBusinessRulesSchema.safeParse(zeroPrice);
-      expect(result.success).toBe(true);
-
+    it("should skip margin validation when cost is zero", () => {
       const zeroCost = { ...validData, averagePrice: 100, costPerUnit: 0 };
-      const result2 = FinancialInputsBusinessRulesSchema.safeParse(zeroCost);
-      expect(result2.success).toBe(true);
+      const result = FinancialInputsBusinessRulesSchema.safeParse(zeroCost);
+      expect(result.success).toBe(true);
     });
   });
 
@@ -250,22 +272,14 @@ describe("FinancialInputsBusinessRulesSchema", () => {
       expect(result.error?.errors[0].path).toEqual(["customerAcquisitionCost"]);
     });
 
-    it("should skip CAC/LTV validation when any required field is zero", () => {
-      const zeroPrice = { ...validData, averagePrice: 0 };
-      const result = FinancialInputsBusinessRulesSchema.safeParse(zeroPrice);
+    it("should skip CAC/LTV validation when cost or CAC is zero", () => {
+      const zeroCost = { ...validData, costPerUnit: 0 };
+      const result = FinancialInputsBusinessRulesSchema.safeParse(zeroCost);
       expect(result.success).toBe(true);
 
-      const zeroCost = { ...validData, costPerUnit: 0 };
-      const result2 = FinancialInputsBusinessRulesSchema.safeParse(zeroCost);
-      expect(result2.success).toBe(true);
-
       const zeroCAC = { ...validData, customerAcquisitionCost: 0 };
-      const result3 = FinancialInputsBusinessRulesSchema.safeParse(zeroCAC);
-      expect(result3.success).toBe(true);
-
-      const zeroLifetime = { ...validData, averageCustomerLifetime: 0 };
-      const result4 = FinancialInputsBusinessRulesSchema.safeParse(zeroLifetime);
-      expect(result4.success).toBe(false); // This should fail basic validation first
+      const result2 = FinancialInputsBusinessRulesSchema.safeParse(zeroCAC);
+      expect(result2.success).toBe(true);
     });
   });
 

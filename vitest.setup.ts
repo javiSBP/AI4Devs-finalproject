@@ -14,3 +14,25 @@ afterEach(() => server.resetHandlers());
 
 // Clean up after all tests
 afterAll(() => server.close());
+
+// Mock ResizeObserver for chart components
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
+
+// Mock window.matchMedia for responsive components
+Object.defineProperty(window, "matchMedia", {
+  writable: true,
+  value: (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => {},
+  }),
+});

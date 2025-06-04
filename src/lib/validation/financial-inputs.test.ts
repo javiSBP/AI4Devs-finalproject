@@ -29,6 +29,97 @@ describe("FinancialInputsSchema", () => {
     const result = FinancialInputsSchema.safeParse(invalidData);
     expect(result.success).toBe(false);
   });
+
+  // New tests for enhanced validation
+  describe("Enhanced Validation Rules", () => {
+    it("should reject averagePrice of 0 (must be > 0)", () => {
+      const zeroPrice = { ...validData, averagePrice: 0 };
+      const result = FinancialInputsSchema.safeParse(zeroPrice);
+      expect(result.success).toBe(false);
+      expect(result.error?.errors[0].message).toContain("El precio medio debe ser mayor que 0");
+    });
+
+    it("should accept minimum averagePrice of 0.01", () => {
+      const minPrice = { ...validData, averagePrice: 0.01 };
+      const result = FinancialInputsSchema.safeParse(minPrice);
+      expect(result.success).toBe(true);
+    });
+
+    it("should reject averagePrice below 0.01", () => {
+      const belowMin = { ...validData, averagePrice: 0.005 };
+      const result = FinancialInputsSchema.safeParse(belowMin);
+      expect(result.success).toBe(false);
+      expect(result.error?.errors[0].message).toContain("El precio medio debe ser mayor que 0");
+    });
+
+    it("should reject monthlyNewCustomers of 0 (must be >= 1)", () => {
+      const zeroCustomers = { ...validData, monthlyNewCustomers: 0 };
+      const result = FinancialInputsSchema.safeParse(zeroCustomers);
+      expect(result.success).toBe(false);
+      expect(result.error?.errors[0].message).toContain(
+        "Debe haber al menos 1 cliente nuevo por mes"
+      );
+    });
+
+    it("should accept minimum monthlyNewCustomers of 1", () => {
+      const minCustomers = { ...validData, monthlyNewCustomers: 1 };
+      const result = FinancialInputsSchema.safeParse(minCustomers);
+      expect(result.success).toBe(true);
+    });
+
+    it("should reject negative monthlyNewCustomers", () => {
+      const negativeCustomers = { ...validData, monthlyNewCustomers: -1 };
+      const result = FinancialInputsSchema.safeParse(negativeCustomers);
+      expect(result.success).toBe(false);
+      expect(result.error?.errors[0].message).toContain(
+        "Debe haber al menos 1 cliente nuevo por mes"
+      );
+    });
+
+    it("should allow CAC = 0 (free acquisition)", () => {
+      const freeCAC = { ...validData, customerAcquisitionCost: 0 };
+      const result = FinancialInputsSchema.safeParse(freeCAC);
+      expect(result.success).toBe(true);
+    });
+
+    it("should allow fixedCosts = 0 (no fixed costs)", () => {
+      const noFixedCosts = { ...validData, fixedCosts: 0 };
+      const result = FinancialInputsSchema.safeParse(noFixedCosts);
+      expect(result.success).toBe(true);
+    });
+
+    it("should allow costPerUnit = 0 (free product)", () => {
+      const freeCost = { ...validData, costPerUnit: 0 };
+      const result = FinancialInputsSchema.safeParse(freeCost);
+      expect(result.success).toBe(true);
+    });
+
+    it("should validate business edge case: very small but valid values", () => {
+      const edgeCase = {
+        averagePrice: 0.01, // Minimum price
+        costPerUnit: 0.005, // Half the price
+        fixedCosts: 1, // Minimum fixed costs
+        customerAcquisitionCost: 0, // Free acquisition
+        monthlyNewCustomers: 1, // Minimum customers
+        averageCustomerLifetime: 0.1, // Very short lifetime
+      };
+      const result = FinancialInputsSchema.safeParse(edgeCase);
+      expect(result.success).toBe(true);
+    });
+
+    it("should handle decimal values correctly", () => {
+      const decimalValues = {
+        averagePrice: 19.99,
+        costPerUnit: 8.75,
+        fixedCosts: 1250.5,
+        customerAcquisitionCost: 15.25,
+        monthlyNewCustomers: 25,
+        averageCustomerLifetime: 18.5,
+      };
+      const result = FinancialInputsSchema.safeParse(decimalValues);
+      expect(result.success).toBe(true);
+    });
+  });
 });
 
 describe("FinancialInputsUpdateSchema", () => {

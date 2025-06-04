@@ -761,3 +761,204 @@ describe("CAC > unit margin detection", () => {
     expect(viabilityRec?.message).not.toContain("unidades más/mes");
   });
 });
+
+describe("Free Customer Acquisition (CAC = 0) Cases", () => {
+  it("should handle CAC = 0 (free organic acquisition) correctly", () => {
+    const result = calculateFinancialMetrics({
+      averagePrice: 100,
+      costPerUnit: 50,
+      fixedCosts: 1000,
+      customerAcquisitionCost: 0, // CAC gratuito
+      monthlyNewCustomers: 50,
+      averageCustomerLifetime: 12,
+    });
+
+    // KPIs should be calculated correctly
+    expect(result.kpis.cac).toBe(0);
+    expect(result.kpis.cacLtvRatio).toBe(0); // Special case: 0 instead of Infinity
+    expect(result.kpis.unitMargin).toBe(50);
+    expect(result.kpis.ltv).toBe(600); // 50 * 12
+
+    // Health classification should be excellent
+    expect(result.health.ltvCacHealth).toBe("good"); // CAC = 0 always good
+    expect(result.health.profitabilityHealth).toBe("good"); // Profitable
+    expect(result.health.overallHealth).toBe("good");
+
+    // Should have special recommendation for free acquisition
+    const acquisitionRec = result.recommendations.find((r) => r.type === "acquisition");
+    expect(acquisitionRec).toBeDefined();
+    expect(acquisitionRec?.status).toBe("positive");
+    expect(acquisitionRec?.message).toContain("Ratio perfecto (CAC gratuito)");
+    expect(acquisitionRec?.message).toContain("Adquisición de clientes totalmente gratuita");
+    expect(acquisitionRec?.message).toContain("marketing orgánico, referencias");
+    expect(acquisitionRec?.message).toContain("acelerar el crecimiento maximizando estos canales");
+  });
+
+  it("should handle CAC = 0 with losses due to fixed costs", () => {
+    const result = calculateFinancialMetrics({
+      averagePrice: 100,
+      costPerUnit: 50,
+      fixedCosts: 2750, // Genera pérdidas pequeñas
+      customerAcquisitionCost: 0, // CAC gratuito
+      monthlyNewCustomers: 50,
+      averageCustomerLifetime: 12,
+    });
+
+    // Should still classify LTV/CAC as excellent despite overall losses
+    expect(result.health.ltvCacHealth).toBe("good");
+    expect(result.health.profitabilityHealth).toBe("medium"); // Small losses but positive unit margin
+    expect(result.health.overallHealth).toBe("medium");
+
+    // Should recommend free acquisition while addressing fixed costs
+    const acquisitionRec = result.recommendations.find((r) => r.type === "acquisition");
+    expect(acquisitionRec?.status).toBe("positive");
+    expect(acquisitionRec?.message).toContain("CAC gratuito");
+  });
+});
+
+describe("Break-even Edge Cases", () => {
+  it("should handle unit margin = 0 correctly", () => {
+    const result = calculateKPIs({
+      averagePrice: 50,
+      costPerUnit: 50, // Unit margin = 0
+      fixedCosts: 1000,
+      customerAcquisitionCost: 25,
+      monthlyNewCustomers: 100,
+      averageCustomerLifetime: 12,
+    });
+
+    expect(result.unitMargin).toBe(0);
+    expect(result.breakEvenUnits).toBe(0); // Special case: already at unit equilibrium
+    expect(result.breakEvenMonths).toBe(0);
+  });
+
+  it("should handle negative unit margin correctly", () => {
+    const result = calculateKPIs({
+      averagePrice: 50,
+      costPerUnit: 70, // Negative unit margin
+      fixedCosts: 1000,
+      customerAcquisitionCost: 25,
+      monthlyNewCustomers: 100,
+      averageCustomerLifetime: 12,
+    });
+
+    expect(result.unitMargin).toBe(-20);
+    expect(result.breakEvenUnits).toBe(Infinity); // Impossible to break even
+    expect(result.breakEvenMonths).toBe(Infinity);
+  });
+
+  it("should handle both fixed costs = 0 and CAC = 0 (perfect scenario)", () => {
+    const result = calculateFinancialMetrics({
+      averagePrice: 100,
+      costPerUnit: 50,
+      fixedCosts: 0, // No fixed costs
+      customerAcquisitionCost: 0, // No acquisition costs
+      monthlyNewCustomers: 50,
+      averageCustomerLifetime: 12,
+    });
+
+    // Should be the perfect business model
+    expect(result.kpis.breakEvenUnits).toBe(0); // Already at equilibrium
+    expect(result.kpis.cacLtvRatio).toBe(0); // Perfect ratio
+    expect(result.health.overallHealth).toBe("good");
+
+    // Recommendations should reflect the perfect scenario
+    const viabilityRec = result.recommendations.find((r) => r.type === "viability");
+    expect(viabilityRec?.status).toBe("positive");
+
+    const acquisitionRec = result.recommendations.find((r) => r.type === "acquisition");
+    expect(acquisitionRec?.message).toContain("CAC gratuito");
+  });
+});
+
+describe("Input Validation Edge Cases", () => {
+  it("should handle very small positive values correctly", () => {
+    const result = calculateFinancialMetrics({
+      averagePrice: 0.01, // Minimum allowed value
+      costPerUnit: 0.005,
+      fixedCosts: 1,
+      customerAcquisitionCost: 0.002,
+      monthlyNewCustomers: 1, // Minimum allowed value
+      averageCustomerLifetime: 1,
+    });
+
+    expect(result.kpis.unitMargin).toBeCloseTo(0.005, 3);
+    expect(result.kpis.monthlyRevenue).toBeCloseTo(0.01, 3);
+    expect(result.kpis.ltv).toBeCloseTo(0.005, 3);
+    expect(result.recommendations.length).toBeGreaterThan(0);
+  });
+
+  it("should handle large numbers correctly", () => {
+    const result = calculateFinancialMetrics({
+      averagePrice: 10000,
+      costPerUnit: 5000,
+      fixedCosts: 50000,
+      customerAcquisitionCost: 1000,
+      monthlyNewCustomers: 100,
+      averageCustomerLifetime: 24,
+    });
+
+    expect(result.kpis.unitMargin).toBe(5000);
+    expect(result.kpis.monthlyRevenue).toBe(1000000);
+    expect(result.kpis.ltv).toBe(120000);
+    expect(result.kpis.breakEvenUnits).toBe(10); // 50000 / 5000
+    expect(result.recommendations.length).toBeGreaterThan(0);
+  });
+});
+
+describe("Recommendation Text Quality", () => {
+  it("should provide specific and actionable recommendations for CAC = 0 scenario", () => {
+    const result = calculateFinancialMetrics({
+      averagePrice: 50,
+      costPerUnit: 30,
+      fixedCosts: 2000,
+      customerAcquisitionCost: 0,
+      monthlyNewCustomers: 200,
+      averageCustomerLifetime: 10,
+    });
+
+    const acquisitionRec = result.recommendations.find((r) => r.type === "acquisition");
+
+    // Should explain what CAC = 0 means in business terms
+    expect(acquisitionRec?.message).toContain("marketing orgánico");
+    expect(acquisitionRec?.message).toContain("referencias");
+
+    // Should provide actionable advice
+    expect(acquisitionRec?.message).toContain("maximizando estos canales");
+
+    // Should be encouraging and positive
+    expect(acquisitionRec?.status).toBe("positive");
+  });
+
+  it("should explain infinite ratios in user-friendly terms", () => {
+    const kpis = {
+      unitMargin: 50,
+      monthlyRevenue: 5000,
+      monthlyProfit: 2000,
+      ltv: 0, // This creates an infinite CAC/LTV ratio
+      cac: 25,
+      cacLtvRatio: Infinity,
+      breakEvenUnits: 20,
+      breakEvenMonths: 0.4,
+    };
+
+    const health = classifyHealth(kpis);
+    expect(health.ltvCacHealth).toBe("bad"); // Infinite ratio should be bad
+
+    const recommendations = generateRecommendations(kpis, health, {
+      averagePrice: 100,
+      costPerUnit: 50,
+      fixedCosts: 1000,
+      customerAcquisitionCost: 25,
+      monthlyNewCustomers: 50,
+      averageCustomerLifetime: 0, // This causes LTV = 0
+    });
+
+    // Should explain the problem in business terms, not mathematical terms
+    const acquisitionRec = recommendations.find((r) => r.type === "acquisition");
+    expect(acquisitionRec?.status).toBe("negative");
+    // Should not contain "Infinity" or mathematical symbols
+    expect(acquisitionRec?.message).not.toContain("Infinity");
+    expect(acquisitionRec?.message).not.toContain("∞");
+  });
+});

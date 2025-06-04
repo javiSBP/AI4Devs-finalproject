@@ -13,7 +13,7 @@ export const FINANCIAL_LIMITS = {
 export const SharedFinancialInputsSchema = z.object({
   averagePrice: z
     .number()
-    .min(0, "El precio medio debe ser mayor o igual a 0")
+    .min(0.01, "El precio medio debe ser mayor que 0")
     .max(
       FINANCIAL_LIMITS.maxPrice,
       `El precio medio no puede exceder ${FINANCIAL_LIMITS.maxPrice} euros`
@@ -46,7 +46,7 @@ export const SharedFinancialInputsSchema = z.object({
 
   monthlyNewCustomers: z
     .number()
-    .min(0, "Los nuevos clientes mensuales deben ser mayor o igual a 0")
+    .min(1, "Debe haber al menos 1 cliente nuevo por mes")
     .max(
       FINANCIAL_LIMITS.maxCustomers,
       `Los nuevos clientes mensuales no pueden exceder ${FINANCIAL_LIMITS.maxCustomers}`
