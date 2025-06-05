@@ -30,12 +30,17 @@ interface ResultsDisplayProps {
 }
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat("es-ES", {
-    style: "currency",
-    currency: "EUR",
+  // Formatear el número sin el símbolo de moneda
+  const formattedNumber = new Intl.NumberFormat("es-ES", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(value);
+  }).format(Math.abs(value));
+
+  // Añadir el símbolo € después del número, como es correcto en español
+  const result = `${formattedNumber}€`;
+
+  // Manejar números negativos
+  return value < 0 ? `-${result}` : result;
 };
 
 const formatDecimal = (value: number) => {
@@ -292,13 +297,15 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
 
   // Calcular el revenue break-even correctamente - validar para evitar NaN
   const calculateBreakEvenRevenue = () => {
-    if (
-      !Number.isFinite(breakEvenUnits) ||
-      !financialInputs.averagePrice ||
-      financialInputs.averagePrice <= 0
-    ) {
-      return 0; // Valor seguro para evitar NaN
+    if (!financialInputs.averagePrice || financialInputs.averagePrice <= 0) {
+      return 0; // Valor seguro para evitar NaN cuando no hay precio válido
     }
+
+    // Si breakEvenUnits es Infinity, el breakEvenRevenue también debe ser Infinity
+    if (breakEvenUnits === Infinity || !Number.isFinite(breakEvenUnits)) {
+      return Infinity;
+    }
+
     return breakEvenUnits * financialInputs.averagePrice;
   };
 

@@ -3,6 +3,23 @@
  * Implements comprehensive financial metrics calculation with user-friendly recommendations
  */
 
+/**
+ * Formats currency values in correct Spanish format (value + €)
+ */
+function formatEuro(value: number): string {
+  // Formatear el número sin el símbolo de moneda
+  const formattedNumber = new Intl.NumberFormat("es-ES", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(Math.abs(value));
+
+  // Añadir el símbolo € después del número, como es correcto en español
+  const result = `${formattedNumber}€`;
+
+  // Manejar números negativos
+  return value < 0 ? `-${result}` : result;
+}
+
 export interface FinancialInputs {
   averagePrice: number;
   costPerUnit: number;
@@ -264,7 +281,7 @@ export function generateRecommendations(
     recommendations.push({
       type: "viability",
       title: "Viabilidad económica",
-      message: `Tu modelo genera un <strong>beneficio del ${profitMargin}%</strong> sobre ventas (€${safeKpis.monthlyProfit.toFixed(0)} de €${safeKpis.monthlyRevenue.toFixed(0)} mensuales). Esto indica viabilidad si mantienes las previsiones de ventas.`,
+      message: `Tu modelo genera un <strong>beneficio del ${profitMargin}%</strong> sobre ventas (${formatEuro(safeKpis.monthlyProfit)} de ${formatEuro(safeKpis.monthlyRevenue)} mensuales). Esto indica viabilidad si mantienes las previsiones de ventas.`,
       status: "positive",
     });
   } else if (health.profitabilityHealth === "medium") {
@@ -278,7 +295,7 @@ export function generateRecommendations(
       recommendations.push({
         type: "viability",
         title: "Viabilidad económica",
-        message: `Tienes margen unitario positivo (€${safeKpis.unitMargin.toFixed(0)}) pero <strong>pérdidas de €${lossAmount.toFixed(0)}/mes</strong>. Necesitas <strong>${additionalSalesNeeded} ventas más al mes</strong> para ser rentable.`,
+        message: `Tienes margen unitario positivo (${formatEuro(safeKpis.unitMargin)}) pero <strong>pérdidas de ${formatEuro(lossAmount)}/mes</strong>. Necesitas <strong>${additionalSalesNeeded} ventas más al mes</strong> para ser rentable.`,
         status: "warning",
       });
     } else {
@@ -287,7 +304,7 @@ export function generateRecommendations(
       recommendations.push({
         type: "viability",
         title: "Viabilidad económica",
-        message: `Tienes margen unitario positivo (€${safeKpis.unitMargin.toFixed(0)}) pero <strong>CAC demasiado alto (€${safeKpis.cac})</strong>. Cada cliente nuevo genera pérdidas. Reduce el CAC por debajo de €${maxViableCAC} antes de aumentar ventas.`,
+        message: `Tienes margen unitario positivo (${formatEuro(safeKpis.unitMargin)}) pero <strong>CAC demasiado alto (${formatEuro(safeKpis.cac)})</strong>. Cada cliente nuevo genera pérdidas. Reduce el CAC por debajo de ${formatEuro(maxViableCAC)} antes de aumentar ventas.`,
         status: "warning",
       });
     }
@@ -302,7 +319,7 @@ export function generateRecommendations(
       recommendations.push({
         type: "viability",
         title: "Viabilidad económica",
-        message: `<strong>Modelo inviable:</strong> cada cliente genera €${lossPerCustomer.toFixed(0)} de pérdida neta (CAC €${safeKpis.cac} > margen €${safeKpis.unitMargin}). <strong>AUMENTAR VENTAS EMPEORA LAS PÉRDIDAS</strong>. Urgente: reduce el CAC por debajo de €${maxViableCAC} antes de adquirir más clientes.`,
+        message: `<strong>Modelo inviable:</strong> cada cliente genera ${formatEuro(lossPerCustomer)} de pérdida neta (CAC ${formatEuro(safeKpis.cac)} > margen ${formatEuro(safeKpis.unitMargin)}). <strong>AUMENTAR VENTAS EMPEORA LAS PÉRDIDAS</strong>. Urgente: reduce el CAC por debajo de ${formatEuro(maxViableCAC)} antes de adquirir más clientes.`,
         status: "negative",
       });
     } else {
@@ -326,7 +343,7 @@ export function generateRecommendations(
             recommendations.push({
               type: "viability",
               title: "Viabilidad económica",
-              message: `Pérdidas importantes de <strong>€${lossAmount.toFixed(0)}/mes</strong>. Para ser viable necesitas: <strong>reducir costes fijos un ${costReductionPercentage}%</strong> (de €${safeInputs.fixedCosts} a €${newFixedCosts.toFixed(0)}) o <strong>aumentar ventas un ${currentSalesGrowth}%</strong> (${additionalSalesNeeded} unidades más/mes).`,
+              message: `Pérdidas importantes de <strong>${formatEuro(lossAmount)}/mes</strong>. Para ser viable necesitas: <strong>reducir costes fijos un ${costReductionPercentage}%</strong> (de ${formatEuro(safeInputs.fixedCosts)} a ${formatEuro(newFixedCosts)}) o <strong>aumentar ventas un ${currentSalesGrowth}%</strong> (${additionalSalesNeeded} unidades más/mes).`,
               status: "negative",
             });
           } else {
@@ -335,7 +352,7 @@ export function generateRecommendations(
             recommendations.push({
               type: "viability",
               title: "Viabilidad económica",
-              message: `Pérdidas críticas de <strong>€${lossAmount.toFixed(0)}/mes</strong>. Incluso <strong>eliminando TODOS los costes fijos</strong> (€${safeInputs.fixedCosts}) aún tendrías €${remainingLoss.toFixed(0)}/mes de pérdidas. Necesitas <strong>aumentar ventas ${additionalSalesNeeded} unidades más/mes</strong> (${currentSalesGrowth}% de crecimiento).`,
+              message: `Pérdidas críticas de <strong>${formatEuro(lossAmount)}/mes</strong>. Incluso <strong>eliminando TODOS los costes fijos</strong> (${formatEuro(safeInputs.fixedCosts)}) aún tendrías ${formatEuro(remainingLoss)}/mes de pérdidas. Necesitas <strong>aumentar ventas ${additionalSalesNeeded} unidades más/mes</strong> (${currentSalesGrowth}% de crecimiento).`,
               status: "negative",
             });
           }
@@ -343,7 +360,7 @@ export function generateRecommendations(
           recommendations.push({
             type: "viability",
             title: "Viabilidad económica",
-            message: `Pérdidas de <strong>€${lossAmount.toFixed(0)}/mes</strong> sin costes fijos. El problema está en los costes variables o CAC. Necesitas <strong>${additionalSalesNeeded} ventas más/mes</strong> (crecimiento del ${currentSalesGrowth}%) para compensar con mayor volumen.`,
+            message: `Pérdidas de <strong>${formatEuro(lossAmount)}/mes</strong> sin costes fijos. El problema está en los costes variables o CAC. Necesitas <strong>${additionalSalesNeeded} ventas más/mes</strong> (crecimiento del ${currentSalesGrowth}%) para compensar con mayor volumen.`,
             status: "negative",
           });
         }
@@ -354,7 +371,7 @@ export function generateRecommendations(
         recommendations.push({
           type: "viability",
           title: "Viabilidad económica",
-          message: `<strong>Error en clasificación:</strong> CAC (€${safeKpis.cac}) ≥ margen unitario (€${safeKpis.unitMargin}). Cada cliente genera pérdidas. Reduce el CAC por debajo de €${maxViableCAC}.`,
+          message: `<strong>Error en clasificación:</strong> CAC (${formatEuro(safeKpis.cac)}) ≥ margen unitario (${formatEuro(safeKpis.unitMargin)}). Cada cliente genera pérdidas. Reduce el CAC por debajo de ${formatEuro(maxViableCAC)}.`,
           status: "negative",
         });
       }
@@ -380,7 +397,7 @@ export function generateRecommendations(
       recommendations.push({
         type: "acquisition",
         title: "Eficiencia de adquisición de clientes",
-        message: `Ratio excelente de <strong>${actualLtvCacRatio}:1</strong>. Recuperas los €${safeKpis.cac} de CAC en solo ${monthsToRecover}. Puedes invertir más en marketing para acelerar el crecimiento.`,
+        message: `Ratio excelente de <strong>${actualLtvCacRatio}:1</strong>. Recuperas los ${formatEuro(safeKpis.cac)} de CAC en solo ${monthsToRecover}. Puedes invertir más en marketing para acelerar el crecimiento.`,
         status: "positive",
       });
     }
@@ -389,7 +406,7 @@ export function generateRecommendations(
     recommendations.push({
       type: "acquisition",
       title: "Eficiencia de adquisición de clientes",
-      message: `Ratio de <strong>${actualLtvCacRatio}:1</strong> es aceptable pero mejorable. Para llegar al ideal (3:1) necesitas aumentar el LTV en €${improvementNeeded} o reducir el CAC a €${Math.ceil(safeKpis.ltv / 3)}.`,
+      message: `Ratio de <strong>${actualLtvCacRatio}:1</strong> es aceptable pero mejorable. Para llegar al ideal (3:1) necesitas aumentar el LTV en ${formatEuro(improvementNeeded)} o reducir el CAC a ${formatEuro(Math.ceil(safeKpis.ltv / 3))}.`,
       status: "warning",
     });
   } else {
@@ -399,14 +416,14 @@ export function generateRecommendations(
       recommendations.push({
         type: "acquisition",
         title: "Eficiencia de adquisición de clientes",
-        message: `<strong>Ratio crítico (${actualLtvCacRatio}:1)</strong>. Pierdes €${lossPerCustomer.toFixed(0)} por cliente adquirido. URGENTE: reduce el CAC a máximo €${maxViableCAC} o para temporalmente la adquisición hasta optimizar el modelo.`,
+        message: `<strong>Ratio crítico (${actualLtvCacRatio}:1)</strong>. Pierdes ${formatEuro(lossPerCustomer)} por cliente adquirido. URGENTE: reduce el CAC a máximo ${formatEuro(maxViableCAC)} o para temporalmente la adquisición hasta optimizar el modelo.`,
         status: "negative",
       });
     } else {
       recommendations.push({
         type: "acquisition",
         title: "Eficiencia de adquisición de clientes",
-        message: `Ratio insuficiente (${actualLtvCacRatio}:1). La adquisición apenas es rentable. Reduce el CAC por debajo de €${Math.ceil(safeKpis.ltv / 2)} o aumenta el LTV mejorando retención.`,
+        message: `Ratio insuficiente (${actualLtvCacRatio}:1). La adquisición apenas es rentable. Reduce el CAC por debajo de ${formatEuro(Math.ceil(safeKpis.ltv / 2))} o aumenta el LTV mejorando retención.`,
         status: "negative",
       });
     }
@@ -419,7 +436,7 @@ export function generateRecommendations(
     recommendations.push({
       type: "optimization",
       title: "Optimización del modelo",
-      message: `Negocio saludable. Puedes reinvertir €${reinvestmentCapacity.toFixed(0)}/mes (70% del beneficio) para adquirir ${potentialNewCustomers} clientes adicionales mensuales y acelerar el crecimiento.`,
+      message: `Negocio saludable. Puedes reinvertir ${formatEuro(reinvestmentCapacity)}/mes (70% del beneficio) para adquirir ${potentialNewCustomers} clientes adicionales mensuales y acelerar el crecimiento.`,
       status: "positive",
     });
   } else if (Number.isFinite(safeKpis.breakEvenMonths) && safeKpis.breakEvenMonths > 0) {
@@ -431,7 +448,7 @@ export function generateRecommendations(
       recommendations.push({
         type: "optimization",
         title: "Aceleración del punto de equilibrio",
-        message: `Break-even en ${Math.ceil(safeKpis.breakEvenMonths)} meses es demasiado lejano. Necesitas aumentar ventas en ${requiredGrowth}% (${Math.ceil(monthlyGap)} unidades más/mes) o reducir costes fijos en €${Math.ceil(safeInputs.fixedCosts * 0.3)}.`,
+        message: `Break-even en ${Math.ceil(safeKpis.breakEvenMonths)} meses es demasiado lejano. Necesitas aumentar ventas en ${requiredGrowth}% (${Math.ceil(monthlyGap)} unidades más/mes) o reducir costes fijos en ${formatEuro(Math.ceil(safeInputs.fixedCosts * 0.3))}.`,
         status: "warning",
       });
     }
@@ -441,20 +458,34 @@ export function generateRecommendations(
   const nextStepsMessage = [];
 
   if (health.ltvCacHealth === "bad") {
-    if (safeKpis.cac > safeKpis.ltv) {
+    if (safeKpis.ltv <= 0) {
+      // Caso especial: LTV negativo o cero - el problema es más fundamental
+      if (safeKpis.unitMargin <= 0) {
+        nextStepsMessage.push(
+          `<strong>Prioridad 1:</strong> Modelo insostenible. Margen unitario negativo (${formatEuro(safeKpis.unitMargin)}). Aumenta precio por encima de ${formatEuro(safeInputs.costPerUnit)} o reduce costes variables`
+        );
+      } else {
+        nextStepsMessage.push(
+          `<strong>Prioridad 1:</strong> Aumenta la retención de clientes por encima de ${Math.ceil(safeKpis.cac / safeKpis.unitMargin)} meses para hacer el LTV positivo`
+        );
+      }
+    } else if (safeKpis.cac > safeKpis.ltv) {
+      // Calculamos un CAC objetivo válido (máximo 80% del LTV, pero nunca negativo)
+      const targetCAC = Math.max(1, Math.floor(safeKpis.ltv * 0.8));
       nextStepsMessage.push(
-        `<strong>Prioridad 1:</strong> Reduce CAC de €${safeKpis.cac} a máximo €${Math.floor(safeKpis.ltv * 0.8)} mediante marketing orgánico o mejores conversiones`
+        `<strong>Prioridad 1:</strong> Reduce CAC de ${formatEuro(safeKpis.cac)} a máximo ${formatEuro(targetCAC)} mediante marketing orgánico o mejores conversiones`
       );
     } else if (safeKpis.cac > safeKpis.unitMargin) {
       // CASO ESPECIAL: CAC > margen unitario - cada cliente genera pérdidas netas
-      const maxViableCAC = Math.floor(safeKpis.unitMargin * 0.9);
+      const maxViableCAC = Math.max(1, Math.floor(safeKpis.unitMargin * 0.9));
       nextStepsMessage.push(
-        `<strong>Prioridad 1:</strong> Reduce CAC de €${safeKpis.cac} a máximo €${maxViableCAC} para que cada cliente sea rentable (CAC debe ser < margen €${safeKpis.unitMargin})`
+        `<strong>Prioridad 1:</strong> Reduce CAC de ${formatEuro(safeKpis.cac)} a máximo ${formatEuro(maxViableCAC)} para que cada cliente sea rentable (CAC debe ser < margen ${formatEuro(safeKpis.unitMargin)})`
       );
     } else {
-      const targetCAC = Math.floor(safeKpis.ltv / 3); // Para ratio 3:1
+      // Para ratio 3:1, pero nunca negativo
+      const targetCAC = Math.max(1, Math.floor(safeKpis.ltv / 3));
       nextStepsMessage.push(
-        `<strong>Prioridad 1:</strong> Reduce CAC de €${safeKpis.cac} a máximo €${targetCAC} para lograr ratio LTV/CAC saludable (3:1)`
+        `<strong>Prioridad 1:</strong> Reduce CAC de ${formatEuro(safeKpis.cac)} a máximo ${formatEuro(targetCAC)} para lograr ratio LTV/CAC saludable (3:1)`
       );
     }
   }
@@ -477,13 +508,13 @@ export function generateRecommendations(
       } else {
         // Caso especial: CAC = margen unitario (contribución neta = 0)
         nextStepsMessage.push(
-          `<strong>Prioridad 2:</strong> CAC igual al margen unitario. Reduce el CAC por debajo de €${Math.floor(safeKpis.unitMargin * 0.9)} para que las ventas sean rentables`
+          `<strong>Prioridad 2:</strong> CAC igual al margen unitario. Reduce el CAC por debajo de ${formatEuro(Math.floor(safeKpis.unitMargin * 0.9))} para que las ventas sean rentables`
         );
       }
     } else {
       // Caso especial: CAC > margen unitario - NO sugerir más ventas
       nextStepsMessage.push(
-        `<strong>Prioridad 2:</strong> Para la adquisición de clientes hasta reducir el CAC. Cada cliente nuevo aumenta las pérdidas en €${(safeKpis.cac - safeKpis.unitMargin).toFixed(0)}/mes`
+        `<strong>Prioridad 2:</strong> Para la adquisición de clientes hasta reducir el CAC. Cada cliente nuevo aumenta las pérdidas en ${formatEuro(safeKpis.cac - safeKpis.unitMargin)}/mes`
       );
     }
   }
@@ -492,7 +523,7 @@ export function generateRecommendations(
     const targetLifetime = Math.ceil(safeInputs.averageCustomerLifetime * 1.5);
     const ltvIncrease = safeKpis.unitMargin * (targetLifetime - safeInputs.averageCustomerLifetime);
     nextStepsMessage.push(
-      `<strong>Mejora retención:</strong> Aumentar duración del cliente de ${safeInputs.averageCustomerLifetime} a ${targetLifetime} meses sumaría €${ltvIncrease.toFixed(0)} al LTV`
+      `<strong>Mejora retención:</strong> Aumentar duración del cliente de ${safeInputs.averageCustomerLifetime} a ${targetLifetime} meses sumaría ${formatEuro(ltvIncrease)} al LTV`
     );
   }
 

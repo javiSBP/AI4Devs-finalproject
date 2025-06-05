@@ -218,7 +218,7 @@ describe("KPI Calculator", () => {
       const viabilityRec = recommendations.find((r) => r.type === "viability");
       expect(viabilityRec?.status).toBe("warning");
       expect(viabilityRec?.message).toContain("margen unitario positivo");
-      expect(viabilityRec?.message).toContain("pérdidas de €500/mes");
+      expect(viabilityRec?.message).toContain("pérdidas de 500€/mes");
     });
 
     it("should generate negative recommendations for bad health", () => {
@@ -234,7 +234,7 @@ describe("KPI Calculator", () => {
       const viabilityRec = recommendations.find((r) => r.type === "viability");
       expect(viabilityRec?.status).toBe("negative");
       expect(viabilityRec?.message).toContain("Modelo inviable");
-      expect(viabilityRec?.message).toContain("cada cliente genera €35 de pérdida neta");
+      expect(viabilityRec?.message).toContain("cada cliente genera 35€ de pérdida neta");
 
       const acquisitionRec = recommendations.find((r) => r.type === "acquisition");
       expect(acquisitionRec?.status).toBe("negative");
@@ -363,7 +363,7 @@ describe("KPI Calculator", () => {
       // Verificar que incluye porcentajes específicos para reducción factible
       expect(manageableViabilityRec?.message).toContain("reducir costes fijos un");
       expect(manageableViabilityRec?.message).toContain("%");
-      expect(manageableViabilityRec?.message).toContain("de €1000 a €");
+      expect(manageableViabilityRec?.message).toContain("de 1000€ a");
       expect(manageableViabilityRec?.message).toContain("aumentar ventas un");
 
       // Caso 2: Pérdidas críticas (mayores que costes fijos)
@@ -384,7 +384,7 @@ describe("KPI Calculator", () => {
 
       // Verificar que muestra el caso crítico correctamente
       expect(criticalViabilityRec?.message).toContain("Modelo inviable");
-      expect(criticalViabilityRec?.message).toContain("cada cliente genera €3 de pérdida neta");
+      expect(criticalViabilityRec?.message).toContain("cada cliente genera 3€ de pérdida neta");
       expect(criticalViabilityRec?.message).toContain("AUMENTAR VENTAS EMPEORA LAS PÉRDIDAS");
 
       // Caso sin costes fijos (edge case)
@@ -399,7 +399,7 @@ describe("KPI Calculator", () => {
 
       const noCostsViabilityRec = noCostsCase.recommendations.find((r) => r.type === "viability");
       expect(noCostsViabilityRec?.message).toContain("Modelo inviable");
-      expect(noCostsViabilityRec?.message).toContain("cada cliente genera €13 de pérdida neta");
+      expect(noCostsViabilityRec?.message).toContain("cada cliente genera 13€ de pérdida neta");
     });
 
     it("should have consistent numbers across all recommendation sections", () => {
@@ -428,7 +428,7 @@ describe("KPI Calculator", () => {
 
       // Viabilidad debe explicar que aumentar ventas empeora las pérdidas (CAC > margen)
       expect(viabilityRec?.message).toContain("Modelo inviable");
-      expect(viabilityRec?.message).toContain("cada cliente genera €7 de pérdida neta");
+      expect(viabilityRec?.message).toContain("cada cliente genera 7€ de pérdida neta");
       expect(viabilityRec?.message).toContain("AUMENTAR VENTAS EMPEORA LAS PÉRDIDAS");
 
       // Próximos pasos: ahora SÍ debe tener Prioridad 1 porque LTV/CAC es "bad"
@@ -436,7 +436,7 @@ describe("KPI Calculator", () => {
       expect(nextStepsRec?.message).toContain("Prioridad 2:");
       // Prioridad 2 ya NO debe sugerir aumentar ventas (porque CAC > margen)
       expect(nextStepsRec?.message).toContain("Para la adquisición de clientes");
-      expect(nextStepsRec?.message).toContain("Cada cliente nuevo aumenta las pérdidas en €7/mes");
+      expect(nextStepsRec?.message).toContain("Cada cliente nuevo aumenta las pérdidas en 7€/mes");
     });
 
     it("should use correct singular/plural forms for time units", () => {
@@ -612,7 +612,7 @@ describe("KPI Calculator", () => {
       expect(acquisitionRec).toBeDefined();
       expect(acquisitionRec?.status).toBe("negative");
       expect(acquisitionRec?.message).toContain("Ratio crítico");
-      expect(acquisitionRec?.message).toContain("Pierdes €38");
+      expect(acquisitionRec?.message).toContain("Pierdes 38€");
 
       // Verificar que hay próximos pasos específicos para este caso crítico
       const nextStepsRec = criticalRecommendations.find((r) => r.type === "next_steps");
@@ -667,7 +667,7 @@ describe("Type Safety and Validation", () => {
 
     // Viabilidad debe explicar que aumentar ventas empeora las pérdidas (CAC > margen)
     expect(viabilityRec?.message).toContain("Modelo inviable");
-    expect(viabilityRec?.message).toContain("cada cliente genera €7 de pérdida neta");
+    expect(viabilityRec?.message).toContain("cada cliente genera 7€ de pérdida neta");
     expect(viabilityRec?.message).toContain("AUMENTAR VENTAS EMPEORA LAS PÉRDIDAS");
 
     // Próximos pasos: ahora SÍ debe tener Prioridad 1 porque LTV/CAC es "bad"
@@ -675,7 +675,7 @@ describe("Type Safety and Validation", () => {
     expect(nextStepsRec?.message).toContain("Prioridad 2:");
     // Prioridad 2 ya NO debe sugerir aumentar ventas (porque CAC > margen)
     expect(nextStepsRec?.message).toContain("Para la adquisición de clientes");
-    expect(nextStepsRec?.message).toContain("Cada cliente nuevo aumenta las pérdidas en €7/mes");
+    expect(nextStepsRec?.message).toContain("Cada cliente nuevo aumenta las pérdidas en 7€/mes");
 
     // Los números deben ser consistentes
     // Break-even (250) < Pérdidas totales (320) ✓ Lógico
@@ -749,14 +749,14 @@ describe("CAC > unit margin detection", () => {
 
     // Debe explicar que cada cliente genera pérdidas netas
     expect(viabilityRec?.message).toContain("Modelo inviable");
-    expect(viabilityRec?.message).toContain("cada cliente genera €7 de pérdida neta");
-    expect(viabilityRec?.message).toContain("CAC €9 > margen €2");
+    expect(viabilityRec?.message).toContain("cada cliente genera 7€ de pérdida neta");
+    expect(viabilityRec?.message).toContain("CAC 9€ > margen 2€");
 
     // Debe advertir explícitamente que aumentar ventas empeora las pérdidas
     expect(viabilityRec?.message).toContain("AUMENTAR VENTAS EMPEORA LAS PÉRDIDAS");
 
     // Debe sugerir reducir CAC, no aumentar ventas
-    expect(viabilityRec?.message).toContain("reduce el CAC por debajo de €1");
+    expect(viabilityRec?.message).toContain("reduce el CAC por debajo de 1€");
     expect(viabilityRec?.message).not.toContain("aumentar ventas");
     expect(viabilityRec?.message).not.toContain("unidades más/mes");
   });

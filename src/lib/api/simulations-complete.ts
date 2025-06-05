@@ -40,24 +40,36 @@ export async function createCompleteSimulation(
       // 3. Create Financial Inputs
       await tx.financialInputs.create({
         data: {
-          simulationId: newSimulation.id,
+          simulation: {
+            connect: { id: newSimulation.id },
+          },
           ...data.financialInputs,
         },
       });
 
+      // Helper function to convert Infinity and NaN to safe database values
+      const safeFloat = (value: number): number => {
+        if (!Number.isFinite(value)) {
+          return -1; // Use -1 to represent infinite/impossible values
+        }
+        return value;
+      };
+
       // 4. Create Results with calculated KPIs
       await tx.simulationResults.create({
         data: {
-          simulationId: newSimulation.id,
-          // KPI values
-          unitMargin: calculationResult.kpis.unitMargin,
-          monthlyRevenue: calculationResult.kpis.monthlyRevenue,
-          monthlyProfit: calculationResult.kpis.monthlyProfit,
-          ltv: calculationResult.kpis.ltv,
-          cac: calculationResult.kpis.cac,
-          cacLtvRatio: calculationResult.kpis.cacLtvRatio,
-          breakEvenUnits: calculationResult.kpis.breakEvenUnits,
-          breakEvenMonths: calculationResult.kpis.breakEvenMonths,
+          simulation: {
+            connect: { id: newSimulation.id },
+          },
+          // KPI values (safe conversion for database)
+          unitMargin: safeFloat(calculationResult.kpis.unitMargin),
+          monthlyRevenue: safeFloat(calculationResult.kpis.monthlyRevenue),
+          monthlyProfit: safeFloat(calculationResult.kpis.monthlyProfit),
+          ltv: safeFloat(calculationResult.kpis.ltv),
+          cac: safeFloat(calculationResult.kpis.cac),
+          cacLtvRatio: safeFloat(calculationResult.kpis.cacLtvRatio),
+          breakEvenUnits: safeFloat(calculationResult.kpis.breakEvenUnits),
+          breakEvenMonths: safeFloat(calculationResult.kpis.breakEvenMonths),
           // Health indicators
           profitabilityHealth: calculationResult.health.profitabilityHealth,
           ltvCacHealth: calculationResult.health.ltvCacHealth,
@@ -187,18 +199,26 @@ export async function updateCompleteSimulation(
 
       // 4. Update Results if recalculation is needed
       if (needsRecalculation && calculationResult && existingSimulation.results) {
+        // Helper function to convert Infinity and NaN to safe database values
+        const safeFloat = (value: number): number => {
+          if (!Number.isFinite(value)) {
+            return -1; // Use -1 to represent infinite/impossible values
+          }
+          return value;
+        };
+
         await tx.simulationResults.update({
           where: { simulationId: id },
           data: {
-            // Updated KPI values
-            unitMargin: calculationResult.kpis.unitMargin,
-            monthlyRevenue: calculationResult.kpis.monthlyRevenue,
-            monthlyProfit: calculationResult.kpis.monthlyProfit,
-            ltv: calculationResult.kpis.ltv,
-            cac: calculationResult.kpis.cac,
-            cacLtvRatio: calculationResult.kpis.cacLtvRatio,
-            breakEvenUnits: calculationResult.kpis.breakEvenUnits,
-            breakEvenMonths: calculationResult.kpis.breakEvenMonths,
+            // Updated KPI values (safe conversion for database)
+            unitMargin: safeFloat(calculationResult.kpis.unitMargin),
+            monthlyRevenue: safeFloat(calculationResult.kpis.monthlyRevenue),
+            monthlyProfit: safeFloat(calculationResult.kpis.monthlyProfit),
+            ltv: safeFloat(calculationResult.kpis.ltv),
+            cac: safeFloat(calculationResult.kpis.cac),
+            cacLtvRatio: safeFloat(calculationResult.kpis.cacLtvRatio),
+            breakEvenUnits: safeFloat(calculationResult.kpis.breakEvenUnits),
+            breakEvenMonths: safeFloat(calculationResult.kpis.breakEvenMonths),
             // Updated health indicators
             profitabilityHealth: calculationResult.health.profitabilityHealth,
             ltvCacHealth: calculationResult.health.ltvCacHealth,

@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import TipCard from "../tips/TipCard";
 
 interface WizardLayoutProps {
@@ -14,9 +14,10 @@ interface WizardLayoutProps {
     validate?: () => Promise<boolean> | boolean;
   }[];
   onComplete?: () => void;
+  isCompleting?: boolean; // Nuevo prop para indicar que se está guardando
 }
 
-const WizardLayout: React.FC<WizardLayoutProps> = ({ steps, onComplete }) => {
+const WizardLayout: React.FC<WizardLayoutProps> = ({ steps, onComplete, isCompleting = false }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isValidating, setIsValidating] = useState(false);
 
@@ -129,9 +130,18 @@ const WizardLayout: React.FC<WizardLayoutProps> = ({ steps, onComplete }) => {
                   Anterior
                 </Button>
               )}
-              <Button onClick={goToNextStep} disabled={isValidating}>
-                {isValidating ? "Validando..." : isLastStep ? "Guardar Simulación" : "Siguiente"}
-                {!isLastStep && !isValidating && <ArrowRight className="ml-2 h-4 w-4" />}
+              <Button onClick={goToNextStep} disabled={isValidating || isCompleting}>
+                {isCompleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isCompleting
+                  ? "Guardando..."
+                  : isValidating
+                    ? "Validando..."
+                    : isLastStep
+                      ? "Guardar Simulación"
+                      : "Siguiente"}
+                {!isLastStep && !isValidating && !isCompleting && (
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                )}
               </Button>
             </div>
           </div>

@@ -51,7 +51,7 @@ describe("BreakEvenProgress", () => {
 
     // Should show 50% progress - using the actual format without comma for 4-digit numbers
     expect(screen.getByText("50.0%")).toBeInTheDocument();
-    expect(screen.getByText("€6000")).toBeInTheDocument();
+    expect(screen.getByText("6000€")).toBeInTheDocument();
   });
 
   it("should handle progress over 100%", () => {
@@ -66,23 +66,30 @@ describe("BreakEvenProgress", () => {
 
     // Should treat current revenue as 0
     expect(screen.getByText("0.0%")).toBeInTheDocument();
-    expect(screen.getByText("€0")).toBeInTheDocument();
+    expect(screen.getByText("0€")).toBeInTheDocument();
   });
 
-  it("should handle invalid breakEvenRevenue (NaN treated as 0)", () => {
+  it("should handle impossible break-even (Infinity)", () => {
+    render(<BreakEvenProgress currentRevenue={5000} breakEvenRevenue={Infinity} />);
+
+    // When breakEvenRevenue is Infinity, should show impossible state
+    expect(screen.getByText("Imposible")).toBeInTheDocument();
+    expect(screen.getByText("Imposible alcanzar")).toBeInTheDocument();
+  });
+
+  it("should handle invalid breakEvenRevenue (NaN treated as impossible)", () => {
     render(<BreakEvenProgress currentRevenue={5000} breakEvenRevenue={NaN} />);
 
-    // When breakEvenRevenue is NaN, it's treated as 0, so should show 100% progress
-    expect(screen.getByText("100.0%")).toBeInTheDocument();
-    expect(screen.getByText("Ya en equilibrio")).toBeInTheDocument();
+    // When breakEvenRevenue is NaN, it's treated as impossible
+    expect(screen.getByText("Imposible")).toBeInTheDocument();
+    expect(screen.getByText("Imposible alcanzar")).toBeInTheDocument();
   });
 
-  it("should show N/A for negative breakEvenRevenue", () => {
-    // Need to directly pass a negative value to see N/A state
+  it("should show impossible for negative breakEvenRevenue", () => {
     render(<BreakEvenProgress currentRevenue={5000} breakEvenRevenue={-100} />);
 
-    // When breakEvenRevenue is negative, should show N/A
-    expect(screen.getByText("N/A")).toBeInTheDocument();
-    expect(screen.getByText("No calculable")).toBeInTheDocument();
+    // When breakEvenRevenue is negative, should show impossible
+    expect(screen.getByText("Imposible")).toBeInTheDocument();
+    expect(screen.getByText("Imposible alcanzar")).toBeInTheDocument();
   });
 });

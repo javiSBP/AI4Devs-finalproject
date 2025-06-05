@@ -145,20 +145,26 @@ export const BreakEvenProgress: React.FC<BreakEvenProgressProps> = ({
 }) => {
   // Validar inputs para evitar NaN
   const validCurrentRevenue = Number.isFinite(currentRevenue) ? currentRevenue : 0;
-  const validBreakEvenRevenue = Number.isFinite(breakEvenRevenue) ? breakEvenRevenue : 0;
 
   let progress = 0;
   let isBreakEven = false;
   let progressText = "N/A";
+  let isImpossible = false;
 
-  if (validBreakEvenRevenue === 0) {
+  if (breakEvenRevenue === Infinity || breakEvenRevenue < 0 || !Number.isFinite(breakEvenRevenue)) {
+    // Caso imposible: no se puede alcanzar el equilibrio
+    progress = 0;
+    isBreakEven = false;
+    isImpossible = true;
+    progressText = "Imposible";
+  } else if (breakEvenRevenue === 0) {
     // Caso especial: breakEvenRevenue = 0 significa que ya estás en equilibrio
     progress = 100;
     isBreakEven = true;
     progressText = "100.0%";
-  } else if (validBreakEvenRevenue > 0) {
-    progress = Math.min((validCurrentRevenue / validBreakEvenRevenue) * 100, 100);
-    isBreakEven = validCurrentRevenue >= validBreakEvenRevenue;
+  } else if (breakEvenRevenue > 0) {
+    progress = Math.min((validCurrentRevenue / breakEvenRevenue) * 100, 100);
+    isBreakEven = validCurrentRevenue >= breakEvenRevenue;
     progressText = `${progress.toFixed(1)}%`;
   }
 
@@ -166,22 +172,38 @@ export const BreakEvenProgress: React.FC<BreakEvenProgressProps> = ({
     <div className="space-y-2">
       <div className="flex justify-between text-sm">
         <span>Progreso hacia equilibrio</span>
-        <span className={isBreakEven ? "text-green-600 font-medium" : "text-gray-600"}>
+        <span
+          className={
+            isImpossible
+              ? "text-red-600 font-medium"
+              : isBreakEven
+                ? "text-green-600 font-medium"
+                : "text-gray-600"
+          }
+        >
           {progressText}
         </span>
       </div>
       <Progress
         value={progress}
-        className={`h-2 ${isBreakEven ? "[&>div]:bg-green-500" : "[&>div]:bg-blue-500"}`}
+        className={`h-2 ${
+          isImpossible
+            ? "[&>div]:bg-red-500"
+            : isBreakEven
+              ? "[&>div]:bg-green-500"
+              : "[&>div]:bg-blue-500"
+        }`}
       />
       <div className="flex justify-between text-xs text-muted-foreground">
-        <span>€{validCurrentRevenue.toLocaleString()}</span>
+        <span>{validCurrentRevenue.toLocaleString()}€</span>
         <span>
-          {validBreakEvenRevenue === 0
-            ? "Ya en equilibrio"
-            : validBreakEvenRevenue > 0
-              ? `€${validBreakEvenRevenue.toLocaleString()}`
-              : "No calculable"}
+          {isImpossible
+            ? "Imposible alcanzar"
+            : breakEvenRevenue === 0
+              ? "Ya en equilibrio"
+              : breakEvenRevenue > 0
+                ? `${breakEvenRevenue.toLocaleString()}€`
+                : "No calculable"}
         </span>
       </div>
     </div>
@@ -205,7 +227,7 @@ export const TrendIndicator: React.FC<TrendIndicatorProps> = ({
   const formatValue = (val: number) => {
     switch (format) {
       case "currency":
-        return `€${val.toLocaleString()}`;
+        return `${val.toLocaleString()}€`;
       case "ratio":
         return val.toFixed(2);
       case "percentage":

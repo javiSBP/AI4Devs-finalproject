@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import MainLayout from "@/components/layout/MainLayout";
+import Toast from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -14,6 +16,15 @@ import {
 } from "@/components/ui/table";
 import Link from "next/link";
 import { ChartBar, FileText, CheckCircle, AlertCircle, XCircle } from "lucide-react";
+
+interface FinancialData {
+  averagePrice: number;
+  costPerUnit: number;
+  fixedCosts: number;
+  customerAcquisitionCost: number;
+  monthlyNewCustomers: number;
+  averageCustomerLifetime: number;
+}
 
 interface Simulation {
   id: number;
@@ -28,19 +39,17 @@ interface Simulation {
     channels: string;
     revenueStreams: string;
   };
-  financial: {
-    averagePrice: number;
-    costPerUnit: number;
-    fixedCosts: number;
-    customerAcquisitionCost: number;
-    monthlyNewCustomers: number;
-    averageCustomerLifetime: number;
-  };
+  financial?: FinancialData;
+  financialInputs?: FinancialData; // Para compatibilidad
 }
 
 export default function HistorialPage() {
+  const searchParams = useSearchParams();
   const [simulations, setSimulations] = useState<Simulation[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Estado del toast de éxito
+  const [successToast, setSuccessToast] = useState(false);
 
   useEffect(() => {
     // Load simulations from local storage
@@ -55,7 +64,12 @@ export default function HistorialPage() {
       }
     }
     setLoading(false);
-  }, []);
+
+    // Mostrar toast de éxito si viene de una simulación guardada
+    if (searchParams.get("success") === "true") {
+      setSuccessToast(true);
+    }
+  }, [searchParams]);
 
   if (loading) {
     return (
@@ -113,18 +127,30 @@ export default function HistorialPage() {
                 </TableHeader>
                 <TableBody>
                   {simulations.map((simulation) => {
+                    // Verificar y normalizar la estructura de datos financieros
+                    const financialData = simulation.financial || simulation.financialInputs;
+
+                    // Valores por defecto para evitar errores
+                    const defaultFinancial: FinancialData = {
+                      averagePrice: financialData?.averagePrice || 0,
+                      costPerUnit: financialData?.costPerUnit || 0,
+                      fixedCosts: financialData?.fixedCosts || 0,
+                      customerAcquisitionCost: financialData?.customerAcquisitionCost || 0,
+                      monthlyNewCustomers: financialData?.monthlyNewCustomers || 0,
+                      averageCustomerLifetime: financialData?.averageCustomerLifetime || 0,
+                    };
+
                     // Calcular ingresos mensuales estimados
                     const monthlyRevenue =
-                      simulation.financial.averagePrice * simulation.financial.monthlyNewCustomers;
+                      defaultFinancial.averagePrice * defaultFinancial.monthlyNewCustomers;
 
                     // Calcular margen unitario para determinar viabilidad
-                    const unitMargin =
-                      simulation.financial.averagePrice - simulation.financial.costPerUnit;
+                    const unitMargin = defaultFinancial.averagePrice - defaultFinancial.costPerUnit;
                     const monthlyProfit =
                       monthlyRevenue -
-                      simulation.financial.fixedCosts -
-                      simulation.financial.customerAcquisitionCost *
-                        simulation.financial.monthlyNewCustomers;
+                      defaultFinancial.fixedCosts -
+                      defaultFinancial.customerAcquisitionCost *
+                        defaultFinancial.monthlyNewCustomers;
 
                     // Determinar estado de viabilidad
                     let viabilityStatus = {
@@ -190,6 +216,15 @@ export default function HistorialPage() {
           </Card>
         )}
       </div>
+
+      {/* Toast de éxito */}
+      <Toast
+        message="¡Simulación guardada correctamente!"
+        type="success"
+        isVisible={successToast}
+        onClose={() => setSuccessToast(false)}
+        duration={4000}
+      />
     </MainLayout>
   );
 }

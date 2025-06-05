@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import MainLayout from "@/components/layout/MainLayout";
 import WizardLayout from "@/components/wizard/WizardLayout";
 import LeanCanvasForm, { LeanCanvasFormRef } from "@/components/forms/LeanCanvasForm";
@@ -7,7 +8,7 @@ import FinancialInputsForm, {
   FinancialInputsFormRef,
 } from "@/components/forms/FinancialInputsForm";
 import ResultsDisplay from "@/components/results/ResultsDisplay";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import Toast from "@/components/ui/toast";
 import { LeanCanvasData } from "@/types/lean-canvas";
 import { calculateFinancialMetrics } from "@/lib/financial/kpi-calculator";
 import { useSimulations } from "@/hooks/useSimulations";
@@ -22,15 +23,20 @@ export interface FinancialData {
 }
 
 export default function SimulationPage() {
-  const { createSimulation, error, clearError } = useSimulations();
+  const router = useRouter();
+  const { createSimulation } = useSimulations();
   const leanCanvasFormRef = useRef<LeanCanvasFormRef>(null);
   const financialInputsFormRef = useRef<FinancialInputsFormRef>(null);
 
   // Estados para mostrar mensajes de éxito/error
-  const [saveMessage, setSaveMessage] = useState<{
-    type: "success" | "error" | null;
+  const [toast, setToast] = useState<{
+    type: "success" | "error" | "info";
     message: string;
-  }>({ type: null, message: "" });
+    isVisible: boolean;
+  }>({ type: "info", message: "", isVisible: false });
+
+  // Estado para loading del guardado
+  const [isCompleting, setIsCompleting] = useState(false);
 
   const [leanCanvasData, setLeanCanvasData] = useState<LeanCanvasData>({
     name: "",
@@ -104,52 +110,6 @@ export default function SimulationPage() {
         <div className="space-y-4">
           <p className="text-muted-foreground">Analiza los resultados de tu simulación</p>
 
-          {/* Error de conexión API */}
-          {error && (
-            <Alert variant="default">
-              <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                <path
-                  fillRule="evenodd"
-                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <AlertTitle>Conexión con servidor limitada</AlertTitle>
-              <AlertDescription>
-                Los datos se guardarán localmente como respaldo. {error}
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Mensaje de éxito/error al guardar */}
-          {saveMessage.type && (
-            <Alert variant={saveMessage.type === "error" ? "destructive" : "default"}>
-              {saveMessage.type === "success" ? (
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              ) : (
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              )}
-              <AlertTitle>
-                {saveMessage.type === "success" ? "¡Simulación guardada!" : "Error al guardar"}
-              </AlertTitle>
-              <AlertDescription>{saveMessage.message}</AlertDescription>
-            </Alert>
-          )}
-
           <ResultsDisplay
             calculationResult={calculationResult}
             leanCanvasData={leanCanvasData}
@@ -161,15 +121,20 @@ export default function SimulationPage() {
   ];
 
   const handleComplete = async () => {
+    // Activar estado de loading
+    setIsCompleting(true);
     // Limpiar mensajes anteriores
-    setSaveMessage({ type: null, message: "" });
-    clearError();
+    setToast({ type: "info", message: "", isVisible: false });
 
     const simulationData = {
       name: leanCanvasData.name || `Simulación ${new Date().toLocaleDateString()}`,
       description: `Simulación creada el ${new Date().toLocaleDateString()}`,
       leanCanvas: leanCanvasData,
-      financialInputs: financialData,
+      financialInputs: financialData, // Para la API
+      // Estructura adicional para compatibilidad con historial local
+      financial: financialData,
+      date: new Date().toISOString(),
+      id: Date.now(), // ID temporal para localStorage
     };
 
     try {
@@ -178,31 +143,42 @@ export default function SimulationPage() {
       if (result.success) {
         // API call successful
         console.log("Simulation saved to API!", result.data);
-        setSaveMessage({
-          type: "success",
-          message: "¡Simulación guardada correctamente en la base de datos!",
-        });
+
+        // Navegar primero al historial
+        router.push("/historial?success=true");
       } else if (result.usedFallback) {
         // API failed but fallback worked
         console.log("Simulation saved to localStorage fallback:", result.data);
-        setSaveMessage({
+        setToast({
           type: "error",
           message: `Error de conexión: ${result.error || "API no disponible"}. Los datos se han guardado localmente.`,
+          isVisible: true,
         });
       }
     } catch (err) {
       // Unexpected error (shouldn't happen now, but just in case)
       console.error("Unexpected error saving simulation:", err);
-      setSaveMessage({
+      setToast({
         type: "error",
         message: `Error inesperado: ${err instanceof Error ? err.message : "Error desconocido"}`,
+        isVisible: true,
       });
+    } finally {
+      // Desactivar estado de loading
+      setIsCompleting(false);
     }
   };
 
   return (
     <MainLayout>
-      <WizardLayout steps={wizardSteps} onComplete={handleComplete} />
+      <WizardLayout steps={wizardSteps} onComplete={handleComplete} isCompleting={isCompleting} />
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={() => setToast({ ...toast, isVisible: false })}
+        duration={5000}
+      />
     </MainLayout>
   );
 }
