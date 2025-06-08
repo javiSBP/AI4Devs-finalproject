@@ -304,7 +304,7 @@ export async function getCompleteSimulations(query: ListSimulationsQueryInput, d
               uniqueValueProposition: true,
             },
           },
-          financialInputs: true,
+          financialInputs: true, // Include for real-time calculation consistency
           results: {
             select: {
               id: true,

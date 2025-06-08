@@ -5,20 +5,13 @@ import { useSearchParams } from "next/navigation";
 import MainLayout from "@/components/layout/MainLayout";
 import Toast from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
-import { ChartBar, FileText, CheckCircle, AlertCircle, XCircle, Trash2, Copy } from "lucide-react";
+import { ChartBar, FileText, XCircle } from "lucide-react";
 import { useSimulations } from "@/hooks/useSimulations";
 import type { SimulationListItem } from "@/types/simulation";
 import { AlertDialog } from "@/components/ui/alert-dialog";
+import { SimulationCard } from "@/components/ui/simulation-card";
 
 export default function HistorialPage() {
   const searchParams = useSearchParams();
@@ -163,121 +156,25 @@ export default function HistorialPage() {
             </CardContent>
           </Card>
         ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle>Tus simulaciones guardadas ({simulations.length})</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Beneficio/mes</TableHead>
-                    <TableHead>Viabilidad</TableHead>
-                    <TableHead>Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {simulations.map((simulation) => {
-                    // Calculate monthly profit from results
-                    const monthlyProfit = simulation.results?.monthlyProfit || 0;
-                    const overallHealth = simulation.results?.overallHealth || "unknown";
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">
+                Tus simulaciones guardadas ({simulations.length})
+              </h2>
+            </div>
 
-                    // Determine viability status based on results
-                    let viabilityStatus = {
-                      icon: XCircle,
-                      text: "Baja",
-                      className: "text-red-600 dark:text-red-400",
-                    };
-
-                    if (overallHealth === "good") {
-                      viabilityStatus = {
-                        icon: CheckCircle,
-                        text: "Buena",
-                        className: "text-green-600 dark:text-green-400",
-                      };
-                    } else if (overallHealth === "medium") {
-                      viabilityStatus = {
-                        icon: AlertCircle,
-                        text: "Media",
-                        className: "text-yellow-600 dark:text-yellow-400",
-                      };
-                    }
-
-                    const IconComponent = viabilityStatus.icon;
-
-                    return (
-                      <TableRow key={simulation.id}>
-                        <TableCell className="font-medium">
-                          <div>
-                            <div>{simulation.name || "Sin nombre"}</div>
-                            {simulation.description && (
-                              <div className="text-sm text-muted-foreground truncate max-w-[200px]">
-                                {simulation.description}
-                              </div>
-                            )}
-                            {simulation.leanCanvas?.name &&
-                              simulation.leanCanvas.name !== simulation.name && (
-                                <div className="text-sm text-muted-foreground truncate max-w-[200px]">
-                                  Canvas: {simulation.leanCanvas.name}
-                                </div>
-                              )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {new Date(simulation.updatedAt).toLocaleDateString("es-ES", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </TableCell>
-                        <TableCell className="font-mono">
-                          {new Intl.NumberFormat("es-ES", {
-                            style: "currency",
-                            currency: "EUR",
-                            minimumFractionDigits: 0,
-                          }).format(monthlyProfit)}
-                        </TableCell>
-                        <TableCell>
-                          <span className="flex items-center gap-2">
-                            <IconComponent className={`h-4 w-4 ${viabilityStatus.className}`} />
-                            <span className={viabilityStatus.className}>
-                              {viabilityStatus.text}
-                            </span>
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="sm" asChild>
-                              <Link href={`/simulation/${simulation.id}`}>Ver detalles</Link>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDuplicate(simulation.id, simulation.name)}
-                              disabled={actionLoading === simulation.id}
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDelete(simulation.id, simulation.name)}
-                              disabled={actionLoading === simulation.id}
-                              className="text-red-600 hover:text-red-700"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {simulations.map((simulation) => (
+                <SimulationCard
+                  key={simulation.id}
+                  simulation={simulation}
+                  onDelete={handleDelete}
+                  onDuplicate={handleDuplicate}
+                  isLoading={actionLoading === simulation.id}
+                />
+              ))}
+            </div>
+          </div>
         )}
       </div>
 

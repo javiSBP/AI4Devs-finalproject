@@ -383,8 +383,14 @@ export function generateRecommendations(
     if (cac === 0) return "∞";
     if (ltv <= 0) return "0";
     const ratio = ltv / cac;
-    // Para ratios, mostrar como entero si es >= 1, sino con 1 decimal
-    return ratio >= 1 ? Math.round(ratio).toString() : ratio.toFixed(1);
+    // Show 1 decimal for critical ranges (1.0-9.9) where thresholds matter most
+    if (ratio >= 10) {
+      return Math.round(ratio).toString(); // 10+ without decimals (e.g., "15")
+    } else if (ratio >= 1) {
+      return ratio.toFixed(1); // 1.0-9.9 with 1 decimal (e.g., "1.5", "2.0", "3.2")
+    } else {
+      return ratio.toFixed(1); // <1 with 1 decimal (e.g., "0.8")
+    }
   };
 
   const actualLtvCacRatio = formatLtvCacRatio(safeKpis.ltv, safeKpis.cac);

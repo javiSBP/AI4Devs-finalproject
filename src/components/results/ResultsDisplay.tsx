@@ -44,11 +44,13 @@ const formatCurrency = (value: number) => {
 };
 
 const formatDecimal = (value: number) => {
-  // Para ratios, mostrar como entero si es >= 1, sino con 1 decimal
-  if (value >= 1) {
-    return Math.round(value).toString();
+  // Show 1 decimal for critical ranges (1.0-9.9) where thresholds matter most
+  if (value >= 10) {
+    return Math.round(value).toString(); // 10+ without decimals (e.g., "15")
+  } else if (value >= 1) {
+    return value.toFixed(1); // 1.0-9.9 with 1 decimal (e.g., "1.5", "2.0", "3.2")
   } else {
-    return value.toFixed(1);
+    return value.toFixed(1); // <1 with 1 decimal (e.g., "0.8")
   }
 };
 

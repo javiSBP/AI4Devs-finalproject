@@ -53,6 +53,7 @@ export interface SimulationListItem {
     solution?: string;
     uniqueValueProposition?: string;
   };
+  financialInputs?: FinancialInputs; // Include for real-time calculation consistency
   results?: {
     id: string;
     overallHealth: string;
