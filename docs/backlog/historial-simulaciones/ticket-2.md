@@ -10,14 +10,14 @@ Implementar la lógica de gestión de estado y la integración con la API para e
 
 ## Tareas
 
-- [ ] Crear tipos TypeScript para el modelo de datos de simulaciones
-- [ ] Desarrollar hooks personalizados para la gestión del estado del historial
-- [ ] Implementar lógica para guardar simulaciones con nombre y metadatos
-- [ ] Crear funcionalidad para listar simulaciones con opciones de ordenación y filtrado
-- [ ] Desarrollar lógica para cargar una simulación específica y restaurar su estado
-- [ ] Implementar funcionalidad para duplicar simulaciones existentes
-- [ ] Crear sistema de sincronización entre localStorage y API para persistencia sin login
-- [ ] Desarrollar mecanismo de generación de ID único para dispositivo/navegador
+- [x] Crear tipos TypeScript para el modelo de datos de simulaciones
+- [x] Desarrollar hooks personalizados para la gestión del estado del historial
+- [x] Implementar lógica para guardar simulaciones con nombre y metadatos
+- [x] Crear funcionalidad para listar simulaciones con opciones de ordenación y filtrado
+- [x] Desarrollar lógica para cargar una simulación específica y restaurar su estado
+- [x] Implementar funcionalidad para duplicar simulaciones existentes
+- [x] ~~Crear sistema de sincronización entre localStorage y API para persistencia sin login~~ (Eliminado por requerimiento)
+- [x] Desarrollar mecanismo de generación de ID único para dispositivo/navegador
 
 ## Criterios de Aceptación Técnicos
 

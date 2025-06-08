@@ -1,6 +1,10 @@
 import { useState, useCallback } from "react";
-import type { LeanCanvasData } from "@/types/lean-canvas";
-import type { FinancialInputs, CalculationResult } from "@/lib/financial/kpi-calculator";
+import type {
+  CompleteSimulation,
+  CreateSimulationData,
+  UpdateSimulationData,
+  PaginatedSimulationsResponse,
+} from "@/types/simulation";
 
 // Helper to generate a device ID (browser fingerprint)
 function getDeviceId(): string {
@@ -30,67 +34,6 @@ function getDeviceId(): string {
   }
 
   return deviceId;
-}
-
-interface CompleteSimulation {
-  id: string;
-  name: string;
-  description?: string;
-  createdAt: string;
-  updatedAt: string;
-  leanCanvas: LeanCanvasData;
-  financialInputs: FinancialInputs;
-  results: CalculationResult;
-}
-
-interface CreateSimulationData {
-  name: string;
-  description?: string;
-  leanCanvas: LeanCanvasData;
-  financialInputs: FinancialInputs;
-}
-
-interface UpdateSimulationData {
-  name?: string;
-  description?: string;
-  leanCanvas?: Partial<LeanCanvasData>;
-  financialInputs?: Partial<FinancialInputs>;
-}
-
-interface SimulationListItem {
-  id: string;
-  name: string;
-  description?: string;
-  createdAt: string;
-  updatedAt: string;
-  leanCanvas?: {
-    id: string;
-    name: string;
-    description?: string;
-    problem?: string;
-    solution?: string;
-    uniqueValueProposition?: string;
-  };
-  results?: {
-    id: string;
-    overallHealth: string;
-    monthlyProfit: number;
-    ltv: number;
-    cacLtvRatio: number;
-    calculatedAt: string;
-  };
-}
-
-interface PaginatedResponse<T> {
-  simulations: T[];
-  pagination: {
-    current: number;
-    total: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-    limit: number;
-    totalRecords: number;
-  };
 }
 
 export function useSimulations() {
@@ -191,7 +134,7 @@ export function useSimulations() {
       limit = 10,
       sort = "updatedAt",
       order = "desc"
-    ): Promise<PaginatedResponse<SimulationListItem>> => {
+    ): Promise<PaginatedSimulationsResponse> => {
       setLoading(true);
       setError(null);
 

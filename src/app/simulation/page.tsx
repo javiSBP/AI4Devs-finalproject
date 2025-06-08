@@ -128,43 +128,26 @@ export default function SimulationPage() {
 
     const simulationData = {
       name: leanCanvasData.name || `Simulación ${new Date().toLocaleDateString()}`,
-      description: `Simulación creada el ${new Date().toLocaleDateString()}`,
+      description:
+        leanCanvasData.description || `Simulación creada el ${new Date().toLocaleDateString()}`,
       leanCanvas: leanCanvasData,
-      financialInputs: financialData, // Para la API
-      // Estructura adicional para compatibilidad con historial local
-      financial: financialData,
-      date: new Date().toISOString(),
-      id: Date.now(), // ID temporal para localStorage
+      financialInputs: financialData,
     };
 
     try {
       const result = await createSimulation(simulationData);
+      console.log("Simulation saved successfully!", result);
 
-      if (result.success) {
-        // API call successful
-        console.log("Simulation saved to API!", result.data);
-
-        // Navegar primero al historial
-        router.push("/historial?success=true");
-      } else if (result.usedFallback) {
-        // API failed but fallback worked
-        console.log("Simulation saved to localStorage fallback:", result.data);
-        setToast({
-          type: "error",
-          message: `Error de conexión: ${result.error || "API no disponible"}. Los datos se han guardado localmente.`,
-          isVisible: true,
-        });
-      }
+      // Navegar al historial con parámetro de éxito
+      router.push("/historial?success=true");
     } catch (err) {
-      // Unexpected error (shouldn't happen now, but just in case)
-      console.error("Unexpected error saving simulation:", err);
+      console.error("Error saving simulation:", err);
       setToast({
         type: "error",
-        message: `Error inesperado: ${err instanceof Error ? err.message : "Error desconocido"}`,
+        message: `Error al guardar la simulación: ${err instanceof Error ? err.message : "Error desconocido"}`,
         isVisible: true,
       });
-    } finally {
-      // Desactivar estado de loading
+      // Desactivar estado de loading si hay error
       setIsCompleting(false);
     }
   };

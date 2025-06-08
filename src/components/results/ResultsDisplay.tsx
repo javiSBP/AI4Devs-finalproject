@@ -44,7 +44,12 @@ const formatCurrency = (value: number) => {
 };
 
 const formatDecimal = (value: number) => {
-  return value.toFixed(2);
+  // Para ratios, mostrar como entero si es >= 1, sino con 1 decimal
+  if (value >= 1) {
+    return Math.round(value).toString();
+  } else {
+    return value.toFixed(1);
+  }
 };
 
 // Helper function to get status color based on health classification
@@ -173,7 +178,7 @@ const getDynamicInterpretation = (
       } else if (kpis.cacLtvRatio === Infinity || kpis.ltv <= 0) {
         return "LTV insuficiente o negativo. Con este valor del cliente es imposible ser rentable independientemente del CAC.";
       } else {
-        const actualRatio = (1 / kpis.cacLtvRatio).toFixed(2);
+        const actualRatio = formatDecimal(1 / kpis.cacLtvRatio);
         if (status === "positive") {
           return `Ratio excelente (${actualRatio}:1). Cada euro invertido en adquisición genera ${actualRatio} euros de valor`;
         } else if (status === "warning") {

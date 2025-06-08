@@ -379,8 +379,15 @@ export function generateRecommendations(
   }
 
   // Eficiencia de adquisición de clientes - con datos específicos
-  const actualLtvCacRatio =
-    safeKpis.cac === 0 ? "∞" : safeKpis.ltv > 0 ? (safeKpis.ltv / safeKpis.cac).toFixed(1) : "0";
+  const formatLtvCacRatio = (ltv: number, cac: number): string => {
+    if (cac === 0) return "∞";
+    if (ltv <= 0) return "0";
+    const ratio = ltv / cac;
+    // Para ratios, mostrar como entero si es >= 1, sino con 1 decimal
+    return ratio >= 1 ? Math.round(ratio).toString() : ratio.toFixed(1);
+  };
+
+  const actualLtvCacRatio = formatLtvCacRatio(safeKpis.ltv, safeKpis.cac);
 
   if (health.ltvCacHealth === "good") {
     if (safeKpis.cac === 0) {

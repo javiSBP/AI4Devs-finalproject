@@ -6,83 +6,47 @@ import MainLayout from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronLeft } from "lucide-react";
-import ResultsDisplay from "@/components/results/ResultsDisplay";
 import InfoTooltip from "@/components/ui/info-tooltip";
-import { calculateFinancialMetrics, FinancialInputs } from "@/lib/financial/kpi-calculator";
-
-interface LeanCanvasData {
-  name: string;
-  description?: string;
-  problem: string;
-  solution: string;
-  uniqueValueProposition: string;
-  customerSegments: string;
-  channels: string;
-  revenueStreams: string;
-}
-
-interface FinancialData {
-  averagePrice: number;
-  costPerUnit: number;
-  fixedCosts: number;
-  customerAcquisitionCost: number;
-  monthlyNewCustomers: number;
-  averageCustomerLifetime: number;
-}
-
-interface Simulation {
-  id: number;
-  date: string;
-  leanCanvas: LeanCanvasData;
-  financial: FinancialData;
-}
+import ResultsDisplay from "@/components/results/ResultsDisplay";
+import { calculateFinancialMetrics } from "@/lib/financial/kpi-calculator";
+import { useSimulations } from "@/hooks/useSimulations";
+import type { CompleteSimulation } from "@/types/simulation";
 
 export default function SimulationDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const [simulation, setSimulation] = useState<Simulation | null>(null);
+  const { getSimulation, loading: apiLoading, error } = useSimulations();
+
+  const [simulation, setSimulation] = useState<CompleteSimulation | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load simulations from localStorage
-    const savedSimulations = localStorage.getItem("simulations");
-    if (savedSimulations) {
-      const parsedSimulations: Simulation[] = JSON.parse(savedSimulations);
-      const foundSimulation = parsedSimulations.find((sim) => sim.id === Number(params.id));
-
-      if (foundSimulation) {
-        setSimulation(foundSimulation);
-      } else {
-        console.error("No se encontró la simulación");
+    const loadSimulation = async () => {
+      if (!params.id || typeof params.id !== "string") {
+        console.error("ID de simulación inválido");
         router.push("/historial");
+        return;
       }
-    } else {
-      console.error("No hay simulaciones guardadas");
-      router.push("/historial");
-    }
 
-    setLoading(false);
-  }, [params.id, router]);
+      try {
+        const result = await getSimulation(params.id);
+        setSimulation(result);
+      } catch (err) {
+        console.error("Error loading simulation:", err);
+        router.push("/historial");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSimulation();
+  }, [params.id, getSimulation, router]);
 
   const handleBack = () => {
     router.push("/historial");
   };
 
-  // Calculate results using KPI calculator
-  const calculateResults = (financial: FinancialData) => {
-    const financialInputs: FinancialInputs = {
-      averagePrice: financial.averagePrice,
-      costPerUnit: financial.costPerUnit,
-      fixedCosts: financial.fixedCosts,
-      customerAcquisitionCost: financial.customerAcquisitionCost,
-      monthlyNewCustomers: financial.monthlyNewCustomers,
-      averageCustomerLifetime: financial.averageCustomerLifetime,
-    };
-
-    return calculateFinancialMetrics(financialInputs);
-  };
-
-  if (loading) {
+  if (loading || apiLoading) {
     return (
       <MainLayout>
         <div className="flex justify-center items-center h-64">
@@ -92,17 +56,28 @@ export default function SimulationDetailPage() {
     );
   }
 
-  if (!simulation) {
+  if (error || !simulation) {
     return (
       <MainLayout>
-        <div className="flex justify-center items-center h-64">
-          <p>Simulación no encontrada</p>
+        <div className="max-w-5xl mx-auto">
+          <Card className="text-center py-12">
+            <CardContent>
+              <div className="flex flex-col items-center gap-4">
+                <h3 className="text-xl font-medium">Simulación no encontrada</h3>
+                <p className="text-muted-foreground mb-4">
+                  {error || "La simulación que buscas no existe o no tienes acceso a ella."}
+                </p>
+                <Button onClick={handleBack}>Volver al historial</Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </MainLayout>
     );
   }
 
-  const calculationResult = calculateResults(simulation.financial);
+  // Calculate results using the saved financial inputs
+  const calculationResult = calculateFinancialMetrics(simulation.financialInputs);
 
   return (
     <MainLayout>
@@ -112,11 +87,17 @@ export default function SimulationDetailPage() {
           Volver al historial
         </Button>
 
-        <h1 className="text-3xl font-bold mb-8">
-          {simulation.leanCanvas.name
-            ? `${simulation.leanCanvas.name} - ${new Date(simulation.date).toLocaleDateString()}`
-            : `Simulación del ${new Date(simulation.date).toLocaleDateString()}`}
-        </h1>
+        <div className="flex justify-between items-start mb-8">
+          <div>
+            <h1 className="text-3xl font-bold">{simulation.name}</h1>
+            {simulation.description && (
+              <p className="text-muted-foreground mt-2">{simulation.description}</p>
+            )}
+            <p className="text-sm text-muted-foreground mt-1">
+              Última actualización: {new Date(simulation.updatedAt).toLocaleString("es-ES")}
+            </p>
+          </div>
+        </div>
 
         <div className="space-y-8">
           {/* Input Summary Section */}
@@ -134,7 +115,7 @@ export default function SimulationDetailPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">Nombre</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground">Nombre del Canvas</h3>
                     <p>{simulation.leanCanvas.name}</p>
                   </div>
                   {simulation.leanCanvas.description && (
@@ -187,35 +168,35 @@ export default function SimulationDetailPage() {
                 <CardContent className="space-y-4">
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground">Precio medio</h3>
-                    <p>{simulation.financial.averagePrice}€</p>
+                    <p>{simulation.financialInputs.averagePrice}€</p>
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground">Coste por unidad</h3>
-                    <p>{simulation.financial.costPerUnit}€</p>
+                    <p>{simulation.financialInputs.costPerUnit}€</p>
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground">
                       Costes fijos mensuales
                     </h3>
-                    <p>{simulation.financial.fixedCosts}€</p>
+                    <p>{simulation.financialInputs.fixedCosts}€</p>
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground">
                       Coste de adquisición de cliente
                     </h3>
-                    <p>{simulation.financial.customerAcquisitionCost}€</p>
+                    <p>{simulation.financialInputs.customerAcquisitionCost}€</p>
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground">
                       Nuevos clientes mensuales
                     </h3>
-                    <p>{simulation.financial.monthlyNewCustomers}</p>
+                    <p>{simulation.financialInputs.monthlyNewCustomers}</p>
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground">
                       Duración media del cliente (meses)
                     </h3>
-                    <p>{simulation.financial.averageCustomerLifetime}</p>
+                    <p>{simulation.financialInputs.averageCustomerLifetime}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -228,14 +209,7 @@ export default function SimulationDetailPage() {
             <ResultsDisplay
               calculationResult={calculationResult}
               leanCanvasData={simulation.leanCanvas}
-              financialInputs={{
-                averagePrice: simulation.financial.averagePrice,
-                costPerUnit: simulation.financial.costPerUnit,
-                fixedCosts: simulation.financial.fixedCosts,
-                customerAcquisitionCost: simulation.financial.customerAcquisitionCost,
-                monthlyNewCustomers: simulation.financial.monthlyNewCustomers,
-                averageCustomerLifetime: simulation.financial.averageCustomerLifetime,
-              }}
+              financialInputs={simulation.financialInputs}
             />
           </div>
         </div>
