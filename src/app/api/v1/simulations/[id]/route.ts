@@ -5,8 +5,8 @@ import {
   getCompleteSimulation,
   updateCompleteSimulation,
   deleteCompleteSimulation,
+  duplicateCompleteSimulation,
 } from "@/lib/api/simulations-complete";
-import { duplicateSimulation } from "@/lib/api/simulations";
 import {
   successResponse,
   errorResponse,
@@ -164,8 +164,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const deviceId = middlewareResult.deviceId!;
     const { id } = await params; // Await params in Next.js 15
 
-    // Duplicate simulation using existing function
-    const result = await duplicateSimulation(id, deviceId);
+    // Duplicate complete simulation using new atomic function
+    const result = await duplicateCompleteSimulation(id, deviceId);
 
     if (!result.success) {
       if (result.error === "Simulation not found") {

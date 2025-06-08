@@ -33,7 +33,6 @@ export async function createCompleteSimulation(
       const leanCanvas = await tx.leanCanvas.create({
         data: {
           ...data.leanCanvas,
-          deviceId,
         },
       });
 
@@ -361,5 +360,157 @@ export async function deleteCompleteSimulation(id: string, deviceId: string) {
   } catch (error) {
     console.error("Error deleting complete simulation:", error);
     return { success: false, error: "Failed to delete complete simulation" };
+  }
+}
+
+/**
+ * Duplicates a complete simulation with all relations and recalculated KPIs
+ */
+export async function duplicateCompleteSimulation(id: string, deviceId: string) {
+  try {
+    const existingSimulation = await prisma.simulation.findFirst({
+      where: { id, deviceId },
+      include: {
+        leanCanvas: true,
+        financialInputs: true,
+        results: true,
+      },
+    });
+
+    if (!existingSimulation) {
+      return { success: false, error: "Simulation not found" };
+    }
+
+    // Recalculate KPIs if we have financial inputs
+    let calculationResult = null;
+    if (existingSimulation.financialInputs) {
+      const financialInputs: FinancialInputs = {
+        averagePrice: existingSimulation.financialInputs.averagePrice,
+        costPerUnit: existingSimulation.financialInputs.costPerUnit,
+        fixedCosts: existingSimulation.financialInputs.fixedCosts,
+        customerAcquisitionCost: existingSimulation.financialInputs.customerAcquisitionCost,
+        monthlyNewCustomers: existingSimulation.financialInputs.monthlyNewCustomers,
+        averageCustomerLifetime: existingSimulation.financialInputs.averageCustomerLifetime,
+      };
+      calculationResult = calculateFinancialMetrics(financialInputs);
+    }
+
+    // Execute atomic transaction to duplicate complete simulation
+    const duplicatedSimulation = await prisma.$transaction(async (tx) => {
+      // 1. Create new simulation record
+      const newSimulation = await tx.simulation.create({
+        data: {
+          name: `${existingSimulation.name} - Copia`,
+          description: existingSimulation.description,
+          deviceId: existingSimulation.deviceId,
+          userId: existingSimulation.userId,
+        },
+      });
+
+      // 2. Duplicate Lean Canvas if it exists
+      let newLeanCanvas = null;
+      if (existingSimulation.leanCanvas) {
+        newLeanCanvas = await tx.leanCanvas.create({
+          data: {
+            name: existingSimulation.leanCanvas.name,
+            description: existingSimulation.leanCanvas.description,
+            problem: existingSimulation.leanCanvas.problem,
+            solution: existingSimulation.leanCanvas.solution,
+            uniqueValueProposition: existingSimulation.leanCanvas.uniqueValueProposition,
+            customerSegments: existingSimulation.leanCanvas.customerSegments,
+            channels: existingSimulation.leanCanvas.channels,
+            revenueStreams: existingSimulation.leanCanvas.revenueStreams,
+          },
+        });
+      }
+
+      // 3. Duplicate Financial Inputs if they exist
+      if (existingSimulation.financialInputs) {
+        await tx.financialInputs.create({
+          data: {
+            simulation: {
+              connect: { id: newSimulation.id },
+            },
+            averagePrice: existingSimulation.financialInputs.averagePrice,
+            costPerUnit: existingSimulation.financialInputs.costPerUnit,
+            fixedCosts: existingSimulation.financialInputs.fixedCosts,
+            customerAcquisitionCost: existingSimulation.financialInputs.customerAcquisitionCost,
+            monthlyNewCustomers: existingSimulation.financialInputs.monthlyNewCustomers,
+            averageCustomerLifetime: existingSimulation.financialInputs.averageCustomerLifetime,
+            validationWarnings:
+              existingSimulation.financialInputs.validationWarnings === null
+                ? undefined
+                : existingSimulation.financialInputs.validationWarnings,
+            calculationNotes: "Duplicado de simulación existente",
+          },
+        });
+      }
+
+      // 4. Create fresh Results with recalculated KPIs if we have financial data
+      if (calculationResult) {
+        // Helper function to convert Infinity and NaN to safe database values
+        const safeFloat = (value: number): number => {
+          if (!Number.isFinite(value)) {
+            return -1; // Use -1 to represent infinite/impossible values
+          }
+          return value;
+        };
+
+        await tx.simulationResults.create({
+          data: {
+            simulation: {
+              connect: { id: newSimulation.id },
+            },
+            // Fresh KPI calculations (safe conversion for database)
+            unitMargin: safeFloat(calculationResult.kpis.unitMargin),
+            monthlyRevenue: safeFloat(calculationResult.kpis.monthlyRevenue),
+            monthlyProfit: safeFloat(calculationResult.kpis.monthlyProfit),
+            ltv: safeFloat(calculationResult.kpis.ltv),
+            cac: safeFloat(calculationResult.kpis.cac),
+            cacLtvRatio: safeFloat(calculationResult.kpis.cacLtvRatio),
+            breakEvenUnits: safeFloat(calculationResult.kpis.breakEvenUnits),
+            breakEvenMonths: safeFloat(calculationResult.kpis.breakEvenMonths),
+            // Fresh health indicators
+            profitabilityHealth: calculationResult.health.profitabilityHealth,
+            ltvCacHealth: calculationResult.health.ltvCacHealth,
+            overallHealth: calculationResult.health.overallHealth,
+            // Fresh recommendations and insights
+            recommendations: JSON.parse(JSON.stringify(calculationResult.recommendations)),
+            insights: {
+              calculatedAt: calculationResult.calculatedAt,
+              calculationVersion: calculationResult.calculationVersion,
+              duplicatedFrom: existingSimulation.id,
+              duplicatedAt: new Date().toISOString(),
+            },
+            // Fresh calculation metadata
+            calculatedAt: calculationResult.calculatedAt,
+            calculationVersion: calculationResult.calculationVersion,
+          },
+        });
+      }
+
+      // 5. Update simulation with Lean Canvas relation if created
+      if (newLeanCanvas) {
+        await tx.simulation.update({
+          where: { id: newSimulation.id },
+          data: { leanCanvasId: newLeanCanvas.id },
+        });
+      }
+
+      // 6. Fetch and return complete duplicated simulation
+      return await tx.simulation.findFirst({
+        where: { id: newSimulation.id },
+        include: {
+          leanCanvas: true,
+          financialInputs: true,
+          results: true,
+        },
+      });
+    });
+
+    return { success: true, data: duplicatedSimulation };
+  } catch (error) {
+    console.error("Error duplicating complete simulation:", error);
+    return { success: false, error: "Failed to duplicate complete simulation" };
   }
 }

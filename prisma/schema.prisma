@@ -40,11 +40,9 @@ model LeanCanvas {
   createdAt              DateTime     @default(now())
   updatedAt              DateTime     @updatedAt
   userId                 String? // Make optional for anonymous users
-  deviceId               String? // Add deviceId for anonymous users
   user                   User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
   simulations            Simulation[]
 
-  @@index([deviceId])
   @@index([userId])
   @@map("lean_canvases")
 }

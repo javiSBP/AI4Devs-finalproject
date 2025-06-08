@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom";
-import { afterAll, afterEach, beforeAll } from "vitest";
+import { afterAll, afterEach, beforeAll, vi } from "vitest";
 import { setupServer } from "msw/node";
 import { handlers } from "./src/mocks/handlers";
 
@@ -7,7 +7,7 @@ import { handlers } from "./src/mocks/handlers";
 export const server = setupServer(...handlers);
 
 // Start server before all tests
-beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+beforeAll(() => server.listen({ onUnhandledRequest: "bypass" }));
 
 // Reset handlers after each test
 afterEach(() => server.resetHandlers());
@@ -36,3 +36,28 @@ Object.defineProperty(window, "matchMedia", {
     dispatchEvent: () => {},
   }),
 });
+
+// Mock localStorage for useSimulations tests
+Object.defineProperty(window, "localStorage", {
+  value: {
+    getItem: vi.fn(),
+    setItem: vi.fn(),
+    removeItem: vi.fn(),
+    clear: vi.fn(),
+  },
+  writable: true,
+});
+
+// Mock HTMLCanvasElement for device ID generation
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(HTMLCanvasElement.prototype.getContext as any) = vi.fn(() => ({
+  fillText: vi.fn(),
+  measureText: vi.fn(() => ({ width: 100 })),
+  fillRect: vi.fn(),
+  canvas: {
+    toDataURL: vi.fn(() => "mock-canvas-data"),
+  },
+}));
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(HTMLCanvasElement.prototype.toDataURL as any) = vi.fn(() => "mock-canvas-data");

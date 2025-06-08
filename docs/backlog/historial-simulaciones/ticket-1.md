@@ -10,14 +10,14 @@ Desarrollar el modelo de datos y los endpoints de API necesarios para almacenar,
 
 ## Tareas
 
-- [ ] Definir modelo de datos `Simulation` en Prisma con relaciones a inputs financieros y métricas calculadas
-- [ ] Implementar campos para metadatos de la simulación (nombre, fecha, etiquetas, descripción)
-- [ ] Crear endpoint para guardar una simulación completa (POST)
-- [ ] Desarrollar endpoint para listar todas las simulaciones guardadas (GET)
-- [ ] Implementar endpoint para recuperar una simulación específica por ID (GET)
-- [ ] Crear endpoint para eliminar una simulación (DELETE)
-- [ ] Desarrollar endpoint para duplicar una simulación existente (POST)
-- [ ] Implementar manejo de identificadores únicos para usuarios sin login (localStorage)
+- [x] Definir modelo de datos `Simulation` en Prisma con relaciones a inputs financieros y métricas calculadas
+- [x] Implementar campos para metadatos de la simulación (nombre, fecha, etiquetas, descripción)
+- [x] Crear endpoint para guardar una simulación completa (POST)
+- [x] Desarrollar endpoint para listar todas las simulaciones guardadas (GET)
+- [x] Implementar endpoint para recuperar una simulación específica por ID (GET)
+- [x] Crear endpoint para eliminar una simulación (DELETE)
+- [x] Desarrollar endpoint para duplicar una simulación existente (POST)
+- [x] Implementar manejo de identificadores únicos para usuarios sin login (localStorage)
 
 ## Criterios de Aceptación Técnicos
 
