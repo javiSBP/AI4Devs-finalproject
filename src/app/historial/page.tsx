@@ -7,11 +7,13 @@ import Toast from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
-import { ChartBar, FileText, XCircle } from "lucide-react";
+import { ChartBar, FileText, XCircle, LayoutGrid, LayoutList } from "lucide-react";
 import { useSimulations } from "@/hooks/useSimulations";
 import type { SimulationListItem } from "@/types/simulation";
 import { AlertDialog } from "@/components/ui/alert-dialog";
 import { SimulationCard } from "@/components/ui/simulation-card";
+
+type ViewMode = "grid" | "list";
 
 export default function HistorialPage() {
   const searchParams = useSearchParams();
@@ -22,6 +24,7 @@ export default function HistorialPage() {
   const [successToast, setSuccessToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
 
   // Alert Dialog state
   const [alertDialog, setAlertDialog] = useState<{
@@ -161,19 +164,61 @@ export default function HistorialPage() {
               <h2 className="text-xl font-semibold">
                 Tus simulaciones guardadas ({simulations.length})
               </h2>
+
+              {/* View Toggle */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Vista:</span>
+                <div className="flex rounded-lg border p-1">
+                  <Button
+                    variant={viewMode === "grid" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("grid")}
+                    className="px-3 py-1"
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === "list" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("list")}
+                    className="px-3 py-1"
+                  >
+                    <LayoutList className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {simulations.map((simulation) => (
-                <SimulationCard
-                  key={simulation.id}
-                  simulation={simulation}
-                  onDelete={handleDelete}
-                  onDuplicate={handleDuplicate}
-                  isLoading={actionLoading === simulation.id}
-                />
-              ))}
-            </div>
+            {/* Grid View */}
+            {viewMode === "grid" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {simulations.map((simulation) => (
+                  <SimulationCard
+                    key={simulation.id}
+                    simulation={simulation}
+                    onDelete={handleDelete}
+                    onDuplicate={handleDuplicate}
+                    isLoading={actionLoading === simulation.id}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* List View */}
+            {viewMode === "list" && (
+              <div className="space-y-3">
+                {simulations.map((simulation) => (
+                  <SimulationCard
+                    key={simulation.id}
+                    simulation={simulation}
+                    onDelete={handleDelete}
+                    onDuplicate={handleDuplicate}
+                    isLoading={actionLoading === simulation.id}
+                    variant="list"
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

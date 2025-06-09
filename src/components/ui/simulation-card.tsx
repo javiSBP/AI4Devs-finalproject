@@ -24,6 +24,7 @@ interface SimulationCardProps {
   onDelete: (id: string, name: string) => void;
   onDuplicate: (id: string, name: string) => void;
   isLoading?: boolean;
+  variant?: "grid" | "list";
 }
 
 export function SimulationCard({
@@ -31,6 +32,7 @@ export function SimulationCard({
   onDelete,
   onDuplicate,
   isLoading = false,
+  variant = "grid",
 }: SimulationCardProps) {
   // Use real-time calculation for consistency with detail page when financialInputs available
   const useRealTimeCalculation = simulation.financialInputs !== undefined;
@@ -146,124 +148,248 @@ export function SimulationCard({
   const viabilityInfo = getViabilityInfo();
   const IconComponent = viabilityInfo.icon;
 
+  // Grid variant (default behavior)
+  if (variant === "grid") {
+    return (
+      <Card className="hover:shadow-md transition-shadow duration-200">
+        <CardHeader className="pb-3">
+          <div className="flex justify-between items-start gap-2">
+            <div className="flex-1 min-w-0">
+              <CardTitle className="text-lg leading-tight truncate">
+                {simulation.name || "Sin nombre"}
+              </CardTitle>
+              {simulation.description && (
+                <p className="text-sm text-muted-foreground mt-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                  {simulation.description}
+                </p>
+              )}
+            </div>
+            <Badge
+              variant={viabilityInfo.variant}
+              className={`shrink-0 ${viabilityInfo.className}`}
+            >
+              <IconComponent className="h-3 w-3 mr-1" />
+              {viabilityInfo.text}
+            </Badge>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          {/* Key Metrics */}
+          <div className="grid grid-cols-2 gap-4">
+            {/* Monthly Profit */}
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                {monthlyProfit >= 0 ? (
+                  <TrendingUp className="h-4 w-4 text-green-600" />
+                ) : (
+                  <TrendingDown className="h-4 w-4 text-red-600" />
+                )}
+                <span className="text-sm font-medium">Beneficio</span>
+              </div>
+              <p
+                className={`text-lg font-semibold ${monthlyProfit >= 0 ? "text-green-600" : "text-red-600"}`}
+              >
+                {formatCurrency(monthlyProfit)}
+              </p>
+            </div>
+
+            {/* LTV/CAC Ratio */}
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Target className={`h-4 w-4 ${getLtvCacColor()}`} />
+                <span className="text-sm font-medium">LTV/CAC</span>
+              </div>
+              <p className={`text-lg font-semibold ${getLtvCacColor()}`}>{ltvCacRatio}</p>
+            </div>
+          </div>
+
+          {/* Lean Canvas info */}
+          {simulation.leanCanvas?.name && simulation.leanCanvas.name !== simulation.name && (
+            <div className="pt-2 border-t">
+              <p className="text-xs text-muted-foreground">Canvas</p>
+              <p className="text-sm truncate">{simulation.leanCanvas.name}</p>
+            </div>
+          )}
+
+          {/* Date */}
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Calendar className="h-3 w-3" />
+            <span>
+              {new Date(simulation.updatedAt).toLocaleDateString("es-ES", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              })}
+            </span>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/simulation/${simulation.id}`}>
+                Ver detalles
+                <ChevronRight className="ml-1 h-3 w-3" />
+              </Link>
+            </Button>
+
+            <TooltipProvider>
+              <div className="flex gap-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onDuplicate(simulation.id, simulation.name || "Sin nombre")}
+                      disabled={isLoading}
+                      aria-label="Duplicar simulación"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Duplicar simulación</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onDelete(simulation.id, simulation.name || "Sin nombre")}
+                      disabled={isLoading}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      aria-label="Eliminar simulación"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Eliminar simulación</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </TooltipProvider>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // List variant
   return (
     <Card className="hover:shadow-md transition-shadow duration-200">
-      <CardHeader className="pb-3">
-        <div className="flex justify-between items-start gap-2">
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between gap-4">
+          {/* Left section: Title and description */}
           <div className="flex-1 min-w-0">
-            <CardTitle className="text-lg leading-tight truncate">
-              {simulation.name || "Sin nombre"}
-            </CardTitle>
+            <div className="flex items-center gap-3">
+              <CardTitle className="text-lg leading-tight truncate">
+                {simulation.name || "Sin nombre"}
+              </CardTitle>
+              <Badge
+                variant={viabilityInfo.variant}
+                className={`shrink-0 ${viabilityInfo.className}`}
+              >
+                <IconComponent className="h-3 w-3 mr-1" />
+                {viabilityInfo.text}
+              </Badge>
+            </div>
             {simulation.description && (
-              <p className="text-sm text-muted-foreground mt-1 overflow-hidden text-ellipsis whitespace-nowrap">
+              <p className="text-sm text-muted-foreground mt-1 truncate">
                 {simulation.description}
               </p>
             )}
-          </div>
-          <Badge variant={viabilityInfo.variant} className={`shrink-0 ${viabilityInfo.className}`}>
-            <IconComponent className="h-3 w-3 mr-1" />
-            {viabilityInfo.text}
-          </Badge>
-        </div>
-      </CardHeader>
-
-      <CardContent className="space-y-4">
-        {/* Key Metrics */}
-        <div className="grid grid-cols-2 gap-4">
-          {/* Monthly Profit */}
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              {monthlyProfit >= 0 ? (
-                <TrendingUp className="h-4 w-4 text-green-600" />
-              ) : (
-                <TrendingDown className="h-4 w-4 text-red-600" />
-              )}
-              <span className="text-sm font-medium">Beneficio</span>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+              <Calendar className="h-3 w-3" />
+              <span>
+                {new Date(simulation.updatedAt).toLocaleDateString("es-ES", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })}
+              </span>
             </div>
-            <p
-              className={`text-lg font-semibold ${monthlyProfit >= 0 ? "text-green-600" : "text-red-600"}`}
-            >
-              {formatCurrency(monthlyProfit)}
-            </p>
           </div>
 
-          {/* LTV/CAC Ratio */}
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Target className={`h-4 w-4 ${getLtvCacColor()}`} />
-              <span className="text-sm font-medium">LTV/CAC</span>
+          {/* Center section: Key metrics */}
+          <div className="flex items-center gap-8">
+            {/* Monthly Profit */}
+            <div className="text-center">
+              <div className="flex items-center gap-1 mb-1">
+                {monthlyProfit >= 0 ? (
+                  <TrendingUp className="h-4 w-4 text-green-600" />
+                ) : (
+                  <TrendingDown className="h-4 w-4 text-red-600" />
+                )}
+                <span className="text-sm font-medium text-muted-foreground">Beneficio</span>
+              </div>
+              <p
+                className={`text-lg font-semibold ${monthlyProfit >= 0 ? "text-green-600" : "text-red-600"}`}
+              >
+                {formatCurrency(monthlyProfit)}
+              </p>
             </div>
-            <p className={`text-lg font-semibold ${getLtvCacColor()}`}>{ltvCacRatio}</p>
-          </div>
-        </div>
 
-        {/* Lean Canvas info */}
-        {simulation.leanCanvas?.name && simulation.leanCanvas.name !== simulation.name && (
-          <div className="pt-2 border-t">
-            <p className="text-xs text-muted-foreground">Canvas</p>
-            <p className="text-sm truncate">{simulation.leanCanvas.name}</p>
-          </div>
-        )}
-
-        {/* Date */}
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Calendar className="h-3 w-3" />
-          <span>
-            {new Date(simulation.updatedAt).toLocaleDateString("es-ES", {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-            })}
-          </span>
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-          <Button variant="outline" size="sm" asChild>
-            <Link href={`/simulation/${simulation.id}`}>
-              Ver detalles
-              <ChevronRight className="ml-1 h-3 w-3" />
-            </Link>
-          </Button>
-
-          <TooltipProvider>
-            <div className="flex gap-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onDuplicate(simulation.id, simulation.name || "Sin nombre")}
-                    disabled={isLoading}
-                    aria-label="Duplicar simulación"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Duplicar simulación</p>
-                </TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onDelete(simulation.id, simulation.name || "Sin nombre")}
-                    disabled={isLoading}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    aria-label="Eliminar simulación"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Eliminar simulación</p>
-                </TooltipContent>
-              </Tooltip>
+            {/* LTV/CAC Ratio */}
+            <div className="text-center">
+              <div className="flex items-center gap-1 mb-1">
+                <Target className={`h-4 w-4 ${getLtvCacColor()}`} />
+                <span className="text-sm font-medium text-muted-foreground">LTV/CAC</span>
+              </div>
+              <p className={`text-lg font-semibold ${getLtvCacColor()}`}>{ltvCacRatio}</p>
             </div>
-          </TooltipProvider>
+          </div>
+
+          {/* Right section: Actions */}
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/simulation/${simulation.id}`}>
+                Ver detalles
+                <ChevronRight className="ml-1 h-3 w-3" />
+              </Link>
+            </Button>
+
+            <TooltipProvider>
+              <div className="flex gap-1">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onDuplicate(simulation.id, simulation.name || "Sin nombre")}
+                      disabled={isLoading}
+                      aria-label="Duplicar simulación"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Duplicar simulación</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onDelete(simulation.id, simulation.name || "Sin nombre")}
+                      disabled={isLoading}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      aria-label="Eliminar simulación"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Eliminar simulación</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </TooltipProvider>
+          </div>
         </div>
       </CardContent>
     </Card>
