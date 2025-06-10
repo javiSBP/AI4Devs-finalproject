@@ -90,7 +90,7 @@ Crea una nueva simulación con datos opcionales de Lean Canvas y datos financier
 
 **Validaciones:**
 
-- `name`: Obligatorio, entre 3 y 100 caracteres
+- `name`: Obligatorio, entre 3 y 50 caracteres
 - `leanCanvas`: Opcional, todos los campos son cadenas de texto
 - `financialData`: Opcional, todos los valores numéricos deben ser mayores o iguales a 0
 

@@ -47,8 +47,6 @@ export interface SimulationListItem {
   updatedAt: string;
   leanCanvas?: {
     id: string;
-    name: string;
-    description?: string;
     problem?: string;
     solution?: string;
     uniqueValueProposition?: string;

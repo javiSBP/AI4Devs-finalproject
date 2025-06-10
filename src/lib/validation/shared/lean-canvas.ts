@@ -2,8 +2,6 @@ import { z } from "zod";
 
 // Límites de caracteres optimizados para cada campo del Lean Canvas
 export const LEAN_CANVAS_LIMITS = {
-  name: 100,
-  description: 200,
   problem: 200,
   solution: 250,
   uniqueValueProposition: 250,
@@ -12,24 +10,34 @@ export const LEAN_CANVAS_LIMITS = {
   revenueStreams: 250,
 } as const;
 
-// Schema base compartido entre frontend y backend
-export const SharedLeanCanvasSchema = z.object({
+// Límites para metadatos de simulación
+export const SIMULATION_METADATA_LIMITS = {
+  name: 50,
+  description: 150,
+} as const;
+
+// Schema para metadatos de simulación
+export const SimulationMetadataSchema = z.object({
   name: z
     .string()
-    .min(1, "El nombre es requerido")
+    .min(3, "El nombre debe tener al menos 3 caracteres")
     .max(
-      LEAN_CANVAS_LIMITS.name,
-      `El nombre no puede exceder ${LEAN_CANVAS_LIMITS.name} caracteres`
+      SIMULATION_METADATA_LIMITS.name,
+      `El nombre no puede exceder ${SIMULATION_METADATA_LIMITS.name} caracteres`
     )
     .trim(),
   description: z
     .string()
     .max(
-      LEAN_CANVAS_LIMITS.description,
-      `La descripción no puede exceder ${LEAN_CANVAS_LIMITS.description} caracteres`
+      SIMULATION_METADATA_LIMITS.description,
+      `La descripción no puede exceder ${SIMULATION_METADATA_LIMITS.description} caracteres`
     )
     .trim()
     .optional(),
+});
+
+// Schema base compartido entre frontend y backend para Lean Canvas
+export const SharedLeanCanvasSchema = z.object({
   problem: z
     .string()
     .min(1, "El problema es requerido")
@@ -80,9 +88,17 @@ export const SharedLeanCanvasSchema = z.object({
     .trim(),
 });
 
+// Schema combinado para el primer paso del wizard
+export const FirstStepSchema = z.object({
+  metadata: SimulationMetadataSchema,
+  leanCanvas: SharedLeanCanvasSchema,
+});
+
 // Esquemas derivados para diferentes casos de uso
 export const SharedLeanCanvasUpdateSchema = SharedLeanCanvasSchema.partial();
 
 // Tipos TypeScript exportados
 export type SharedLeanCanvasInput = z.infer<typeof SharedLeanCanvasSchema>;
 export type SharedLeanCanvasUpdateInput = z.infer<typeof SharedLeanCanvasUpdateSchema>;
+export type SimulationMetadataInput = z.infer<typeof SimulationMetadataSchema>;
+export type FirstStepInput = z.infer<typeof FirstStepSchema>;

@@ -422,8 +422,6 @@ describe("simulations-complete API", () => {
           leanCanvas: {
             select: {
               id: true,
-              name: true,
-              description: true,
               problem: true,
               solution: true,
               uniqueValueProposition: true,

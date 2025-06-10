@@ -29,8 +29,6 @@ model User {
 // Modelo para el Lean Canvas
 model LeanCanvas {
   id                     String       @id @default(cuid())
-  name                   String
-  description            String?
   problem                String?      @db.Text
   solution               String?      @db.Text
   uniqueValueProposition String?      @db.Text

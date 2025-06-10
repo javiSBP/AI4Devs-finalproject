@@ -9,9 +9,9 @@ import FinancialInputsForm, {
 } from "@/components/forms/FinancialInputsForm";
 import ResultsDisplay from "@/components/results/ResultsDisplay";
 import Toast from "@/components/ui/toast";
-import { LeanCanvasData } from "@/types/lean-canvas";
 import { calculateFinancialMetrics } from "@/lib/financial/kpi-calculator";
 import { useSimulations } from "@/hooks/useSimulations";
+import type { FirstStepInput } from "@/lib/validation/shared/lean-canvas";
 
 export interface FinancialData {
   averagePrice: number;
@@ -38,15 +38,20 @@ export default function SimulationPage() {
   // Estado para loading del guardado
   const [isCompleting, setIsCompleting] = useState(false);
 
-  const [leanCanvasData, setLeanCanvasData] = useState<LeanCanvasData>({
-    name: "",
-    description: "",
-    problem: "",
-    solution: "",
-    uniqueValueProposition: "",
-    customerSegments: "",
-    channels: "",
-    revenueStreams: "",
+  // Estado combinado para el primer paso
+  const [firstStepData, setFirstStepData] = useState<FirstStepInput>({
+    metadata: {
+      name: "",
+      description: "",
+    },
+    leanCanvas: {
+      problem: "",
+      solution: "",
+      uniqueValueProposition: "",
+      customerSegments: "",
+      channels: "",
+      revenueStreams: "",
+    },
   });
 
   const [financialData, setFinancialData] = useState<FinancialData>({
@@ -73,8 +78,8 @@ export default function SimulationPage() {
           <p className="text-muted-foreground">Define los aspectos clave de tu modelo de negocio</p>
           <LeanCanvasForm
             ref={leanCanvasFormRef}
-            initialData={leanCanvasData}
-            onSubmit={(data) => setLeanCanvasData(data)}
+            initialData={firstStepData}
+            onSubmit={(data) => setFirstStepData(data)}
           />
         </div>
       ),
@@ -112,8 +117,10 @@ export default function SimulationPage() {
 
           <ResultsDisplay
             calculationResult={calculationResult}
-            leanCanvasData={leanCanvasData}
+            leanCanvasData={firstStepData.leanCanvas}
             financialInputs={financialData}
+            simulationName={firstStepData.metadata.name}
+            simulationDescription={firstStepData.metadata.description}
           />
         </div>
       ),
@@ -127,10 +134,9 @@ export default function SimulationPage() {
     setToast({ type: "info", message: "", isVisible: false });
 
     const simulationData = {
-      name: leanCanvasData.name || `Simulación ${new Date().toLocaleDateString()}`,
-      description:
-        leanCanvasData.description || `Simulación creada el ${new Date().toLocaleDateString()}`,
-      leanCanvas: leanCanvasData,
+      name: firstStepData.metadata.name,
+      description: firstStepData.metadata.description || undefined,
+      leanCanvas: firstStepData.leanCanvas,
       financialInputs: financialData,
     };
 

@@ -32,7 +32,12 @@ export async function createCompleteSimulation(
       // 2. Create the Lean Canvas
       const leanCanvas = await tx.leanCanvas.create({
         data: {
-          ...data.leanCanvas,
+          problem: data.leanCanvas.problem,
+          solution: data.leanCanvas.solution,
+          uniqueValueProposition: data.leanCanvas.uniqueValueProposition,
+          customerSegments: data.leanCanvas.customerSegments,
+          channels: data.leanCanvas.channels,
+          revenueStreams: data.leanCanvas.revenueStreams,
         },
       });
 
@@ -297,8 +302,6 @@ export async function getCompleteSimulations(query: ListSimulationsQueryInput, d
           leanCanvas: {
             select: {
               id: true,
-              name: true,
-              description: true,
               problem: true,
               solution: true,
               uniqueValueProposition: true,
@@ -407,13 +410,11 @@ export async function duplicateCompleteSimulation(id: string, deviceId: string) 
         },
       });
 
-      // 2. Duplicate Lean Canvas if it exists
+      // 2. Create new Lean Canvas (copying all relevant data except references)
       let newLeanCanvas = null;
       if (existingSimulation.leanCanvas) {
         newLeanCanvas = await tx.leanCanvas.create({
           data: {
-            name: existingSimulation.leanCanvas.name,
-            description: existingSimulation.leanCanvas.description,
             problem: existingSimulation.leanCanvas.problem,
             solution: existingSimulation.leanCanvas.solution,
             uniqueValueProposition: existingSimulation.leanCanvas.uniqueValueProposition,

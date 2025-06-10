@@ -115,16 +115,6 @@ export default function SimulationDetailPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">Nombre del Canvas</h3>
-                    <p>{simulation.leanCanvas.name}</p>
-                  </div>
-                  {simulation.leanCanvas.description && (
-                    <div>
-                      <h3 className="text-sm font-medium text-muted-foreground">Descripción</h3>
-                      <p>{simulation.leanCanvas.description}</p>
-                    </div>
-                  )}
-                  <div>
                     <h3 className="text-sm font-medium text-muted-foreground">Problema</h3>
                     <p>{simulation.leanCanvas.problem}</p>
                   </div>
@@ -210,6 +200,8 @@ export default function SimulationDetailPage() {
               calculationResult={calculationResult}
               leanCanvasData={simulation.leanCanvas}
               financialInputs={simulation.financialInputs}
+              simulationName={simulation.name}
+              simulationDescription={simulation.description}
             />
           </div>
         </div>

@@ -1,11 +1,11 @@
-import { z } from "zod";
-import {
+import type { z } from "zod";
+import type {
   SharedLeanCanvasSchema,
   SharedLeanCanvasUpdateSchema,
 } from "@/lib/validation/shared/lean-canvas";
 import { LeanCanvasSchema, LeanCanvasUpdateSchema } from "@/lib/validation/lean-canvas";
 
-// Core Lean Canvas types
+// Main LeanCanvas type based on validation schema
 export type LeanCanvasData = z.infer<typeof SharedLeanCanvasSchema>;
 export type LeanCanvasUpdateData = z.infer<typeof SharedLeanCanvasUpdateSchema>;
 export type CreateLeanCanvasData = z.infer<typeof LeanCanvasSchema>;
@@ -14,8 +14,6 @@ export type UpdateLeanCanvasData = z.infer<typeof LeanCanvasUpdateSchema>;
 // API Response types
 export interface LeanCanvasResponse {
   id: string;
-  name: string;
-  description?: string;
   problem: string;
   solution: string;
   uniqueValueProposition: string;
@@ -24,7 +22,6 @@ export interface LeanCanvasResponse {
   revenueStreams: string;
   createdAt: string;
   updatedAt: string;
-  deviceId: string;
 }
 
 export interface LeanCanvasListResponse {

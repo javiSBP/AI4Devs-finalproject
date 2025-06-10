@@ -165,7 +165,7 @@ const FinancialInputsForm = forwardRef<FinancialInputsFormRef, FinancialInputsFo
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="flex items-center gap-2">
-                    {FINANCIAL_INPUTS_HELP.averagePrice.label}
+                    {FINANCIAL_INPUTS_HELP.averagePrice.label} *
                     <EnhancedInfoTooltip
                       content={FINANCIAL_INPUTS_HELP.averagePrice.description}
                       example={FINANCIAL_INPUTS_HELP.averagePrice.example}
@@ -275,7 +275,7 @@ const FinancialInputsForm = forwardRef<FinancialInputsFormRef, FinancialInputsFo
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="flex items-center gap-2">
-                    {FINANCIAL_INPUTS_HELP.monthlyNewCustomers.label}
+                    {FINANCIAL_INPUTS_HELP.monthlyNewCustomers.label} *
                     <EnhancedInfoTooltip
                       content={FINANCIAL_INPUTS_HELP.monthlyNewCustomers.description}
                       example={FINANCIAL_INPUTS_HELP.monthlyNewCustomers.example}
@@ -301,7 +301,7 @@ const FinancialInputsForm = forwardRef<FinancialInputsFormRef, FinancialInputsFo
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="flex items-center gap-2">
-                    {FINANCIAL_INPUTS_HELP.averageCustomerLifetime.label}
+                    {FINANCIAL_INPUTS_HELP.averageCustomerLifetime.label} *
                     <EnhancedInfoTooltip
                       content={FINANCIAL_INPUTS_HELP.averageCustomerLifetime.description}
                       example={FINANCIAL_INPUTS_HELP.averageCustomerLifetime.example}

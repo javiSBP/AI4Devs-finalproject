@@ -186,10 +186,10 @@ describe("CreateSimulationSchema", () => {
   });
 
   it("should validate name maximum length", () => {
-    const longName = { ...validData, name: "a".repeat(101) };
+    const longName = { ...validData, name: "a".repeat(51) };
     const result = CreateSimulationSchema.safeParse(longName);
     expect(result.success).toBe(false);
-    expect(result.error?.errors[0].message).toContain("no puede exceder 100 caracteres");
+    expect(result.error?.errors[0].message).toContain("no puede exceder 50 caracteres");
   });
 
   it("should trim name", () => {
@@ -207,10 +207,10 @@ describe("CreateSimulationSchema", () => {
   });
 
   it("should validate description length", () => {
-    const longDescription = { ...validData, description: "a".repeat(501) };
+    const longDescription = { ...validData, description: "a".repeat(151) };
     const result = CreateSimulationSchema.safeParse(longDescription);
     expect(result.success).toBe(false);
-    expect(result.error?.errors[0].message).toContain("no puede exceder 500 caracteres");
+    expect(result.error?.errors[0].message).toContain("no puede exceder 150 caracteres");
   });
 
   it("should allow optional leanCanvasId", () => {

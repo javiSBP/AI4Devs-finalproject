@@ -27,6 +27,8 @@ interface ResultsDisplayProps {
   calculationResult: CalculationResult;
   leanCanvasData: LeanCanvasData;
   financialInputs: FinancialInputs;
+  simulationName?: string;
+  simulationDescription?: string;
 }
 
 const formatCurrency = (value: number) => {
@@ -276,6 +278,8 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   calculationResult,
   leanCanvasData,
   financialInputs,
+  simulationName,
+  simulationDescription,
 }) => {
   const { kpis, health, recommendations } = calculationResult;
   const {
@@ -425,10 +429,10 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
       {/* Lean Canvas Visual - ahora aparece primero */}
       <div>
         <div className="flex items-center gap-3 mb-4">
-          <h3 className="font-semibold text-lg">{leanCanvasData.name}</h3>
+          <h3 className="font-semibold text-lg">{simulationName || "Simulación sin nombre"}</h3>
         </div>
-        {leanCanvasData.description && (
-          <div className="text-muted-foreground mb-6">{leanCanvasData.description}</div>
+        {simulationDescription && (
+          <div className="text-muted-foreground mb-6">{simulationDescription}</div>
         )}
         <LeanCanvasVisual data={leanCanvasData} />
       </div>

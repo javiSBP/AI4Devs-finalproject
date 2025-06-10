@@ -7,8 +7,6 @@ import type { FinancialInputs } from "@/lib/financial/kpi-calculator";
 
 // Mock data for testing
 const mockLeanCanvasData: LeanCanvasData = {
-  name: "Test Business",
-  description: "Test description",
   problem: "Test problem",
   solution: "Test solution",
   uniqueValueProposition: "Test UVP",

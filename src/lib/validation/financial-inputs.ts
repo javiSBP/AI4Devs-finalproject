@@ -18,11 +18,11 @@ export const CreateSimulationSchema = z
     name: z
       .string()
       .min(3, "El nombre debe tener al menos 3 caracteres")
-      .max(100, "El nombre no puede exceder 100 caracteres")
+      .max(50, "El nombre no puede exceder 50 caracteres")
       .trim(),
     description: z
       .string()
-      .max(500, "La descripción no puede exceder 500 caracteres")
+      .max(150, "La descripción no puede exceder 150 caracteres")
       .trim()
       .optional(),
     leanCanvasId: z.string().cuid("ID de Lean Canvas inválido").optional(),
@@ -35,12 +35,12 @@ export const UpdateSimulationSchema = z
     name: z
       .string()
       .min(3, "El nombre debe tener al menos 3 caracteres")
-      .max(100, "El nombre no puede exceder 100 caracteres")
+      .max(50, "El nombre no puede exceder 50 caracteres")
       .trim()
       .optional(),
     description: z
       .string()
-      .max(500, "La descripción no puede exceder 500 caracteres")
+      .max(150, "La descripción no puede exceder 150 caracteres")
       .trim()
       .optional(),
     leanCanvasId: z.string().cuid("ID de Lean Canvas inválido").optional(),
