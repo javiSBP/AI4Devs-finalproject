@@ -22,7 +22,7 @@
     "db:seed": "prisma db seed",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate && prisma migrate deploy"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
