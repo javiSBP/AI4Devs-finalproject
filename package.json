@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "build:prod": "prisma generate && prisma migrate deploy && next build",
     "start": "next start",
     "lint": "next lint",
     "test": "vitest --run",
@@ -21,8 +22,7 @@
     "prisma:studio": "prisma studio",
     "db:seed": "prisma db seed",
     "docker:up": "docker-compose up -d",
-    "docker:down": "docker-compose down",
-    "postinstall": "prisma generate && prisma migrate deploy"
+    "docker:down": "docker-compose down"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
