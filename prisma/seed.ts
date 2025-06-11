@@ -21,8 +21,6 @@ async function main() {
     update: {},
     create: {
       id: "demo-lean-canvas",
-      name: "Proyecto de Ejemplo",
-      description: "Un ejemplo de Lean Canvas para demostración",
       problem:
         "Los emprendedores tienen dificultades para evaluar la viabilidad financiera de sus ideas",
       solution:
