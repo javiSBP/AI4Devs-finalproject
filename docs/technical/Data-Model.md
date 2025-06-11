@@ -2,15 +2,17 @@
 
 ## Descripción
 
-Este modelo de datos representa las entidades principales de la aplicación LeanSim tras la limpieza y normalización de la arquitectura legacy. El diseño está optimizado para separar claramente los metadatos de simulación, los inputs financieros, y los resultados calculados, proporcionando una base sólida para futuras funcionalidades.
+Este modelo de datos representa las entidades principales de la aplicación LeanSim tras la limpieza y normalización de la arquitectura legacy. El diseño está optimizado para separar claramente los metadatos de simulación, los inputs financieros, y los resultados calculados, eliminando duplicaciones y centralizando la información en las entidades apropiadas para proporcionar una base sólida y mantenible para futuras funcionalidades.
 
 ## Decisiones de Diseño
 
 - **Separación de responsabilidades**: Se han separado los datos en entidades especializadas (`Simulation`, `FinancialInputs`, `SimulationResults`, `LeanCanvas`)
 - **Eliminación de legacy**: Se han eliminado completamente los campos legacy del modelo `Simulation` para usar exclusivamente tablas normalizadas
+- **Centralización de metadatos**: Los campos `name` y `description` se mantienen únicamente en `Simulation`, eliminando duplicación con `LeanCanvas`
 - **Soporte multi-usuario**: Se ha añadido soporte para usuarios registrados y anónimos mediante `userId` y `deviceId`
 - **Flexibilidad de cálculo**: Los resultados se almacenan con metadatos de versión para permitir evolución de algoritmos
 - **Relaciones limpias**: Cada simulación puede tener opcionalmente inputs financieros, resultados y un lean canvas asociado
+- **Arquitectura normalizada**: LeanCanvas se enfoca únicamente en contenido de negocio, mientras Simulation maneja metadatos
 
 ## Diagrama
 
@@ -37,8 +39,6 @@ erDiagram
 
     LeanCanvas {
         String id PK
-        String name
-        String description
         String problem
         String solution
         String uniqueValueProposition
@@ -48,7 +48,6 @@ erDiagram
         DateTime createdAt
         DateTime updatedAt
         String userId FK
-        String deviceId
     }
 
     FinancialInputs {
@@ -117,13 +116,13 @@ erDiagram
 
 ### 2. Entidad Simulation
 
-**Descripción:** Contenedor principal que representa una simulación completa. Almacena únicamente metadatos y relaciones, manteniendo la arquitectura limpia tras la eliminación de campos legacy.
+**Descripción:** Contenedor principal que representa una simulación completa. Almacena metadatos centralizados (nombre, descripción) y gestiona las relaciones con otras entidades, manteniendo la arquitectura limpia tras la eliminación de campos legacy y la centralización de metadatos.
 
 **Atributos:**
 
 - `id` (String): Identificador único de la simulación. **Clave primaria**, generado automáticamente usando CUID.
-- `name` (String): Nombre de la simulación. **Not null**.
-- `description` (String): Descripción opcional de la simulación. **Nullable**.
+- `name` (String): Nombre de la simulación. **Not null**. Campo centralizado que anteriormente estaba duplicado en LeanCanvas.
+- `description` (String): Descripción opcional de la simulación. **Nullable**. Campo centralizado que anteriormente estaba duplicado en LeanCanvas.
 - `createdAt` (DateTime): Fecha y hora de creación. **Not null**, valor por defecto: fecha/hora actual.
 - `updatedAt` (DateTime): Fecha y hora de la última actualización. **Not null**, se actualiza automáticamente.
 - `userId` (String): Identificador del usuario propietario. **Nullable**, para permitir usuarios anónimos.
@@ -145,13 +144,11 @@ erDiagram
 
 ### 3. Entidad LeanCanvas
 
-**Descripción:** Almacena los campos del Lean Canvas para definir la estrategia del negocio. Puede ser compartido entre múltiples simulaciones.
+**Descripción:** Almacena los campos del Lean Canvas para definir la estrategia del negocio. Puede ser compartido entre múltiples simulaciones. Los metadatos de nombre y descripción se almacenan en la entidad Simulation.
 
 **Atributos:**
 
 - `id` (String): Identificador único del lean canvas. **Clave primaria**, generado automáticamente usando CUID.
-- `name` (String): Nombre del lean canvas. **Not null**.
-- `description` (String): Descripción opcional. **Nullable**.
 - `problem` (String): Descripción del problema que resuelve el negocio. **Nullable**, tipo Text.
 - `solution` (String): Descripción de la solución propuesta. **Nullable**, tipo Text.
 - `uniqueValueProposition` (String): Propuesta de valor única. **Nullable**, tipo Text.
@@ -160,8 +157,7 @@ erDiagram
 - `revenueStreams` (String): Flujos de ingresos. **Nullable**, tipo Text.
 - `createdAt` (DateTime): Fecha y hora de creación. **Not null**, valor por defecto: fecha/hora actual.
 - `updatedAt` (DateTime): Fecha y hora de la última actualización. **Not null**, se actualiza automáticamente.
-- `userId` (String): Identificador del usuario propietario. **Nullable**.
-- `deviceId` (String): Identificador del dispositivo. **Nullable**.
+- `userId` (String): Identificador del usuario propietario. **Nullable**, para permitir usuarios anónimos.
 
 **Relaciones:**
 
@@ -170,7 +166,6 @@ erDiagram
 
 **Índices:**
 
-- `deviceId` para búsquedas de usuarios anónimos
 - `userId` para búsquedas de usuarios registrados
 
 ### 4. Entidad FinancialInputs
@@ -246,8 +241,10 @@ erDiagram
 ### Arquitectura Limpia
 
 - **Eliminación de legacy**: Se han eliminado completamente los 13 campos legacy del modelo `Simulation` (averagePrice, costPerUnit, fixedCosts, etc.)
+- **Centralización de metadatos**: Se eliminó la duplicación de `name` y `description` entre `Simulation` y `LeanCanvas`, manteniendo estos campos únicamente en `Simulation`
 - **Separación de responsabilidades**: Cada entidad tiene una responsabilidad específica y bien definida
 - **Flexibilidad**: El modelo permite evolución sin breaking changes mediante metadatos de versión
+- **Consistencia de datos**: LeanCanvas se enfoca exclusivamente en contenido de estrategia de negocio
 
 ### Soporte Multi-usuario
 
