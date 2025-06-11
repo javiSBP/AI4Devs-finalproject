@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: "LeanSim - Simulador de Modelos de Negocio",
@@ -20,6 +22,8 @@ export default function RootLayout({
         <ThemeProvider defaultTheme="system" storageKey="leansim-ui-theme">
           <TooltipProvider>{children}</TooltipProvider>
         </ThemeProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

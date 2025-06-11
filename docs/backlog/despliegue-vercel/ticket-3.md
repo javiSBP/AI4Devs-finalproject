@@ -10,10 +10,10 @@ Configurar la base de datos PostgreSQL de producción, implementar métricas y m
 
 ## Tareas
 
-- [ ] Configurar una instancia de PostgreSQL para producción (por ejemplo, en Supabase o similar)
-- [ ] Implementar Prisma Migrate para gestionar el esquema de la base de datos en producción
-- [ ] Configurar conexión segura entre Vercel y la base de datos
-- [ ] Implementar monitoreo de rendimiento utilizando Vercel Analytics
+- [x] Configurar una instancia de PostgreSQL para producción (por ejemplo, en Supabase o similar)
+- [x] Implementar Prisma Migrate para gestionar el esquema de la base de datos en producción
+- [x] Configurar conexión segura entre Vercel y la base de datos
+- [x] Implementar monitoreo de rendimiento utilizando Vercel Analytics
 - [ ] Configurar sistema de registro de errores (Sentry u otro)
 - [ ] Implementar página de estado para monitorear disponibilidad del servicio
 - [ ] Crear scripts para backup automático de la base de datos

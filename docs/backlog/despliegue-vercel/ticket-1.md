@@ -10,16 +10,16 @@ Configurar el proyecto en la plataforma Vercel, conectándolo al repositorio de 
 
 ## Tareas
 
-- [ ] Crear cuenta y proyecto en Vercel
-- [ ] Conectar el repositorio de GitHub con el proyecto de Vercel
-- [ ] Configurar las opciones de build y framework (Next.js)
-- [ ] Ajustar configuración para el directorio raíz y comandos de build
-- [ ] Configurar variables de entorno básicas en el dashboard de Vercel
-- [ ] Realizar el despliegue inicial y verificar su correcto funcionamiento
-- [ ] Configurar domain para el entorno de producción
-- [ ] Verificar que los recursos estáticos se sirven correctamente
-- [ ] Documentar el proceso de despliegue y configuración básica
-- [ ] Verificar la aplicación desplegada utilizando diferentes dispositivos y navegadores
+- [x] Crear cuenta y proyecto en Vercel
+- [x] Conectar el repositorio de GitHub con el proyecto de Vercel
+- [x] Configurar las opciones de build y framework (Next.js)
+- [x] Ajustar configuración para el directorio raíz y comandos de build
+- [x] Configurar variables de entorno básicas en el dashboard de Vercel
+- [x] Realizar el despliegue inicial y verificar su correcto funcionamiento
+- [x] Configurar domain para el entorno de producción
+- [x] Verificar que los recursos estáticos se sirven correctamente
+- [x] Documentar el proceso de despliegue y configuración básica
+- [x] Verificar la aplicación desplegada utilizando diferentes dispositivos y navegadores
 
 ## Criterios de Aceptación Técnicos
 
