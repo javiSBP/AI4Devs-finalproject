@@ -2,18 +2,18 @@ import { z } from "zod";
 
 // Límites de caracteres optimizados para cada campo del Lean Canvas
 export const LEAN_CANVAS_LIMITS = {
-  problem: 200,
-  solution: 250,
-  uniqueValueProposition: 250,
-  customerSegments: 200,
-  channels: 180,
-  revenueStreams: 250,
+  problem: 500,
+  solution: 500,
+  uniqueValueProposition: 500,
+  customerSegments: 500,
+  channels: 500,
+  revenueStreams: 500,
 } as const;
 
 // Límites para metadatos de simulación
 export const SIMULATION_METADATA_LIMITS = {
   name: 50,
-  description: 150,
+  description: 250,
 } as const;
 
 // Schema para metadatos de simulación

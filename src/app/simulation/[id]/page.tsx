@@ -6,7 +6,7 @@ import MainLayout from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronLeft } from "lucide-react";
-import InfoTooltip from "@/components/ui/info-tooltip";
+
 import ResultsDisplay from "@/components/results/ResultsDisplay";
 import { calculateFinancialMetrics } from "@/lib/financial/kpi-calculator";
 import { useSimulations } from "@/hooks/useSimulations";
@@ -108,10 +108,7 @@ export default function SimulationDetailPage() {
               {/* Lean Canvas Summary */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    Lean Canvas
-                    <InfoTooltip content="Resumen de los datos del Lean Canvas introducidos" />
-                  </CardTitle>
+                  <CardTitle>Lean Canvas</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
@@ -150,10 +147,7 @@ export default function SimulationDetailPage() {
               {/* Financial Inputs Summary */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    Inputs Financieros
-                    <InfoTooltip content="Resumen de los datos financieros introducidos" />
-                  </CardTitle>
+                  <CardTitle>Inputs Financieros</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>

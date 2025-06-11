@@ -153,6 +153,7 @@ const LeanCanvasForm = forwardRef<LeanCanvasFormRef, LeanCanvasFormProps>(
           </div>
 
           {/* Lean Canvas */}
+          <p className="text-muted-foreground">Define los aspectos clave de tu modelo de negocio</p>
           <div>
             <div className="grid gap-6 md:grid-cols-2">
               <FormField

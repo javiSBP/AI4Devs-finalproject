@@ -75,7 +75,6 @@ export default function SimulationPage() {
       title: "Lean Canvas",
       component: (
         <div className="space-y-4">
-          <p className="text-muted-foreground">Define los aspectos clave de tu modelo de negocio</p>
           <LeanCanvasForm
             ref={leanCanvasFormRef}
             initialData={firstStepData}

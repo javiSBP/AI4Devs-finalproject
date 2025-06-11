@@ -57,7 +57,7 @@ model Simulation {
   deviceId     String? // Add deviceId for anonymous users
   user         User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
   leanCanvasId String?
-  leanCanvas   LeanCanvas? @relation(fields: [leanCanvasId], references: [id], onDelete: SetNull)
+  leanCanvas   LeanCanvas? @relation(fields: [leanCanvasId], references: [id], onDelete: Cascade)
 
   // Relaciones con inputs y resultados
   financialInputs FinancialInputs?
