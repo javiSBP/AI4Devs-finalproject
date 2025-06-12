@@ -218,8 +218,8 @@ export function SimulationCard({
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-            <Button variant="outline" size="sm" asChild>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2 border-t border-gray-100">
+            <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
               <Link href={`/simulation/${simulation.id}`}>
                 Ver detalles
                 <ChevronRight className="ml-1 h-3 w-3" />
@@ -227,7 +227,7 @@ export function SimulationCard({
             </Button>
 
             <TooltipProvider>
-              <div className="flex gap-2">
+              <div className="flex gap-2 justify-center sm:justify-end">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
@@ -308,7 +308,7 @@ export function SimulationCard({
           </div>
 
           {/* Center section: Key metrics */}
-          <div className="flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-8">
             {/* Monthly Profit */}
             <div className="text-center">
               <div className="flex items-center gap-1 mb-1">
@@ -340,7 +340,8 @@ export function SimulationCard({
           <div className="flex items-center gap-3">
             <Button variant="outline" size="sm" asChild>
               <Link href={`/simulation/${simulation.id}`}>
-                Ver detalles
+                <span className="hidden lg:inline">Ver detalles</span>
+                <span className="lg:hidden">Ver</span>
                 <ChevronRight className="ml-1 h-3 w-3" />
               </Link>
             </Button>

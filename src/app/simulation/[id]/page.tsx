@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import MainLayout from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { ChevronLeft } from "lucide-react";
 
 import ResultsDisplay from "@/components/results/ResultsDisplay";
@@ -100,11 +101,22 @@ export default function SimulationDetailPage() {
         </div>
 
         <div className="space-y-8">
+          {/* Results Section - Now first and most prominent */}
+          <div>
+            <h2 className="text-2xl font-semibold mb-6">Resultados</h2>
+            <ResultsDisplay
+              calculationResult={calculationResult}
+              leanCanvasData={simulation.leanCanvas}
+              financialInputs={simulation.financialInputs}
+              simulationName={simulation.name}
+              simulationDescription={simulation.description}
+            />
+          </div>
+
           {/* Input Summary Section */}
           <div>
             <h2 className="text-2xl font-semibold mb-6">Datos de la simulación</h2>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Lean Canvas Summary */}
               <Card>
                 <CardHeader>
@@ -185,18 +197,6 @@ export default function SimulationDetailPage() {
                 </CardContent>
               </Card>
             </div>
-          </div>
-
-          {/* Results Section */}
-          <div>
-            <h2 className="text-2xl font-semibold mb-6">Resultados</h2>
-            <ResultsDisplay
-              calculationResult={calculationResult}
-              leanCanvasData={simulation.leanCanvas}
-              financialInputs={simulation.financialInputs}
-              simulationName={simulation.name}
-              simulationDescription={simulation.description}
-            />
           </div>
         </div>
       </div>

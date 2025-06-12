@@ -22,14 +22,14 @@ export default function Home() {
               LeanSim te ayuda a evaluar la viabilidad básica de tu idea de negocio con métricas
               clave y resultados comprensibles.
             </p>
-            <div className="flex gap-4">
-              <Button asChild size="lg" className="gap-2">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button asChild size="lg" className="gap-2 w-full sm:w-auto">
                 <Link href="/simulation">
                   <Calculator className="h-5 w-5" />
                   Iniciar simulación
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="gap-2">
+              <Button asChild variant="outline" size="lg" className="gap-2 w-full sm:w-auto">
                 <Link href="/historial">
                   Ver historial
                   <ChevronRight className="h-5 w-5" />

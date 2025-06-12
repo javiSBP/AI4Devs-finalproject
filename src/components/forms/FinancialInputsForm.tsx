@@ -128,11 +128,11 @@ const FinancialInputsForm = forwardRef<FinancialInputsFormRef, FinancialInputsFo
       <Form {...form}>
         <form className="space-y-8">
           {/* Banner informativo general */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <div className="flex items-start gap-3">
-              <div className="bg-blue-100 rounded-full p-1 mt-0.5">
+              <div className="bg-blue-100 dark:bg-blue-900 rounded-full p-1 mt-0.5">
                 <svg
-                  className="w-4 h-4 text-blue-600"
+                  className="w-4 h-4 text-blue-600 dark:text-blue-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -146,10 +146,10 @@ const FinancialInputsForm = forwardRef<FinancialInputsFormRef, FinancialInputsFo
                 </svg>
               </div>
               <div>
-                <h4 className="text-sm font-medium text-blue-800 mb-1">
+                <h4 className="text-sm font-medium text-blue-800 dark:text-blue-100 mb-1">
                   Todos los importes deben ser sin IVA
                 </h4>
-                <p className="text-xs text-blue-700">
+                <p className="text-xs text-blue-700 dark:text-blue-200">
                   Para calcular márgenes y viabilidad reales, ingresa precios y costes excluyendo
                   IVA (21%). El IVA es dinero &ldquo;de paso&rdquo; que no forma parte de tus
                   ingresos netos.

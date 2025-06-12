@@ -294,9 +294,9 @@ export default function HistorialPage() {
     <MainLayout>
       <div className="max-w-5xl mx-auto">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Historial de Simulaciones</h1>
-          <Button asChild>
+        <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold">Historial de Simulaciones</h1>
+          <Button asChild className="w-full sm:w-auto">
             <Link href="/simulation">
               <ChartBar className="mr-2 h-4 w-4" />
               Nueva simulación
@@ -338,10 +338,10 @@ export default function HistorialPage() {
               </div>
 
               {/* View Toggle and Page Size */}
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
                 {/* Page Size Selector */}
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Mostrar:</span>
+                  <span className="text-sm text-muted-foreground whitespace-nowrap">Mostrar:</span>
                   <select
                     value={filters.limit}
                     onChange={(e) => handleLimitChange(parseInt(e.target.value))}
@@ -354,9 +354,9 @@ export default function HistorialPage() {
                   </select>
                 </div>
 
-                {/* View Toggle */}
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Vista:</span>
+                {/* View Toggle - Hidden on mobile */}
+                <div className="hidden sm:flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground whitespace-nowrap">Vista:</span>
                   <div className="flex rounded-lg border p-1">
                     <button
                       onClick={() => setViewMode("grid")}
@@ -406,15 +406,19 @@ export default function HistorialPage() {
               </div>
 
               {/* Sort Controls */}
-              <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Ordenar por:</span>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground whitespace-nowrap">
+                    Ordenar por:
+                  </span>
+                </div>
 
                 {/* Sort Field Dropdown */}
                 <select
                   value={filters.sortField}
                   onChange={(e) => handleSortChange(e.target.value as SortField)}
-                  className="px-3 py-1 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  className="px-3 py-1 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 min-w-0"
                 >
                   <option value="updatedAt">Última actualización</option>
                   <option value="createdAt">Fecha de creación</option>
@@ -424,7 +428,7 @@ export default function HistorialPage() {
                 {/* Sort Order Toggle */}
                 <button
                   onClick={handleOrderToggle}
-                  className="inline-flex items-center justify-center gap-1 px-3 py-1 border border-input bg-background rounded-md text-sm hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  className="inline-flex items-center justify-center gap-1 px-3 py-1 border border-input bg-background rounded-md text-sm hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 flex-shrink-0"
                   title={`Orden ${filters.sortOrder === "desc" ? "descendente" : "ascendente"}`}
                 >
                   {filters.sortOrder === "desc" ? (
@@ -471,7 +475,7 @@ export default function HistorialPage() {
                     className={
                       viewMode === "grid"
                         ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                        : "space-y-4"
+                        : "hidden sm:block sm:space-y-4"
                     }
                   >
                     {filteredSimulations.map((simulation) => (
@@ -485,28 +489,46 @@ export default function HistorialPage() {
                       />
                     ))}
                   </div>
+
+                  {/* Mobile-only grid view */}
+                  <div className="block sm:hidden">
+                    <div className="grid grid-cols-1 gap-6">
+                      {filteredSimulations.map((simulation) => (
+                        <SimulationCard
+                          key={simulation.id}
+                          simulation={simulation}
+                          variant="grid"
+                          onDelete={handleDelete}
+                          onDuplicate={handleDuplicate}
+                          isLoading={loading}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Pagination Controls */}
                 {pagination.total > 1 && (
-                  <div className="flex items-center justify-between mt-8 pt-4 border-t">
-                    <div className="flex items-center gap-2">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-8 pt-4 border-t">
+                    <div className="flex items-center justify-center gap-2 overflow-x-auto">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handlePageChange(pagination.current - 1)}
                         disabled={!pagination.hasPrev || loading}
+                        className="flex-shrink-0"
                       >
                         <ChevronLeft className="h-4 w-4 mr-1" />
-                        Anterior
+                        <span className="hidden xs:inline">Anterior</span>
+                        <span className="xs:hidden">Ant</span>
                       </Button>
 
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 overflow-x-auto">
                         {getPageNumbers().map((page, index) =>
                           page === "..." ? (
                             <span
                               key={`ellipsis-${index}`}
-                              className="px-3 py-1 text-muted-foreground"
+                              className="px-2 py-1 text-muted-foreground flex-shrink-0"
                             >
                               ...
                             </span>
@@ -515,7 +537,7 @@ export default function HistorialPage() {
                               key={page}
                               onClick={() => handlePageChange(page as number)}
                               disabled={loading}
-                              className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                              className={`px-2 sm:px-3 py-1 text-sm rounded-md transition-colors flex-shrink-0 ${
                                 page === pagination.current
                                   ? "bg-primary text-primary-foreground"
                                   : "hover:bg-accent hover:text-accent-foreground"
@@ -532,13 +554,15 @@ export default function HistorialPage() {
                         size="sm"
                         onClick={() => handlePageChange(pagination.current + 1)}
                         disabled={!pagination.hasNext || loading}
+                        className="flex-shrink-0"
                       >
-                        Siguiente
+                        <span className="hidden xs:inline">Siguiente</span>
+                        <span className="xs:hidden">Sig</span>
                         <ChevronRight className="h-4 w-4 ml-1" />
                       </Button>
                     </div>
 
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground text-center sm:text-left">
                       Página {pagination.current} de {pagination.total}
                     </p>
                   </div>
