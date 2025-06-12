@@ -22,6 +22,7 @@ import {
 import { useSimulations } from "@/hooks/useSimulations";
 import type { SimulationListItem } from "@/types/simulation";
 import { AlertDialog } from "@/components/ui/alert-dialog";
+import { RocketLoader } from "@/components/ui/rocket-loader";
 import { SimulationCard } from "@/components/ui/simulation-card";
 
 type ViewMode = "grid" | "list";
@@ -260,8 +261,8 @@ export default function HistorialPage() {
     return (
       <MainLayout>
         <div className="max-w-5xl mx-auto">
-          <div className="text-center py-12">
-            <p className="text-lg">Cargando simulaciones...</p>
+          <div className="flex justify-center items-center h-64">
+            <RocketLoader message="Cargando simulaciones..." size="lg" />
           </div>
         </div>
       </MainLayout>
@@ -466,7 +467,7 @@ export default function HistorialPage() {
                 <div className="relative">
                   {loading && (
                     <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10 rounded-lg">
-                      <p className="text-sm text-muted-foreground">Cargando...</p>
+                      <RocketLoader message="" size="md" />
                     </div>
                   )}
 

@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import MainLayout from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
+import { RocketLoader } from "@/components/ui/rocket-loader";
 import { ChevronLeft } from "lucide-react";
 
 import ResultsDisplay from "@/components/results/ResultsDisplay";
@@ -51,7 +51,7 @@ export default function SimulationDetailPage() {
     return (
       <MainLayout>
         <div className="flex justify-center items-center h-64">
-          <p>Cargando simulación...</p>
+          <RocketLoader message="Cargando simulación..." size="lg" />
         </div>
       </MainLayout>
     );
