@@ -27,7 +27,7 @@ LeanSim
 
 ### **0.4. URL del proyecto:**
 
-> Puede ser pública o privada, en cuyo caso deberás compartir los accesos de manera segura. Puedes enviarlos a [alvaro@lidr.co](mailto:alvaro@lidr.co) usando algún servicio como [onetimesecret](https://onetimesecret.com/).
+https://leansim.vercel.app/
 
 ### 0.5. URL o archivo comprimido del repositorio
 
