@@ -476,7 +476,7 @@ export default function HistorialPage() {
                     className={
                       viewMode === "grid"
                         ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                        : "hidden sm:block sm:space-y-4"
+                        : "space-y-4"
                     }
                   >
                     {filteredSimulations.map((simulation) => (
@@ -489,22 +489,6 @@ export default function HistorialPage() {
                         isLoading={loading}
                       />
                     ))}
-                  </div>
-
-                  {/* Mobile-only grid view */}
-                  <div className="block sm:hidden">
-                    <div className="grid grid-cols-1 gap-6">
-                      {filteredSimulations.map((simulation) => (
-                        <SimulationCard
-                          key={simulation.id}
-                          simulation={simulation}
-                          variant="grid"
-                          onDelete={handleDelete}
-                          onDuplicate={handleDuplicate}
-                          isLoading={loading}
-                        />
-                      ))}
-                    </div>
                   </div>
                 </div>
 
